@@ -900,6 +900,7 @@ public class PlotMe_Core extends JavaPlugin
 		properties.put("MsgWasNotDenied","was not denied");
 		properties.put("MsgNowUndenied","now undenied.");
 		properties.put("MsgNowDenied","now denied.");
+		properties.put("MsgNowAllowed", "now allowed.");
 		properties.put("MsgAddedPlayer","added player");
 		properties.put("MsgDeniedPlayer","denied player");
 		properties.put("MsgRemovedPlayer","removed player");
