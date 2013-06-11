@@ -30,6 +30,7 @@ public class Plot implements Comparable<Plot> {
 	public boolean auctionned;
 	public String currentbidder;
 	public double currentbid;
+	public String auctionneddate;
 
 	public Plot()
 	{
@@ -86,7 +87,7 @@ public class Plot implements Comparable<Plot> {
 	
 	public Plot(String o, String w, String bio, Date exp, boolean fini, HashSet<String> al,
 			List<String[]> comm, String tid, double custprice, boolean sale, String finishdt, boolean prot, String bidder, 
-			Double bid, boolean isauctionned, HashSet<String> den)
+			Double bid, boolean isauctionned, HashSet<String> den, String auctdate)
 	{
 		owner = o;
 		world = w;
@@ -104,6 +105,7 @@ public class Plot implements Comparable<Plot> {
 		currentbidder = bidder;
 		currentbid = bid;
 		denied = den;
+		auctionneddate = auctdate;
 	}
 			
 	public void setExpire(Date date)

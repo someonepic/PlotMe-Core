@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
-
+import multiworld.MultiWorldPlugin;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
@@ -40,10 +39,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
 
 import com.griefcraft.model.Protection;
+import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.worldcretornica.plotme_core.Metrics.Graph;
-import com.worldcretornica.plotme_core.api.v0_14.IPlotMe_ChunkGenerator;
-import com.worldcretornica.plotme_core.api.v0_14.IPlotMe_GeneratorManager;
+import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
+import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
 import com.worldcretornica.plotme_core.listener.PlotDenyListener;
 import com.worldcretornica.plotme_core.listener.PlotListener;
 import com.worldcretornica.plotme_core.listener.PlotWorldEditListener;
@@ -51,11 +51,11 @@ import com.worldcretornica.plotme_core.listener.PlotWorldEditListener;
 public class PlotMe_Core extends JavaPlugin
 {
 	public static String NAME;
-	public static String PREFIX;
+	//public static String PREFIX;
 	public static String VERSION;
 	public static String WEBSITE;
 	
-	public static Logger logger = Logger.getLogger("Minecraft");
+	//public static Logger logger = Logger.getLogger("Minecraft");
 		
 	public static Boolean usemySQL;
     public static String mySQLuname;
@@ -83,17 +83,22 @@ public class PlotMe_Core extends JavaPlugin
     public static Integer counterexpired;
     public static Integer nbperdeletionprocessingexpired;
     public static Boolean defaultWEAnywhere;
+    
+    public static MultiWorldPlugin multiworld;
+    public static MultiverseCore multiverse;
         
-    protected static PlotMe_Core self = null;
+    public static PlotMe_Core self = null;
+    
+    public static Map<String, Map<String, String>> creationbuffer = null;
 	
     public void onDisable()
 	{	
 		SqlManager.closeConnection();
 		NAME = null;
-		PREFIX = null;
+		//PREFIX = null;
 		VERSION = null;
 		WEBSITE = null;
-		logger = null;
+		//logger = null;
 		usemySQL = null;
 		mySQLuname = null;
 		mySQLpass = null;
@@ -117,13 +122,14 @@ public class PlotMe_Core extends JavaPlugin
 		defaultWEAnywhere = null;
 		self = null;
 		allowToDeny = null;
+		creationbuffer = null;
 	}
     
 	public void onEnable()
 	{
-		initialize();
+		self = this;
 		
-		doMetric();
+		initialize();
 		
 		PluginManager pm = getServer().getPluginManager();
 				
@@ -149,10 +155,12 @@ public class PlotMe_Core extends JavaPlugin
 		{
 			pm.registerEvents(new PlotDenyListener(), this);
 		}
-				
-		getCommand("plotme").setExecutor(new PMCommand(this));
-								
-		self = this;
+		
+		creationbuffer = new HashMap<String, Map<String,String>>();
+		
+		getCommand("plotme").setExecutor(new PMCommand());
+		
+		doMetric();
 	}
 	
 	private void doMetric()
@@ -182,11 +190,14 @@ public class PlotMe_Core extends JavaPlugin
 					{
 						int totalplotsize = 0;
 						
-						for(PlotMapInfo p : plotmaps.values())
+						for(String s : plotmaps.keySet())
 						{
-							totalplotsize += p.PlotSize;
+							if(PlotMeCoreManager.getGenMan(s) != null)
+							{
+								if(PlotMeCoreManager.getGenMan(s).getPlotSize(s) != 0)
+									totalplotsize += PlotMeCoreManager.getGenMan(s).getPlotSize(s);
+							}
 						}
-						
 						
 						return totalplotsize / plotmaps.size();
 					}
@@ -261,7 +272,7 @@ public class PlotMe_Core extends JavaPlugin
 		
 		if(oldfile.exists())
 		{
-			logger.info(PREFIX + "Importing old configurations");
+			getLogger().info("Importing old configurations");
 			FileConfiguration oldconfig = new YamlConfiguration();
 			FileConfiguration newconfig = new YamlConfiguration();
 			
@@ -272,12 +283,12 @@ public class PlotMe_Core extends JavaPlugin
 			catch (FileNotFoundException e) {} 
 			catch (IOException e) 
 			{
-				logger.severe(PREFIX + "can't read configuration file");
+				getLogger().severe("can't read configuration file");
 				e.printStackTrace();
 			} 
 			catch (InvalidConfigurationException e) 
 			{
-				logger.severe(PREFIX + "invalid configuration format");
+				getLogger().severe("invalid configuration format");
 				e.printStackTrace();
 			}
 			
@@ -388,7 +399,7 @@ public class PlotMe_Core extends JavaPlugin
 			} 
 			catch (IOException e) 
 			{
-				logger.severe(PREFIX + "error writting configurations");
+				getLogger().severe("error writting configurations");
 				e.printStackTrace();
 				return;
 			}
@@ -399,10 +410,10 @@ public class PlotMe_Core extends JavaPlugin
 	{
 		PluginDescriptionFile pdfFile = this.getDescription();
 		NAME = pdfFile.getName();
-		PREFIX = ChatColor.BLUE + "[" + NAME + "] " + ChatColor.RESET;
+		//PREFIX = ChatColor.BLUE + "[" + NAME + "] " + ChatColor.RESET;
 		VERSION = pdfFile.getVersion();
 		WEBSITE = pdfFile.getWebsite();
-		configpath = getDataFolder().getParentFile().getAbsolutePath() + "/PlotMe";
+		configpath = getDataFolder().getParentFile().getAbsolutePath() + "\\PlotMe";
 		playersignoringwelimit = new HashSet<String>();
 		
 		File configfolder = new File(configpath);
@@ -428,12 +439,12 @@ public class PlotMe_Core extends JavaPlugin
 		catch (FileNotFoundException e) {} 
 		catch (IOException e) 
 		{
-			logger.severe(PREFIX + "can't read configuration file");
+			getLogger().severe("can't read configuration file");
 			e.printStackTrace();
 		} 
 		catch (InvalidConfigurationException e) 
 		{
-			logger.severe(PREFIX + "invalid configuration format");
+			getLogger().severe("invalid configuration format");
 			e.printStackTrace();
 		}
         
@@ -627,7 +638,7 @@ public class PlotMe_Core extends JavaPlugin
 		} 
 		catch (IOException e) 
 		{
-			logger.severe(PREFIX + "error writting configurations");
+			getLogger().severe("error writting configurations");
 			e.printStackTrace();
 		}
 		
@@ -736,7 +747,7 @@ public class PlotMe_Core extends JavaPlugin
 		return expireddate.toString();
 	}
 	
-	private List<Integer> getDefaultProtectedBlocks()
+	public static List<Integer> getDefaultProtectedBlocks()
 	{
 		List<Integer> protections = new ArrayList<Integer>();
 		
@@ -758,7 +769,7 @@ public class PlotMe_Core extends JavaPlugin
 		return protections;
 	}
 	
-	private List<String> getDefaultPreventedItems()
+	public static List<String> getDefaultPreventedItems()
 	{
 		List<String> preventeditems = new ArrayList<String>();
 
@@ -774,7 +785,7 @@ public class PlotMe_Core extends JavaPlugin
 	
 	public void scheduleTask(Runnable task, int eachseconds, int howmanytimes)
 	{		 		 
-		cscurrentlyprocessingexpired.sendMessage("" + PREFIX + ChatColor.RESET + caption("MsgStartDeleteSession"));
+		cscurrentlyprocessingexpired.sendMessage("" + NAME + ChatColor.RESET + caption("MsgStartDeleteSession"));
 		
 		for(int ctr = 0; ctr < (howmanytimes / nbperdeletionprocessingexpired); ctr++)
 		{
@@ -785,7 +796,7 @@ public class PlotMe_Core extends JavaPlugin
 	private void loadCaptions()
 	{
 		File filelang = new File(configpath, "caption-english.yml");
-		
+
 		TreeMap<String, String> properties = new TreeMap<String, String>();
 		properties.put("MsgStartDeleteSession","Starting delete session");
 		properties.put("MsgDeletedExpiredPlots", "Deleted expired plot");
@@ -894,6 +905,7 @@ public class PlotMe_Core extends JavaPlugin
 		properties.put("MsgPlotCleared","Plot cleared.");
 		properties.put("MsgClearedPlot","cleared plot");
 		properties.put("MsgNotYoursNotAllowedClear","is not yours. You are not allowed to clear it.");
+		properties.put("MsgNotYoursNotAllowedReset","is not yours. You are not allowed to reset it.");
 		properties.put("MsgAlreadyAllowed","was already allowed");
 		properties.put("MsgAlreadyDenied","was already denied");
 		properties.put("MsgWasNotAllowed","was not allowed");
@@ -922,6 +934,14 @@ public class PlotMe_Core extends JavaPlugin
 		properties.put("MsgReloadedConfigurations","reloaded configurations");
 		properties.put("MsgNoPlotworldFound","No Plot world found.");
 		properties.put("MsgWorldNotPlot","does not exist or is not a plot world.");
+		properties.put("MsgCreateWorldHelp", "If no generator is specified, PlotMe-DefaultGenerator will be used.");
+		properties.put("MsgWorldCreationSuccess", "World successfully created.");
+		properties.put("MsgCreateWorldParameters1", "Plotworld creation preparation started");
+		properties.put("MsgCreateWorldParameters2", "Default core settings :");
+		properties.put("MsgCreateWorldParameters3", "Default generator settings :");
+		properties.put("MsgCreateWorldParameters4", "to change settings");
+		properties.put("MsgCreateWorldParameters5", "to cancel world creation");
+		properties.put("MsgSettingChanged", "Setting changed");
 		
 		properties.put("ConsoleHelpMain", " ---==PlotMe Console Help Page==---");
 		properties.put("ConsoleHelpReload", " - Reloads the plugin and its configuration files");
@@ -1005,6 +1025,9 @@ public class PlotMe_Core extends JavaPlugin
 		properties.put("WordTop", "Top");
 		properties.put("WordPossessive", "'s");
 		properties.put("WordRemoved", "removed");
+		properties.put("WordGenerator", "generator");
+		properties.put("WordConfig", "config");
+		properties.put("WordValue", "value");
 		
 		properties.put("SignOwner", "Owner:");
 		properties.put("SignId", "ID:");
@@ -1063,12 +1086,26 @@ public class PlotMe_Core extends JavaPlugin
 		properties.put("CommandDispose", "dispose");
 		properties.put("CommandAuction", "auction");
 		properties.put("CommandHome", "home");
+		properties.put("CommandCreateWorld", "createworld");
+		properties.put("CommandCreateWorld-Setting", "set");
+		properties.put("CommandCreateWorld-Cancel", "cancel");
 		
 		properties.put("ErrCannotBuild","You cannot build here.");
 		properties.put("ErrCannotUseEggs", "You cannot use eggs here.");
 		properties.put("ErrCannotUse", "You cannot use that.");
 		properties.put("ErrCreatingPlotAt", "An error occured while creating the plot at");
 		properties.put("ErrMovingPlot", "Error moving plot");
+		properties.put("ErrWorldPluginNotFound", "Cannot create new world, Multiverse and Multiworld not found");
+		properties.put("ErrCannotFindWorldGen", "Cannot create new world, cannot find generator");
+		properties.put("ErrCannotCreateGen1", "Cannot create new world, generator");
+		properties.put("ErrCannotCreateGen2", "failed to create configurations");
+		properties.put("ErrCannotCreateGen3", "does not implement PlotMe_Generator");
+		properties.put("ErrCannotCreateMW", "Cannot create new world, failed to create world using multiworld");
+		properties.put("ErrMWDisabled",	"Cannot create new world, multiworld is disabled");
+		properties.put("ErrCannotCreateMV", "Cannot create new world, failed to create world using multiverse");
+		properties.put("ErrMVDisabled", "Cannot create new world, multiverse is disabled");
+		properties.put("ErrWorldExists", "Cannot create new world, name chosen already exists");
+		properties.put("ErrInvalidWorldName", "Cannot create new world, invalid world name chosen.");
 		
 		CreateConfig(filelang, properties, "PlotMe Caption configuration αω");
 		
@@ -1098,10 +1135,10 @@ public class PlotMe_Core extends JavaPlugin
 				}
 		    }
 		} catch (FileNotFoundException e) {
-			logger.severe("[" + NAME + "] File not found: " + e.getMessage());
+			getLogger().severe("File not found: " + e.getMessage());
 			e.printStackTrace();
 		} catch (Exception e) {
-			logger.severe("[" + NAME + "] Error with configuration: " + e.getMessage());
+			getLogger().severe("Error with configuration: " + e.getMessage());
 			e.printStackTrace();
 		} finally {                      
 			if (input != null) try {
@@ -1121,17 +1158,17 @@ public class PlotMe_Core extends JavaPlugin
 				dir.mkdirs();			
 				
 				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8"));
-				writer.write("# " + Title + "\n");
+				writer.write("# " + Title);
 				
 				for(Entry<String, String> e : properties.entrySet())
 				{
-					writer.write(e.getKey() + ": '" + e.getValue().replace("'", "''") + "'\n");
+					writer.write("\n" + e.getKey() + ": '" + e.getValue().replace("'", "''") + "'");
 				}
 				
 				writer.close();
 			}catch (IOException e){
-				logger.severe("[" + NAME + "] Unable to create config file : " + Title + "!");
-				logger.severe(e.getMessage());
+				getLogger().severe("Unable to create config file : " + Title + "!");
+				getLogger().severe(e.getMessage());
 			} finally {                      
 				if (writer != null) try {
 					writer.close();
@@ -1166,10 +1203,10 @@ public class PlotMe_Core extends JavaPlugin
 					input.close();
 			    }
 			} catch (FileNotFoundException e) {
-				logger.severe("[" + NAME + "] File not found: " + e.getMessage());
+				getLogger().severe("File not found: " + e.getMessage());
 				e.printStackTrace();
 			} catch (Exception e) {
-				logger.severe("[" + NAME + "] Error with configuration: " + e.getMessage());
+				getLogger().severe("Error with configuration: " + e.getMessage());
 				e.printStackTrace();
 			} finally {                      
 				if (writer != null) try {
@@ -1187,8 +1224,10 @@ public class PlotMe_Core extends JavaPlugin
 		if(captions.containsKey(s))
 		{
 			return addColor(captions.get(s));
-		}else{
-			logger.warning("[" + NAME + "] Missing caption: " + s);
+		}
+		else
+		{
+			self.getLogger().warning("Missing caption: " + s);
 			return "ERROR:Missing caption '" + s + "'";
 		}
 	}

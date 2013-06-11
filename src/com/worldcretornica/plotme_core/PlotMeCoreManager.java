@@ -1,26 +1,291 @@
 package com.worldcretornica.plotme_core;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
+import org.bukkit.WorldType;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.plugin.Plugin;
 
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
+import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.api.v0_14.IPlotMe_GeneratorManager;
+import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
+import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
+
+import multiworld.MultiWorldPlugin;
+import multiworld.worldgen.WorldGenerator;
 
 public class PlotMeCoreManager 
 {
+	public static boolean CreatePlotWorld(CommandSender cs, String worldname, String generator, Map<String, String> args)
+	{
+		//Get a seed
+		Long seed = (new java.util.Random()).nextLong();
+				
+		//Check if we have multiworld
+		if(PlotMe_Core.multiworld == null)
+		{
+			if(Bukkit.getPluginManager().isPluginEnabled("MultiWorld"))
+				PlotMe_Core.multiworld = (MultiWorldPlugin)Bukkit.getPluginManager().getPlugin("MultiWorld");
+		}
+		//Check if we have multiverse
+		if(PlotMe_Core.multiverse == null)
+		{
+			if(Bukkit.getPluginManager().isPluginEnabled("Multiverse-Core"))
+				PlotMe_Core.multiverse = ((MultiverseCore)Bukkit.getPluginManager().getPlugin("Multiverse-Core"));
+		}
+		
+		//Do we have one of them
+		if(PlotMe_Core.multiworld == null && PlotMe_Core.multiverse == null)
+		{
+			cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrWorldPluginNotFound"));
+			return false;
+		}
+		
+		
+		//Find generator
+		Plugin plugin = Bukkit.getPluginManager().getPlugin(generator);
+		
+		//Make generator create settings
+		if(plugin == null)
+		{
+			cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrCannotFindWorldGen") + " '" + generator + "'");
+			return false;
+		}
+		else
+		{
+			ChunkGenerator cg = plugin.getDefaultWorldGenerator(worldname, "");
+			if(cg != null && cg instanceof IPlotMe_ChunkGenerator)
+			{
+				//Create the generator configurations
+				if(!((IPlotMe_ChunkGenerator) cg).getManager().createConfig(worldname, args, cs))
+				{
+					cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrCannotCreateGen1") + " '" + generator + "' " + Util.C("ErrCannotCreateGen2"));
+					return false;
+				}
+			}
+			else
+			{
+				cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrCannotCreateGen1") + " '" + generator + "' " + Util.C("ErrCannotCreateGen3"));
+				return false;
+			}
+		}
+		
+		//Create manager configurations		
+		File configfile = new File(PlotMe_Core.configpath, "core-config.yml");
+		
+		FileConfiguration config = new YamlConfiguration();
+		try 
+		{
+			config.load(configfile);
+		} 
+		catch (FileNotFoundException e) {} 
+		catch (IOException e) 
+		{
+			PlotMe_Core.self.getLogger().severe("can't read configuration file");
+			e.printStackTrace();
+			return false;
+		} 
+		catch (InvalidConfigurationException e) 
+		{
+			PlotMe_Core.self.getLogger().severe("invalid configuration format");
+			e.printStackTrace();
+			return false;
+		}
+		
+		ConfigurationSection worlds;
+		
+		if(!config.contains("worlds"))
+		{
+			worlds = config.createSection("worlds");
+		}
+		else
+		{
+			worlds = config.getConfigurationSection("worlds");
+		}
+		
+		PlotMapInfo tempPlotInfo = new PlotMapInfo();
+		ConfigurationSection currworld = worlds.getConfigurationSection(worldname);
+		
+		if(currworld == null)
+		{
+			currworld = worlds.createSection(worldname);
+		}
+		
+		tempPlotInfo.PlotAutoLimit = Integer.parseInt(args.get("PlotAutoLimit"));
+		tempPlotInfo.DaysToExpiration = Integer.parseInt(args.get("DaysToExpiration"));
+		tempPlotInfo.ProtectedBlocks = PlotMe_Core.getDefaultProtectedBlocks();
+		tempPlotInfo.PreventedItems = PlotMe_Core.getDefaultPreventedItems();
+		tempPlotInfo.AutoLinkPlots = Boolean.parseBoolean(args.get("AutoLinkPlots"));
+		tempPlotInfo.DisableExplosion = Boolean.parseBoolean(args.get("DisableExplosion"));
+		tempPlotInfo.DisableIgnition = Boolean.parseBoolean(args.get("DisableIgnition"));
+		tempPlotInfo.UseEconomy = Boolean.parseBoolean(args.get("UseEconomy"));
+		tempPlotInfo.CanPutOnSale = Boolean.parseBoolean(args.get("CanPutOnSale"));
+		tempPlotInfo.CanSellToBank = Boolean.parseBoolean(args.get("CanSellToBank"));
+		tempPlotInfo.RefundClaimPriceOnReset = Boolean.parseBoolean(args.get("RefundClaimPriceOnReset"));
+		tempPlotInfo.RefundClaimPriceOnSetOwner = Boolean.parseBoolean(args.get("RefundClaimPriceOnSetOwner"));
+		tempPlotInfo.ClaimPrice = Double.parseDouble(args.get("ClaimPrice"));
+		tempPlotInfo.ClearPrice = Double.parseDouble(args.get("ClearPrice"));
+		tempPlotInfo.AddPlayerPrice = Double.parseDouble(args.get("AddPlayerPrice"));
+		tempPlotInfo.DenyPlayerPrice = Double.parseDouble(args.get("DenyPlayerPrice"));
+		tempPlotInfo.RemovePlayerPrice = Double.parseDouble(args.get("RemovePlayerPrice"));
+		tempPlotInfo.UndenyPlayerPrice = Double.parseDouble(args.get("UndenyPlayerPrice"));
+		tempPlotInfo.PlotHomePrice = Double.parseDouble(args.get("PlotHomePrice"));
+		tempPlotInfo.CanCustomizeSellPrice = Boolean.parseBoolean(args.get("CanCustomizeSellPrice"));
+		tempPlotInfo.SellToPlayerPrice = Double.parseDouble(args.get("SellToPlayerPrice"));
+		tempPlotInfo.SellToBankPrice = Double.parseDouble(args.get("SellToBankPrice"));
+		tempPlotInfo.BuyFromBankPrice = Double.parseDouble(args.get("BuyFromBankPrice"));
+		tempPlotInfo.AddCommentPrice = Double.parseDouble(args.get("AddCommentPrice"));
+		tempPlotInfo.BiomeChangePrice = Double.parseDouble(args.get("BiomeChangePrice"));
+		tempPlotInfo.ProtectPrice = Double.parseDouble(args.get("ProtectPrice"));
+		tempPlotInfo.DisposePrice = Double.parseDouble(args.get("DisposePrice"));
+		
+		currworld.set("PlotAutoLimit", tempPlotInfo.PlotAutoLimit);
+		currworld.set("DaysToExpiration", tempPlotInfo.DaysToExpiration);
+		currworld.set("ProtectedBlocks", tempPlotInfo.ProtectedBlocks);
+		currworld.set("PreventedItems", tempPlotInfo.PreventedItems);
+		currworld.set("AutoLinkPlots", tempPlotInfo.AutoLinkPlots);
+		currworld.set("DisableExplosion", tempPlotInfo.DisableExplosion);
+		currworld.set("DisableIgnition", tempPlotInfo.DisableIgnition);
+		
+		ConfigurationSection economysection = currworld.createSection("economy");
+		
+		economysection.set("UseEconomy", tempPlotInfo.UseEconomy);
+		economysection.set("CanPutOnSale", tempPlotInfo.CanPutOnSale);
+		economysection.set("CanSellToBank", tempPlotInfo.CanSellToBank);
+		economysection.set("RefundClaimPriceOnReset", tempPlotInfo.RefundClaimPriceOnReset);
+		economysection.set("RefundClaimPriceOnSetOwner", tempPlotInfo.RefundClaimPriceOnSetOwner);
+		economysection.set("ClaimPrice", tempPlotInfo.ClaimPrice);
+		economysection.set("ClearPrice", tempPlotInfo.ClearPrice);
+		economysection.set("AddPlayerPrice", tempPlotInfo.AddPlayerPrice);
+		economysection.set("DenyPlayerPrice", tempPlotInfo.DenyPlayerPrice);
+		economysection.set("RemovePlayerPrice", tempPlotInfo.RemovePlayerPrice);
+		economysection.set("UndenyPlayerPrice", tempPlotInfo.UndenyPlayerPrice);
+		economysection.set("PlotHomePrice", tempPlotInfo.PlotHomePrice);
+		economysection.set("CanCustomizeSellPrice", tempPlotInfo.CanCustomizeSellPrice);
+		economysection.set("SellToPlayerPrice", tempPlotInfo.SellToPlayerPrice);
+		economysection.set("SellToBankPrice", tempPlotInfo.SellToBankPrice);
+		economysection.set("BuyFromBankPrice", tempPlotInfo.BuyFromBankPrice);
+		economysection.set("AddCommentPrice", tempPlotInfo.AddCommentPrice);
+		economysection.set("BiomeChangePrice", tempPlotInfo.BiomeChangePrice);
+		economysection.set("ProtectPrice", tempPlotInfo.ProtectPrice);
+		economysection.set("DisposePrice", tempPlotInfo.DisposePrice);
+		
+		currworld.set("economy", economysection);
+		
+		worlds.set(worldname, currworld);
+		
+		tempPlotInfo.plots = SqlManager.getPlots(worldname.toLowerCase());
+		
+		PlotMe_Core.plotmaps.put(worldname.toLowerCase(), tempPlotInfo);
+		
+		try
+		{
+			config.save(configfile);
+		} 
+		catch (IOException e) 
+		{
+			PlotMe_Core.self.getLogger().severe("error writting configurations");
+			e.printStackTrace();
+			return false;
+		}
+		
+		
+		
+		//Are we using multiworld?
+		if(PlotMe_Core.multiworld != null)
+		{
+			boolean success = false;
+			
+			if(PlotMe_Core.multiworld.isEnabled())
+			{
+				WorldGenerator env = WorldGenerator.NORMAL;
+				
+				try
+				{
+					env = WorldGenerator.getGenByName("plugin");
+				} 
+				catch (Exception e) 
+				{
+					e.printStackTrace();
+					return false;
+				}
+				
+				try 
+				{
+					success = PlotMe_Core.multiworld.getDataManager().makeWorld(worldname, env, seed, generator);
+				} 
+				catch (Exception e) 
+				{
+					e.printStackTrace();
+					return false;
+				}
+				
+				if(success)
+				{
+					try 
+					{
+						PlotMe_Core.multiworld.getDataManager().loadWorld(worldname, true);
+					} 
+					catch (Exception e) 
+					{
+						e.printStackTrace();
+						return false;
+					}
+				}
+				else
+					cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrCannotCreateMW"));
+			}
+			else
+			{
+				cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrMWDisabled"));
+			}
+			return success;
+		}
+		
+		//Are we using multiverse?
+		if(PlotMe_Core.multiverse != null)
+		{
+			boolean success = false;
+			
+			if(PlotMe_Core.multiverse.isEnabled())
+			{
+				success = PlotMe_Core.multiverse.getMVWorldManager().addWorld(worldname, Environment.NORMAL, seed.toString(), WorldType.NORMAL, true, generator);
+				
+				if(!success)
+					cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrCannotCreateMV"));
+			}
+			else
+			{
+				cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrMVDisabled"));
+			}
+			return success;
+		}
+		
+		return false;
+	}
+	
 	public static int getIdX(String id)
 	{
 		return Integer.parseInt(id.substring(0, id.indexOf(";")));
@@ -397,12 +662,20 @@ public class PlotMeCoreManager
 		if(w == null)
 			return false;
 		else
-			return PlotMe_Core.plotmaps.containsKey(w.getName().toLowerCase());
+		{
+			if(getGenMan(w) == null)
+				return false;
+			else
+				return PlotMe_Core.plotmaps.containsKey(w.getName().toLowerCase());
+		}
 	}
 	
 	public static boolean isPlotWorld(String name)
 	{
-		return PlotMe_Core.plotmaps.containsKey(name.toLowerCase());
+		if(getGenMan(name) == null)
+			return false;
+		else
+			return PlotMe_Core.plotmaps.containsKey(name.toLowerCase());
 	}
 	
 	public static boolean isPlotWorld(Location l)
@@ -410,7 +683,12 @@ public class PlotMeCoreManager
 		if(l == null)
 			return false;
 		else
-			return PlotMe_Core.plotmaps.containsKey(l.getWorld().getName().toLowerCase());
+		{
+			if(getGenMan(l) == null)
+				return false;
+			else
+				return PlotMe_Core.plotmaps.containsKey(l.getWorld().getName().toLowerCase());
+		}
 	}
 	
 	public static boolean isPlotWorld(Player p)
@@ -418,7 +696,12 @@ public class PlotMeCoreManager
 		if(p == null)
 			return false;
 		else
-			return PlotMe_Core.plotmaps.containsKey(p.getWorld().getName().toLowerCase());
+		{
+			if(getGenMan(p.getWorld()) == null)
+				return false;
+			else
+				return PlotMe_Core.plotmaps.containsKey(p.getWorld().getName().toLowerCase());
+		}
 	}
 	
 	public static boolean isPlotWorld(Block b)
@@ -426,7 +709,12 @@ public class PlotMeCoreManager
 		if(b == null)
 			return false;
 		else
-			return PlotMe_Core.plotmaps.containsKey(b.getWorld().getName().toLowerCase());
+		{
+			if(getGenMan(b.getWorld()) == null)
+				return false;
+			else
+				return PlotMe_Core.plotmaps.containsKey(b.getWorld().getName().toLowerCase());
+		}
 	}
 	
 	public static boolean isPlotWorld(BlockState b)
@@ -434,7 +722,12 @@ public class PlotMeCoreManager
 		if(b == null)
 			return false;
 		else
-			return PlotMe_Core.plotmaps.containsKey(b.getWorld().getName().toLowerCase());
+		{
+			if(getGenMan(b.getWorld()) == null)
+				return false;
+			else
+				return PlotMe_Core.plotmaps.containsKey(b.getWorld().getName().toLowerCase());
+		}
 	}
 	
 	public static Plot createPlot(World w, String id, String owner)
@@ -825,7 +1118,35 @@ public class PlotMeCoreManager
 	public static void clear(World w, Plot plot)
 	{
 		String id = plot.id;
-		getGenMan(w).clear(w, id);
+		
+		/*if(PlotMe_Core.we != null)
+		{
+Location top = getGenMan(w).getPlotTopLoc(w, plot.id);
+Location bottom = getGenMan(w).getPlotBottomLoc(w, plot.id);
+
+Vector pos1 = new Vector(bottom.getBlockX(), bottom.getBlockY(), bottom.getBlockZ());
+Vector pos2 = new Vector(top.getBlockX(), top.getBlockY(), top.getBlockZ());
+
+CuboidRegion cr = new CuboidRegion(BukkitUtil.getLocalWorld(w), pos1, pos2);
+
+EditSession session = new EditSession(cr.getWorld(), 0);
+
+long t1 = Calendar.getInstance().getTimeInMillis();
+long t2;
+
+PlotMe_Core.self.getLogger().info("Start");
+
+cr.getWorld().regenerate(cr, session);
+			
+			t2 = Calendar.getInstance().getTimeInMillis();
+			
+			PlotMe_Core.self.getLogger().info("Time " + (t2-t1));
+		}
+		else
+		{*/
+			getGenMan(w).clear(w, id);
+		//}
+		
 		adjustWall(w, plot);
 		
 		RemoveLWC(w, plot);
@@ -855,12 +1176,34 @@ public class PlotMeCoreManager
 
 	public static String getPlotId(Location l) 
 	{
-		return getGenMan(l).getPlotId(l);
+		if(getGenMan(l) == null)
+			return "";
+		
+		IPlotMe_GeneratorManager gen = getGenMan(l);
+
+		if(gen == null)
+		{
+			return "";
+		}
+		else
+		{
+			return gen.getPlotId(l);
+		}
 	}
 	
 	public static String getPlotId(Player p) 
 	{
-		return getPlotId(p.getLocation());
+		if(getGenMan(p.getLocation()) == null)
+			return "";
+		
+		IPlotMe_GeneratorManager gen = getGenMan(p.getLocation());
+
+		if(gen == null)
+			return "";
+		else
+		{
+			return gen.getPlotId(p.getLocation());
+		}
 	}
 	
 	public static IPlotMe_GeneratorManager getGenMan(World w)

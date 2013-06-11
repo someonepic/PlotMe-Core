@@ -73,12 +73,12 @@ public class PlotRunnableDeleteExpire implements Runnable
 					ids = ids.substring(0, ids.length() - 2);
 				}
 				
-				PlotMe_Core.cscurrentlyprocessingexpired.sendMessage("" + PlotMe_Core.PREFIX + PlotMe_Core.caption("MsgDeletedExpiredPlots") + " " + ids);
+				PlotMe_Core.cscurrentlyprocessingexpired.sendMessage("[" + PlotMe_Core.NAME + "]" + PlotMe_Core.caption("MsgDeletedExpiredPlots") + " " + ids);
 			}
 			
 			if(PlotMe_Core.counterexpired == 0)
 			{
-				PlotMe_Core.cscurrentlyprocessingexpired.sendMessage("" + PlotMe_Core.PREFIX + PlotMe_Core.caption("MsgDeleteSessionFinished"));
+				PlotMe_Core.cscurrentlyprocessingexpired.sendMessage("[" + PlotMe_Core.NAME + "]" + PlotMe_Core.caption("MsgDeleteSessionFinished"));
 				PlotMe_Core.worldcurrentlyprocessingexpired = null;
 				PlotMe_Core.cscurrentlyprocessingexpired = null;
 			}

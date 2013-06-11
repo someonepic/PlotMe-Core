@@ -28,32 +28,43 @@ public class PlotWorldEditListener implements Listener
 	{	
 		Location from = event.getFrom();
 		Location to = event.getTo();
+		
 		boolean changemask = false;
+		Player p = event.getPlayer();
 		
-		if(!from.getWorld().getName().equalsIgnoreCase(to.getWorld().getName()))
+		if(to == null)
 		{
-			changemask = true;
+			PlotWorldEdit.removeMask(p);
 		}
-		else if(from.getBlockX() != to.getBlockX() || from.getBlockZ() != to.getBlockZ())
+		else
 		{
-			String idFrom = PlotMeCoreManager.getPlotId(from);
-			String idTo = PlotMeCoreManager.getPlotId(to);
-			
-			if(!idFrom.equalsIgnoreCase(idTo))
+			if(from != null)
 			{
-				changemask = true;
+				if(!from.getWorld().getName().equalsIgnoreCase(to.getWorld().getName()))
+				{
+					changemask = true;
+				}
+				else if(from.getBlockX() != to.getBlockX() || from.getBlockZ() != to.getBlockZ())
+				{
+					String idFrom = PlotMeCoreManager.getPlotId(from);
+					String idTo = PlotMeCoreManager.getPlotId(to);
+					
+					if(!idFrom.equalsIgnoreCase(idTo))
+					{
+						changemask = true;
+					}
+				}
 			}
-		}
-		
-		if(changemask)
-		{
-			Player p = event.getPlayer();
-			if(PlotMeCoreManager.isPlotWorld(to.getWorld()))
+			
+			if(changemask)
 			{
-				if(!PlotMe_Core.isIgnoringWELimit(p))
-					PlotWorldEdit.setMask(p);
-				else
-					PlotWorldEdit.removeMask(p);
+				if(PlotMeCoreManager.isPlotWorld(to.getWorld()))
+				{
+					if(!PlotMe_Core.isIgnoringWELimit(p))
+						PlotWorldEdit.setMask(p);
+					else
+						PlotWorldEdit.removeMask(p);
+				}
 			}
 		}
 	}
@@ -82,13 +93,20 @@ public class PlotWorldEditListener implements Listener
 		Location from = event.getFrom();
 		Location to = event.getTo();
 		
-		if(PlotMeCoreManager.isPlotWorld(from) && !PlotMeCoreManager.isPlotWorld(to))
+		if(to == null)
 		{
 			PlotWorldEdit.removeMask(p);
 		}
-		else if(PlotMeCoreManager.isPlotWorld(to))
+		else
 		{
-			PlotWorldEdit.setMask(p);
+			if(from != null && PlotMeCoreManager.isPlotWorld(from) && !PlotMeCoreManager.isPlotWorld(to))
+			{
+				PlotWorldEdit.removeMask(p);
+			}
+			else if(PlotMeCoreManager.isPlotWorld(to))
+			{
+				PlotWorldEdit.setMask(p);
+			}
 		}
 	}
 	
@@ -99,13 +117,20 @@ public class PlotWorldEditListener implements Listener
 		Location from = event.getFrom();
 		Location to = event.getTo();
 		
-		if(PlotMeCoreManager.isPlotWorld(from) && !PlotMeCoreManager.isPlotWorld(to))
+		if(to == null)
 		{
 			PlotWorldEdit.removeMask(p);
 		}
-		else if(PlotMeCoreManager.isPlotWorld(to))
+		else
 		{
-			PlotWorldEdit.setMask(p);
+			if(from != null && PlotMeCoreManager.isPlotWorld(from) && !PlotMeCoreManager.isPlotWorld(to))
+			{
+				PlotWorldEdit.removeMask(p);
+			}
+			else if(PlotMeCoreManager.isPlotWorld(to))
+			{
+				PlotWorldEdit.setMask(p);
+			}
 		}
 	}
 	

@@ -1,9 +1,9 @@
 name: PlotMe-Core
 main: com.worldcretornica.plotme_core.PlotMe_Core
-version: '0.14'
+version: '0.14.1'
 author: ZachBora
 website: http://dev.bukkit.org/server-mods/plotme/
-softdepend: [WorldEdit, Vault, LWC, PlotMe_Core]
+softdepend: [WorldEdit, Vault, LWC, PlotMe-DefaultGenerator, Multiverse-Core, MultiWorld]
 description: >
              Handles plot management and protection
 commands:
@@ -32,6 +32,7 @@ permissions:
         plotme.use.done: true
         plotme.use.deny: true
         plotme.use.undeny: true
+        plotme.use.reset: true
         plotme.limit.1: true
     plotme.admin:
       description: Gives default administrator commands
@@ -61,6 +62,7 @@ permissions:
         plotme.admin.undeny: true
         plotme.admin.bypassdeny: true
         plotme.admin.buildanywhere: true
+        plotme.admin.createworld: true
     plotme.use.buy:
       description: Gives the buy command
     plotme.use.sell:
@@ -77,6 +79,8 @@ permissions:
       description: Gives the claim command
     plotme.use.auto:
       description: Gives the auto claim command
+    plotme.use.reset:
+      description: Gives the reset command for plots owned
     plotme.use.home:
       description: Gives the home command
     plotme.use.info:
@@ -165,3 +169,5 @@ permissions:
       description: Resets expired plots
     plotme.admin.buildanywhere:
       description: Allows to build anywhere in the plot world
+    plotme.admin.createworld:
+      description: Allows to create a new plot world
