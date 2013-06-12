@@ -31,7 +31,7 @@
 			<artifactId>lwc</artifactId>
 			<version>4.3.2 Beta 3</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/lwc.jar</systemPath>
+			<systemPath>${project.basedir}/lib/LWC.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>multiworld</groupId>
