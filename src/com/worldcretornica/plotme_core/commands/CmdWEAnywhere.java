@@ -3,7 +3,7 @@ package com.worldcretornica.plotme_core.commands;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.Util;
+import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdWEAnywhere extends PlotCommand 
 {

@@ -6,7 +6,7 @@ import org.bukkit.command.CommandSender;
 import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
 import com.worldcretornica.plotme_core.PlotRunnableDeleteExpire;
-import com.worldcretornica.plotme_core.Util;
+import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdResetExpired extends PlotCommand 
 {

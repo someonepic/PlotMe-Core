@@ -6,12 +6,12 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import  com.worldcretornica.plotme_core.commands.PlotCommand;
+import com.worldcretornica.plotme_core.utils.Util;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.Util;
 
 public class CmdClaim extends PlotCommand 
 {

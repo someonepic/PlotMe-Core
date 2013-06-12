@@ -12,8 +12,8 @@ import com.worldcretornica.plotme_core.PlotFinishedComparator;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.Util;
 import com.worldcretornica.plotme_core.utils.MinecraftFontWidthCalculator;
+import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdDoneList extends PlotCommand 
 {

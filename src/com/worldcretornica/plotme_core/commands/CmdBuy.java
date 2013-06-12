@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.Util;
+import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdBuy extends PlotCommand 
 {

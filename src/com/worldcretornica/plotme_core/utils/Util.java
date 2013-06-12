@@ -1,9 +1,9 @@
-package com.worldcretornica.plotme_core;
+package com.worldcretornica.plotme_core.utils;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import com.worldcretornica.plotme_core.utils.MinecraftFontWidthCalculator;
+import com.worldcretornica.plotme_core.PlotMe_Core;
 
 public class Util 
 {
