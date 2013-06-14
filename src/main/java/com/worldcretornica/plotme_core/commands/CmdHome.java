@@ -10,6 +10,7 @@ import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.SqlManager;
 import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdHome extends PlotCommand 
@@ -95,7 +96,7 @@ public class CmdHome extends PlotCommand
 				{
 					int i = nb - 1;
 							
-					for(Plot plot : PlotMeCoreManager.getPlots(w).values())
+					for(Plot plot : SqlManager.getOwnedPlots(w.getName(), playername))
 					{
 						if(plot.owner.equalsIgnoreCase(playername))
 						{

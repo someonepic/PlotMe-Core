@@ -1,6 +1,5 @@
 package com.worldcretornica.plotme;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Location;
@@ -256,32 +255,7 @@ public class PlotManager
 	{
 		return PlotMeCoreManager.getMap(b);
 	}
-	
-	public static HashMap<String, Plot> getPlots(World w)
-	{
-		return PlotMeCoreManager.getPlots(w);
-	}
-	
-	public static HashMap<String, Plot> getPlots(String name)
-	{		
-		return PlotMeCoreManager.getPlots(name);
-	}
-	
-	public static HashMap<String, Plot> getPlots(Player p)
-	{		
-		return PlotMeCoreManager.getPlots(p);
-	}
-	
-	public static HashMap<String, Plot> getPlots(Block b)
-	{	
-		return PlotMeCoreManager.getPlots(b);
-	}
-	
-	public static HashMap<String, Plot> getPlots(Location l)
-	{
-		return PlotMeCoreManager.getPlots(l);
-	}
-	
+		
 	public static Plot getPlotById(World w, String id)
 	{
 		return PlotMeCoreManager.getPlotById(w, id);
@@ -330,11 +304,6 @@ public class PlotManager
 	public static World getFirstWorld(String player)
 	{
 		return PlotMeCoreManager.getFirstWorld(player);
-	}
-	
-	public static Plot getFirstPlot(String player)
-	{
-		return PlotMeCoreManager.getFirstPlot(player);
 	}
 	
 	public static boolean isValidId(String id)

@@ -215,11 +215,11 @@ public class PlotMe_Core extends JavaPlugin
 				{
 					int nbplot = 0;
 					
-					for(PlotMapInfo p : plotmaps.values())
+					for(String map : plotmaps.keySet())
 					{
-						nbplot += p.plots.size();
+						nbplot += SqlManager.getPlotCount(map);
 					}
-					
+
 					return nbplot;
 				}
 			});
@@ -518,7 +518,7 @@ public class PlotMe_Core extends JavaPlugin
 		
 		for(String worldname : worlds.getKeys(false))
 		{
-			PlotMapInfo tempPlotInfo = new PlotMapInfo();
+			PlotMapInfo tempPlotInfo = new PlotMapInfo(worldname);
 			ConfigurationSection currworld = worlds.getConfigurationSection(worldname);
 			
 			tempPlotInfo.PlotAutoLimit = currworld.getInt("PlotAutoLimit", 100);
@@ -615,7 +615,7 @@ public class PlotMe_Core extends JavaPlugin
 			
 			worlds.set(worldname, currworld);
 			
-			tempPlotInfo.plots = SqlManager.getPlots(worldname.toLowerCase());
+			//SqlManager.getPlots(worldname.toLowerCase());
 			
 			plotmaps.put(worldname.toLowerCase(), tempPlotInfo);
 		}
@@ -785,7 +785,7 @@ public class PlotMe_Core extends JavaPlugin
 	
 	public void scheduleTask(Runnable task, int eachseconds, int howmanytimes)
 	{		 		 
-		cscurrentlyprocessingexpired.sendMessage("" + NAME + ChatColor.RESET + caption("MsgStartDeleteSession"));
+		cscurrentlyprocessingexpired.sendMessage(caption("MsgStartDeleteSession"));
 		
 		for(int ctr = 0; ctr < (howmanytimes / nbperdeletionprocessingexpired); ctr++)
 		{
@@ -1109,7 +1109,7 @@ public class PlotMe_Core extends JavaPlugin
 		
 		CreateConfig(filelang, properties, "PlotMe Caption configuration αω");
 		
-		if (language != "english")
+		if (!language.equalsIgnoreCase("english"))
 		{
 			filelang = new File(configpath, "caption-" + language + ".yml");
 			CreateConfig(filelang, properties, "PlotMe Caption configuration");

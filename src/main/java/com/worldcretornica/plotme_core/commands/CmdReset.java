@@ -108,7 +108,7 @@ public class CmdReset extends PlotCommand
 							
 							if(!PlotMeCoreManager.isPlotAvailable(id, p))
 							{
-								PlotMeCoreManager.getPlots(p).remove(id);
+								PlotMeCoreManager.removePlot(w, id);
 							}
 							
 							String name = p.getName();

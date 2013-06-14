@@ -86,6 +86,9 @@ public class CmdBiome extends PlotCommand
 									}
 									
 									PlotMeCoreManager.setBiome(w, id, biome);
+									plot.biome = biome;
+									
+									
 								
 									Util.Send(p, Util.C("MsgBiomeSet") + " " + ChatColor.BLUE + Util.FormatBiome(biome.name()) + " " + Util.moneyFormat(-price));
 									
@@ -103,7 +106,7 @@ public class CmdBiome extends PlotCommand
 						}
 						else
 						{
-							Plot plot = PlotMe_Core.plotmaps.get(w.getName().toLowerCase()).plots.get(id);
+							Plot plot = PlotMe_Core.plotmaps.get(w.getName().toLowerCase()).getPlot(id);
 							
 							Util.Send(p, Util.C("MsgPlotUsingBiome") + " " + ChatColor.BLUE + Util.FormatBiome(plot.biome.name()));
 						}

@@ -55,11 +55,11 @@ public class Plot implements Comparable<Plot> {
 		currentbidder = "";
 		currentbid = 0;
 	}
-	
-	public Plot(String o, World w, String tid, int days)
+		
+	public Plot(String own, World wor, String tid, int days)
 	{
-		owner = o;
-		world = w.getName();
+		owner = own;
+		world = wor.getName();
 		allowed = new HashSet<String>();
 		denied = new HashSet<String>();
 		biome = Biome.PLAINS;

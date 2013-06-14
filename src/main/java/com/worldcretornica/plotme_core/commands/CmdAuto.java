@@ -98,7 +98,7 @@ public class CmdAuto extends PlotCommand
 											}
 										}
 										
-										//Plot plot = PlotMeCoreManager.createPlot(w, id, name);
+										PlotMeCoreManager.createPlot(w, id, name);
 										
 										//PlotMeCoreManager.adjustLinkedPlots(id, w);
 										

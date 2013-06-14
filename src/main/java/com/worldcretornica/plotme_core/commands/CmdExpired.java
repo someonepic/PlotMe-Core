@@ -1,8 +1,5 @@
 package com.worldcretornica.plotme_core.commands;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.World;
@@ -11,6 +8,7 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.SqlManager;
 import com.worldcretornica.plotme_core.utils.MinecraftFontWidthCalculator;
 import com.worldcretornica.plotme_core.utils.Util;
 
@@ -30,11 +28,7 @@ public class CmdExpired extends PlotCommand
 				int pagesize = 8;
 				int page = 1;
 				int maxpage = 0;
-				int nbexpiredplots = 0; 
 				World w = p.getWorld();
-				List<Plot> expiredplots = new ArrayList<Plot>();
-				HashMap<String, Plot> plots = PlotMeCoreManager.getPlots(w);
-				String date = PlotMe_Core.getDate();
 				
 				if(args.length == 2)
 				{
@@ -43,21 +37,10 @@ public class CmdExpired extends PlotCommand
 						page = Integer.parseInt(args[1]);
 					}catch(NumberFormatException ex){}
 				}
+												
+				maxpage = (int) Math.ceil((double)SqlManager.getExpiredPlotCount(p.getWorld().getName()) / (double)pagesize);
 				
-				for(String id : plots.keySet())
-				{
-					Plot plot = plots.get(id);
-					
-					if(!plot.protect && plot.expireddate != null && PlotMe_Core.getDate(plot.expireddate).compareTo(date.toString()) < 0)
-					{
-						nbexpiredplots++;
-						expiredplots.add(plot);
-					}
-				}
-				
-				Collections.sort(expiredplots);
-								
-				maxpage = (int) Math.ceil(((double)nbexpiredplots/(double)pagesize));
+				List<Plot> expiredplots = SqlManager.getExpiredPlots(w.getName(), page, pagesize);
 				
 				if(expiredplots.size() == 0)
 				{

@@ -78,7 +78,7 @@ public class CmdRemove extends PlotCommand
 									
 									plot.removeAllowed(allowed);
 																	
-									Util.Send(p, Util.C("WordPlayer") + " " + RED + allowed + RESET + " " + Util.C("WorldRemoved") + ". " + Util.moneyFormat(-price));
+									Util.Send(p, Util.C("WordPlayer") + " " + RED + allowed + RESET + " " + Util.C("WordRemoved") + ". " + Util.moneyFormat(-price));
 									
 									if(isAdv)
 										PlotMe_Core.self.getLogger().info(LOG + playername + " " + Util.C("MsgRemovedPlayer") + " " + allowed + " " + Util.C("MsgFromPlot") + " " + id + ((price != 0) ? " " + Util.C("WordFor") + " " + price : ""));

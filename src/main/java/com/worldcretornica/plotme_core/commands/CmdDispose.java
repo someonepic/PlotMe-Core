@@ -100,7 +100,7 @@ public class CmdDispose extends PlotCommand
 								
 								if(!PlotMeCoreManager.isPlotAvailable(id, p))
 								{
-									PlotMeCoreManager.getPlots(p).remove(id);
+									PlotMeCoreManager.removePlot(w, id);
 								}
 								
 								PlotMeCoreManager.removeOwnerSign(w, id);

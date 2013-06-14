@@ -64,7 +64,7 @@ public class PlotListener implements Listener
 			}
 			else
 			{
-				Plot plot = PlotMeCoreManager.getMap(p).plots.get(id);
+				Plot plot = PlotMeCoreManager.getMap(p).getPlot(id);
 				
 				if (plot == null)
 				{

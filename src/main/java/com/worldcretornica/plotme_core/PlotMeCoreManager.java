@@ -3,8 +3,6 @@ package com.worldcretornica.plotme_core;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +124,7 @@ public class PlotMeCoreManager
 			worlds = config.getConfigurationSection("worlds");
 		}
 		
-		PlotMapInfo tempPlotInfo = new PlotMapInfo();
+		PlotMapInfo tempPlotInfo = new PlotMapInfo(worldname);
 		ConfigurationSection currworld = worlds.getConfigurationSection(worldname);
 		
 		if(currworld == null)
@@ -197,7 +195,7 @@ public class PlotMeCoreManager
 		
 		worlds.set(worldname, currworld);
 		
-		tempPlotInfo.plots = SqlManager.getPlots(worldname.toLowerCase());
+		//tempPlotInfo.plots = new HashMap<String, Plot>(); //SqlManager.getPlots(worldname.toLowerCase());
 		
 		PlotMe_Core.plotmaps.put(worldname.toLowerCase(), tempPlotInfo);
 		
@@ -308,19 +306,8 @@ public class PlotMeCoreManager
 	}
 
 	public static int getNbOwnedPlot(String name, World w)
-	{
-		int nbfound = 0;
-		if(getPlots(w) != null)
-		{
-			for(Plot plot : getPlots(w).values())
-			{
-				if(plot.owner.equalsIgnoreCase(name))
-				{
-					nbfound++;
-				}
-			}
-		}
-		return nbfound;
+	{ 
+		return SqlManager.getPlotCount(w.getName(), name);
 	}
 	
 	public static boolean isEconomyEnabled(World w)
@@ -435,159 +422,105 @@ public class PlotMeCoreManager
 		}
 	}
 	
-	public static HashMap<String, Plot> getPlots(World w)
+	public static Plot getPlotById(World w, String id)
 	{
 		PlotMapInfo pmi = getMap(w);
 		
 		if(pmi == null)
 			return null;
-		else
-			return pmi.plots;
+				
+		return  pmi.getPlot(id);
 	}
 	
-	public static HashMap<String, Plot> getPlots(String name)
-	{		
+	public static Plot getPlotById(String name, String id)
+	{
 		PlotMapInfo pmi = getMap(name);
 		
 		if(pmi == null)
 			return null;
-		else
-			return pmi.plots;
+				
+		return  pmi.getPlot(id);
 	}
 	
-	public static HashMap<String, Plot> getPlots(Player p)
-	{		
+	public static Plot getPlotById(Player p, String id)
+	{
 		PlotMapInfo pmi = getMap(p);
 		
 		if(pmi == null)
 			return null;
-		else
-			return pmi.plots;
+				
+		return  pmi.getPlot(id);
 	}
 	
-	public static HashMap<String, Plot> getPlots(Block b)
-	{	
-		PlotMapInfo pmi = getMap(b);
+	public static Plot getPlotById(Player p)
+	{
+		PlotMapInfo pmi = getMap(p);
 		
 		if(pmi == null)
 			return null;
-		else
-			return pmi.plots;
+				
+		return pmi.getPlot(getPlotId(p));
 	}
 	
-	public static HashMap<String, Plot> getPlots(Location l)
+	public static Plot getPlotById(Location l)
 	{
 		PlotMapInfo pmi = getMap(l);
 		
 		if(pmi == null)
 			return null;
-		else
-			return pmi.plots;
-	}
-	
-	public static Plot getPlotById(World w, String id)
-	{
-		HashMap<String, Plot> plots = getPlots(w);
-		
-		if(plots == null)
-			return null;
-		else
-			return plots.get(id);
-	}
-	
-	public static Plot getPlotById(String name, String id)
-	{
-		HashMap<String, Plot> plots = getPlots(name);
-		
-		if(plots == null)
-			return null;
-		else
-			return plots.get(id);
-	}
-	
-	public static Plot getPlotById(Player p, String id)
-	{
-		HashMap<String, Plot> plots = getPlots(p);
-		
-		if(plots == null)
-			return null;
-		else
-			return plots.get(id);
-	}
-	
-	public static Plot getPlotById(Player p)
-	{
-		HashMap<String, Plot> plots = getPlots(p);
-		String plotid = getPlotId(p.getLocation());
-		
-		if(plots == null || plotid == "")
-			return null;
-		else
-			return plots.get(plotid);
-	}
-	
-	public static Plot getPlotById(Location l)
-	{
-		HashMap<String, Plot> plots = getPlots(l);
-		String plotid = getPlotId(l);
-		
-		if(plots == null || plotid == "")
-			return null;
-		else
-			return plots.get(plotid);
+				
+		return pmi.getPlot(getPlotId(l));
 	}
 	
 	public static Plot getPlotById(Block b, String id)
 	{
-		HashMap<String, Plot> plots = getPlots(b);
+		PlotMapInfo pmi = getMap(b);
 		
-		if(plots == null)
+		if(pmi == null)
 			return null;
-		else
-			return plots.get(id);
+				
+		return pmi.getPlot(id);
 	}
 	
 	public static Plot getPlotById(Block b)
 	{
-		HashMap<String, Plot> plots = getPlots(b);
-		String plotid = getPlotId(b.getLocation());
+		PlotMapInfo pmi = getMap(b);
 		
-		if(plots == null || plotid == "")
+		if(pmi == null)
 			return null;
-		else
-			return plots.get(plotid);
+				
+		return pmi.getPlot(getPlotId(b.getLocation()));
+	}
+	
+	public static void removePlot(World w, String id)
+	{
+		PlotMapInfo pmi = getMap(w);
+		
+		if(pmi == null)
+			return;
+				
+		pmi.removePlot(id);
+	}
+	
+	public static void addPlot(World w, String id, Plot plot)
+	{
+		PlotMapInfo pmi = getMap(w);
+		
+		if(pmi == null)
+			return;
+				
+		pmi.addPlot(id, plot);
 	}
 	
 	public static void deleteNextExpired(World w, CommandSender sender)
 	{
-		List<Plot> expiredplots = new ArrayList<Plot>();
-		HashMap<String, Plot> plots = getPlots(w);
-		String date = PlotMe_Core.getDate();
-		Plot expiredplot;
-		
-		for(String id : plots.keySet())
-		{
-			Plot plot = plots.get(id);
-			
-			if(!plot.protect && !plot.finished && plot.expireddate != null && PlotMe_Core.getDate(plot.expireddate).compareTo(date.toString()) < 0)
-			{
-				expiredplots.add(plot);
-			}
-		}
-		
-		plots = null;
-		
-		Collections.sort(expiredplots);
-		
-		expiredplot = expiredplots.get(0);
-		
-		expiredplots = null;
+		Plot expiredplot = SqlManager.getExpiredPlot(w.getName());
 		
 		clear(w, expiredplot);
 		
 		String id = expiredplot.id;
 		
-		getPlots(w).remove(id);
+		removePlot(w, id);
 			
 		getGenMan(w).removeOwnerDisplay(w, id);
 		getGenMan(w).removeSellerDisplay(w, id);
@@ -612,50 +545,12 @@ public class PlotMeCoreManager
 	
 	public static World getFirstWorld(String player)
 	{
-		if(PlotMe_Core.plotmaps != null)
-		{
-			if(PlotMe_Core.plotmaps.keySet() != null)
-			{
-				if(PlotMe_Core.plotmaps.keySet().toArray().length > 0)
-				{
-					for(String mapkey : PlotMe_Core.plotmaps.keySet())
-					{
-						for(String id : PlotMe_Core.plotmaps.get(mapkey).plots.keySet())
-						{
-							if(PlotMe_Core.plotmaps.get(mapkey).plots.get(id).owner.equalsIgnoreCase(player))
-							{
-								return Bukkit.getWorld(mapkey);
-							}
-						}
-					}
-				}
-			}
-		}
-		return null;
-	}
-	
-	public static Plot getFirstPlot(String player)
-	{
-		if(PlotMe_Core.plotmaps != null)
-		{
-			if(PlotMe_Core.plotmaps.keySet() != null)
-			{
-				if(PlotMe_Core.plotmaps.keySet().toArray().length > 0)
-				{
-					for(String mapkey : PlotMe_Core.plotmaps.keySet())
-					{
-						for(String id : PlotMe_Core.plotmaps.get(mapkey).plots.keySet())
-						{
-							if(PlotMe_Core.plotmaps.get(mapkey).plots.get(id).owner.equalsIgnoreCase(player))
-							{
-								return PlotMe_Core.plotmaps.get(mapkey).plots.get(id);
-							}
-						}
-					}
-				}
-			}
-		}
-		return null;
+		String world = SqlManager.getFirstWorld(player);
+		
+		if(!world.equals(""))
+			return Bukkit.getWorld(world);
+		else
+			return null;
 	}
 	
 	public static boolean isPlotWorld(World w)
@@ -733,13 +628,14 @@ public class PlotMeCoreManager
 	
 	public static Plot createPlot(World w, String id, String owner)
 	{
-		if(isPlotAvailable(id, w) && id != "")
+		if(isPlotAvailable(id, w) && !id.equals(""))
 		{
 			Plot plot = new Plot(owner, w, id, getMap(w).DaysToExpiration);
 
 			setOwnerSign(w, plot);
 			
-			getPlots(w).put(id, plot);
+			addPlot(w, id, plot);
+			
 			SqlManager.addPlot(plot, getIdX(id), getIdZ(id), w);
 			return plot;
 		}
@@ -751,7 +647,7 @@ public class PlotMeCoreManager
 	
 	public static boolean movePlot(World w, String idFrom, String idTo)
 	{
-		Location plot1Bottom = getPlotBottomLoc(w, idFrom);
+		/*Location plot1Bottom = getPlotBottomLoc(w, idFrom);
 		Location plot2Bottom = getPlotBottomLoc(w, idTo);
 		Location plot1Top = getPlotTopLoc(w, idFrom);
 		
@@ -762,8 +658,8 @@ public class PlotMeCoreManager
 		{
 			for(int z = plot1Bottom.getBlockZ(); z <= plot1Top.getBlockZ(); z++)
 			{
-				Block plot1Block = w.getBlockAt(new Location(w, x, 0, z));
-				Block plot2Block = w.getBlockAt(new Location(w, x - distanceX, 0, z - distanceZ));
+				Block plot1Block = w.getBlockAt(x, 0, z);
+				Block plot2Block = w.getBlockAt(x - distanceX, 0, z - distanceZ);
 				
 				String plot1Biome = plot1Block.getBiome().name();
 				String plot2Biome = plot2Block.getBiome().name();
@@ -780,37 +676,43 @@ public class PlotMeCoreManager
 					plot2Block = w.getBlockAt(new Location(w, x - distanceX, y, z - distanceZ));
 					int plot2Type = plot2Block.getTypeId();
 					byte plot2Data = plot2Block.getData();
-					
+										
 					plot1Block.setTypeIdAndData(plot2Type, plot2Data, false);
-					plot1Block.setData(plot2Data);
-					
+					plot1Block.setData(plot2Data, false);
+										
 					plot2Block.setTypeIdAndData(plot1Type, plot1Data, false);
-					plot2Block.setData(plot1Data);
+					plot2Block.setData(plot1Data, false);
 				}
 			}
+		}*/
+		
+		if(!getGenMan(w).movePlot(w, w, idFrom, idTo))
+		{
+			return false;
 		}
 		
-		HashMap<String, Plot> plots = getPlots(w);
 		
-		if(plots.containsKey(idFrom))
+		//HashMap<String, Plot> plots = getPlots(w);
+		
+		Plot plot1 = getPlotById(w, idFrom);
+		Plot plot2 = getPlotById(w, idTo);
+		
+		if(plot1 != null)
 		{
-			if(plots.containsKey(idTo))
-			{
-				Plot plot1 = plots.get(idFrom);
-				Plot plot2 = plots.get(idTo);
-								
+			if(plot2 != null)
+			{		
 				int idX = getIdX(idTo);
 				int idZ = getIdZ(idTo);
 				SqlManager.deletePlot(idX, idZ, plot2.world);
-				plots.remove(idFrom);
-				plots.remove(idTo);
+				removePlot(w, idFrom);
+				removePlot(w, idTo);
 				idX = getIdX(idFrom);
 				idZ = getIdZ(idFrom);
 				SqlManager.deletePlot(idX, idZ, plot1.world);
 				
 				plot2.id = "" + idX + ";" + idZ;
 				SqlManager.addPlot(plot2, idX, idZ, w);
-				plots.put(idFrom, plot2);
+				addPlot(w, idFrom, plot2);
 				
 				for(int i = 0 ; i < plot2.comments.size() ; i++)
 				{
@@ -826,7 +728,7 @@ public class PlotMeCoreManager
 				idZ = getIdZ(idTo);
 				plot1.id = "" + idX + ";" + idZ;
 				SqlManager.addPlot(plot1, idX, idZ, w);
-				plots.put(idTo, plot1);
+				addPlot(w, idTo, plot1);
 				
 				for(int i = 0 ; i < plot1.comments.size() ; i++)
 				{
@@ -845,63 +747,61 @@ public class PlotMeCoreManager
 				
 			}
 			else
-			{
-				Plot plot = plots.get(idFrom);
-				
+			{				
 				int idX = getIdX(idFrom);
 				int idZ = getIdZ(idFrom);
-				SqlManager.deletePlot(idX, idZ, plot.world);
-				plots.remove(idFrom);
+				SqlManager.deletePlot(idX, idZ, plot1.world);
+				removePlot(w, idFrom);
 				idX = getIdX(idTo);
 				idZ = getIdZ(idTo);
-				plot.id = "" + idX + ";" + idZ;
-				SqlManager.addPlot(plot, idX, idZ, w);
-				plots.put(idTo, plot);
+				plot1.id = "" + idX + ";" + idZ;
+				SqlManager.addPlot(plot1, idX, idZ, w);
+				addPlot(w, idTo, plot1);
 				
-				for(int i = 0 ; i < plot.comments.size() ; i++)
+				for(int i = 0 ; i < plot1.comments.size() ; i++)
 				{
-					SqlManager.addPlotComment(plot.comments.get(i), i, idX, idZ, plot.world);
+					SqlManager.addPlotComment(plot1.comments.get(i), i, idX, idZ, plot1.world);
 				}
 				
-				for(String player : plot.allowed())
+				for(String player : plot1.allowed())
 				{
-					SqlManager.addPlotAllowed(player, idX, idZ, plot.world);
+					SqlManager.addPlotAllowed(player, idX, idZ, plot1.world);
 				}
 				
-				setOwnerSign(w, plot);
-				setSellSign(w, plot);
+				setOwnerSign(w, plot1);
+				setSellSign(w, plot1);
 				getGenMan(w).removeOwnerDisplay(w, idFrom);
 				getGenMan(w).removeSellerDisplay(w, idFrom);
 				
 			}
-		}else{
-			if(plots.containsKey(idTo))
+		}
+		else
+		{
+			if(plot2 != null)
 			{
-				Plot plot = plots.get(idTo);
-				
 				int idX = getIdX(idTo);
 				int idZ = getIdZ(idTo);
-				SqlManager.deletePlot(idX, idZ, plot.world);
-				plots.remove(idTo);
+				SqlManager.deletePlot(idX, idZ, plot2.world);
+				removePlot(w, idTo);
 				
 				idX = getIdX(idFrom);
 				idZ = getIdZ(idFrom);
-				plot.id = "" + idX + ";" + idZ;
-				SqlManager.addPlot(plot, idX, idZ, w);
-				plots.put(idFrom, plot);
+				plot2.id = "" + idX + ";" + idZ;
+				SqlManager.addPlot(plot2, idX, idZ, w);
+				addPlot(w, idFrom, plot2);
 				
-				for(int i = 0 ; i < plot.comments.size() ; i++)
+				for(int i = 0 ; i < plot2.comments.size() ; i++)
 				{
-					SqlManager.addPlotComment(plot.comments.get(i), i, idX, idZ, plot.world);
+					SqlManager.addPlotComment(plot2.comments.get(i), i, idX, idZ, plot2.world);
 				}
 				
-				for(String player : plot.allowed())
+				for(String player : plot2.allowed())
 				{
-					SqlManager.addPlotAllowed(player, idX, idZ, plot.world);
+					SqlManager.addPlotAllowed(player, idX, idZ, plot2.world);
 				}
 				
-				setOwnerSign(w, plot);
-				setSellSign(w, plot);
+				setOwnerSign(w, plot2);
+				setSellSign(w, plot2);
 				getGenMan(w).removeOwnerDisplay(w, idTo);
 				getGenMan(w).removeSellerDisplay(w, idTo);
 			}
@@ -1032,7 +932,8 @@ public class PlotMeCoreManager
 	
 	public static void adjustLinkedPlots(String id, World world)
 	{		
-		HashMap<String, Plot> plots = getPlots(world);
+		//TODO
+		Map<String, Plot> plots = new HashMap<String, Plot>(); //getPlots(world);
 		
 		IPlotMe_GeneratorManager gm = getGenMan(world);
 		
@@ -1165,9 +1066,16 @@ cr.getWorld().regenerate(cr, session);
 	
 	public static boolean isPlotAvailable(String id, String world)
 	{
-		if(isPlotWorld(world))
+		PlotMapInfo pmi = getMap(world);
+		
+		if(pmi != null)
 		{
-			return !getPlots(world).containsKey(id);
+			if(pmi.getPlot(id) == null)
+				return true;
+			else
+				return false;
+			
+			// !getPlots(world).containsKey(id);
 		}
 		else
 		{
@@ -1297,6 +1205,7 @@ cr.getWorld().regenerate(cr, session);
 	public static void setBiome(World w, String id, Biome biome) 
 	{
 		getGenMan(w).setBiome(w, id, biome);
+		SqlManager.updatePlot(getIdX(id), getIdZ(id), w.getName(), "biome", biome.name());
 	}
 
 	public static Location getPlotHome(World w, String id) 
