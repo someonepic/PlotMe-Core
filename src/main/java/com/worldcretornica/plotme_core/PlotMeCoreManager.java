@@ -246,6 +246,7 @@ public class PlotMeCoreManager
 					try 
 					{
 						PlotMe_Core.multiworld.getDataManager().loadWorld(worldname, true);
+						PlotMe_Core.multiworld.getDataManager().save();
 					} 
 					catch (Exception e) 
 					{
@@ -516,7 +517,7 @@ public class PlotMeCoreManager
 	{
 		Plot expiredplot = SqlManager.getExpiredPlot(w.getName());
 		
-		clear(w, expiredplot);
+		clear(w, expiredplot, sender);
 		
 		String id = expiredplot.id;
 		
@@ -810,12 +811,12 @@ public class PlotMeCoreManager
 		return true;
 	}
 	
-	public static void RemoveLWC(World w, Plot plot)
+	public static void RemoveLWC(World w, String id)
 	{
 		if(PlotMe_Core.usinglwc)
 		{
-			Location bottom = getGenMan(w).getBottom(w, plot.id);
-			Location top = getGenMan(w).getTop(w, plot.id);
+			Location bottom = getGenMan(w).getBottom(w, id);
+			Location top = getGenMan(w).getTop(w, id);
 			final int x1 = bottom.getBlockX();
 			final int y1 = bottom.getBlockY();
 	    	final int z1 = bottom.getBlockZ();
@@ -1017,41 +1018,32 @@ public class PlotMeCoreManager
 		SqlManager.updatePlot(getIdX(id), getIdZ(id), plot.world, "biome", b.name());
 	}
 	
-	public static void clear(World w, Plot plot)
+	public static void clear(World w, Plot plot, CommandSender cs)
 	{
 		String id = plot.id;
 		
-		/*if(PlotMe_Core.we != null)
-		{
-Location top = getGenMan(w).getPlotTopLoc(w, plot.id);
-Location bottom = getGenMan(w).getPlotBottomLoc(w, plot.id);
-
-Vector pos1 = new Vector(bottom.getBlockX(), bottom.getBlockY(), bottom.getBlockZ());
-Vector pos2 = new Vector(top.getBlockX(), top.getBlockY(), top.getBlockZ());
-
-CuboidRegion cr = new CuboidRegion(BukkitUtil.getLocalWorld(w), pos1, pos2);
-
-EditSession session = new EditSession(cr.getWorld(), 0);
-
-long t1 = Calendar.getInstance().getTimeInMillis();
-long t2;
-
-PlotMe_Core.self.getLogger().info("Start");
-
-cr.getWorld().regenerate(cr, session);
-			
-			t2 = Calendar.getInstance().getTimeInMillis();
-			
-			PlotMe_Core.self.getLogger().info("Time " + (t2-t1));
-		}
-		else
-		{*/
-			getGenMan(w).clear(w, id);
-		//}
-		
+		/*getGenMan(w).clear(w, id);
 		adjustWall(w, plot);
+		RemoveLWC(w, plot);*/
+		plot.forsale = false;
+		plot.protect = false;
+		plot.auctionned = false;
+		plot.auctionneddate = null;
+		plot.currentbid = 0;
+		plot.currentbidder = "";
 		
-		RemoveLWC(w, plot);
+		String world = w.getName();
+		int idX = getIdX(id);
+		int idZ = getIdZ(id);
+		
+		SqlManager.updatePlot(idX, idZ, world, "forsale", false);
+		SqlManager.updatePlot(idX, idZ, world, "protected", false);
+		SqlManager.updatePlot(idX, idZ, world, "auctionned", false);
+		SqlManager.updatePlot(idX, idZ, world, "auctionneddate", "");
+		SqlManager.updatePlot(idX, idZ, world, "currentbid", 0);
+		SqlManager.updatePlot(idX, idZ, world, "currentbidder", "");
+				
+		PlotMe_Core.plotsToClear.add(new String[]{world, id, cs.getName()});
 	}
 	
 	public static boolean isPlotAvailable(String id, World world)

@@ -20,10 +20,14 @@ public class PlotWorldEdit {
 	
 	public static void setMask(Player p, Location l)
 	{
+		String id = PlotMeCoreManager.getPlotId(l);
+		setMask(p, id);
+	}
+	
+	public static void setMask(Player p, String id)
+	{
 		World w = p.getWorld();
 		
-		String id = PlotMeCoreManager.getPlotId(l);
-				
 		Location bottom = null;
 		Location top = null;
 		
@@ -53,7 +57,8 @@ public class PlotWorldEdit {
 			}
 		}
 		
-		if(bottom == null || top == null){
+		if(bottom == null || top == null)
+		{
 			bottom = new Location(w, 0, 0, 0);
 			top = new Location(w, 0, 0, 0);
 		}

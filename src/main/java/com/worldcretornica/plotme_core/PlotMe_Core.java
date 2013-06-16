@@ -10,11 +10,13 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 import multiworld.MultiWorldPlugin;
@@ -36,6 +38,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.yaml.snakeyaml.Yaml;
 
 import com.griefcraft.model.Protection;
@@ -90,9 +93,15 @@ public class PlotMe_Core extends JavaPlugin
     public static PlotMe_Core self = null;
     
     public static Map<String, Map<String, String>> creationbuffer = null;
-	
+    
+    //Spool stuff
+    public static Set<String[]> plotsToClear = null;
+	public static BukkitTask spoolTask = null;
+    
     public void onDisable()
 	{	
+    	spoolTask.cancel();
+    	spoolTask = null;
 		SqlManager.closeConnection();
 		NAME = null;
 		//PREFIX = null;
@@ -123,6 +132,16 @@ public class PlotMe_Core extends JavaPlugin
 		self = null;
 		allowToDeny = null;
 		creationbuffer = null;
+		plotsToClear.clear();
+		plotsToClear = null;
+		
+		if(creationbuffer != null)
+		{
+			creationbuffer.clear();
+			creationbuffer = null;
+		}
+		multiverse = null;
+		multiworld = null;
 	}
     
 	public void onEnable()
@@ -157,8 +176,15 @@ public class PlotMe_Core extends JavaPlugin
 		}
 		
 		creationbuffer = new HashMap<String, Map<String,String>>();
+		plotsToClear = Collections.synchronizedSet(new HashSet<String[]>());
 		
 		getCommand("plotme").setExecutor(new PMCommand());
+		
+	
+		//Start the spool
+		getLogger().info("PLOTME TEST 1");
+		spoolTask = Bukkit.getServer().getScheduler().runTaskAsynchronously(this, new PlotMeSpool());
+		getLogger().info("PLOTME TEST 2");
 		
 		doMetric();
 	}

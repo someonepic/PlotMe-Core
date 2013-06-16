@@ -48,7 +48,7 @@ public class CmdReset extends PlotCommand
 							World w = p.getWorld();
 							
 							PlotMeCoreManager.setBiome(w, id, Biome.PLAINS);
-							PlotMeCoreManager.clear(w, plot);
+							PlotMeCoreManager.clear(w, plot, p);
 							//RemoveLWC(w, plot);
 							
 							if(PlotMeCoreManager.isEconomyEnabled(p))

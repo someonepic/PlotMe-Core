@@ -24,7 +24,7 @@ public class PlotRunnableDeleteExpire implements Runnable
 				
 				for(Plot expiredplot : expiredplots)
 				{										
-					PlotMeCoreManager.clear(w, expiredplot);
+					PlotMeCoreManager.clear(w, expiredplot, PlotMe_Core.cscurrentlyprocessingexpired);
 					
 					String id = expiredplot.id;
 					ids += ChatColor.RED + id + ChatColor.RESET + ", ";

@@ -38,6 +38,8 @@ public class PlotWorldEditListener implements Listener
 		}
 		else
 		{
+			String idTo = "";
+			
 			if(from != null)
 			{
 				if(!from.getWorld().getName().equalsIgnoreCase(to.getWorld().getName()))
@@ -47,7 +49,7 @@ public class PlotWorldEditListener implements Listener
 				else if(from.getBlockX() != to.getBlockX() || from.getBlockZ() != to.getBlockZ())
 				{
 					String idFrom = PlotMeCoreManager.getPlotId(from);
-					String idTo = PlotMeCoreManager.getPlotId(to);
+					idTo = PlotMeCoreManager.getPlotId(to);
 					
 					if(!idFrom.equalsIgnoreCase(idTo))
 					{
@@ -61,9 +63,13 @@ public class PlotWorldEditListener implements Listener
 				if(PlotMeCoreManager.isPlotWorld(to.getWorld()))
 				{
 					if(!PlotMe_Core.isIgnoringWELimit(p))
-						PlotWorldEdit.setMask(p);
+					{
+						PlotWorldEdit.setMask(p, idTo);
+					}
 					else
+					{
 						PlotWorldEdit.removeMask(p);
+					}
 				}
 			}
 		}

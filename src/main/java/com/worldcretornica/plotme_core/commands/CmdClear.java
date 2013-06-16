@@ -73,7 +73,7 @@ public class CmdClear extends PlotCommand
 									}
 								}						
 								
-								PlotMeCoreManager.clear(w, plot);
+								PlotMeCoreManager.clear(w, plot, p);
 								//RemoveLWC(w, plot, p);
 								//PlotMeCoreManager.regen(w, plot);
 								

@@ -123,7 +123,7 @@ public class PlotManager
 	
 	public static void clear(World w, Plot plot)
 	{
-		PlotMeCoreManager.clear(w, plot);
+		PlotMeCoreManager.clear(w, plot, null);
 	}
 	
 	public static void clear(Location bottom, Location top)
@@ -338,6 +338,6 @@ public class PlotManager
 	
 	public static void RemoveLWC(World w, Plot plot)
 	{
-		PlotMeCoreManager.RemoveLWC(w, plot);
+		PlotMeCoreManager.RemoveLWC(w, plot.id);
 	}
 }
