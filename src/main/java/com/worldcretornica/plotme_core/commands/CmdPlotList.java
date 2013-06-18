@@ -2,11 +2,14 @@ package com.worldcretornica.plotme_core.commands;
 
 import java.util.Calendar;
 
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.SqlManager;
 import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdPlotList extends PlotCommand 
@@ -34,10 +37,27 @@ public class CmdPlotList extends PlotCommand
 					name = p.getName();
 					Util.Send(p, Util.C("MsgListOfPlotsWhereYou"));
 				}
+				
+				String oldworld = "";
 								
-				for(Plot plot : PlotMeCoreManager.getPlots(p).values())
+				for(Plot plot : SqlManager.getPlayerPlots(name))
 				{
+					if(!plot.world.equals(""))
+					{
+						World world = Bukkit.getWorld(plot.world);
+						if(world != null)
+						{
+							PlotMeCoreManager.getMap(world).addPlot(plot.id, plot);
+						}
+					}
+					
 					StringBuilder addition = new StringBuilder();
+					
+					if(!oldworld.equalsIgnoreCase(plot.world))
+					{
+						oldworld = plot.world;
+						p.sendMessage("  World: " + plot.world);
+					}
 						
 					if(plot.expireddate != null)
 					{
@@ -129,6 +149,7 @@ public class CmdPlotList extends PlotCommand
 							p.sendMessage("  " + plot.id + " -> " + AQUA + plot.owner + Util.C("WordPossessive") + RESET + addition + ", " + Util.C("WordHelpers") + ": " + helpers);
 						}
 					}
+					
 				}
 			}
 		}

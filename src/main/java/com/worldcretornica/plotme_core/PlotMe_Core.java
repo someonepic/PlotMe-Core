@@ -10,11 +10,13 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 import multiworld.MultiWorldPlugin;
@@ -36,6 +38,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.yaml.snakeyaml.Yaml;
 
 import com.griefcraft.model.Protection;
@@ -90,9 +93,15 @@ public class PlotMe_Core extends JavaPlugin
     public static PlotMe_Core self = null;
     
     public static Map<String, Map<String, String>> creationbuffer = null;
-	
+    
+    //Spool stuff
+    public static Set<String[]> plotsToClear = null;
+	public static BukkitTask spoolTask = null;
+    
     public void onDisable()
 	{	
+    	spoolTask.cancel();
+    	spoolTask = null;
 		SqlManager.closeConnection();
 		NAME = null;
 		//PREFIX = null;
@@ -123,6 +132,16 @@ public class PlotMe_Core extends JavaPlugin
 		self = null;
 		allowToDeny = null;
 		creationbuffer = null;
+		plotsToClear.clear();
+		plotsToClear = null;
+		
+		if(creationbuffer != null)
+		{
+			creationbuffer.clear();
+			creationbuffer = null;
+		}
+		multiverse = null;
+		multiworld = null;
 	}
     
 	public void onEnable()
@@ -157,8 +176,15 @@ public class PlotMe_Core extends JavaPlugin
 		}
 		
 		creationbuffer = new HashMap<String, Map<String,String>>();
+		plotsToClear = Collections.synchronizedSet(new HashSet<String[]>());
 		
 		getCommand("plotme").setExecutor(new PMCommand());
+		
+	
+		//Start the spool
+		getLogger().info("PLOTME TEST 1");
+		spoolTask = Bukkit.getServer().getScheduler().runTaskAsynchronously(this, new PlotMeSpool());
+		getLogger().info("PLOTME TEST 2");
 		
 		doMetric();
 	}
@@ -215,11 +241,11 @@ public class PlotMe_Core extends JavaPlugin
 				{
 					int nbplot = 0;
 					
-					for(PlotMapInfo p : plotmaps.values())
+					for(String map : plotmaps.keySet())
 					{
-						nbplot += p.plots.size();
+						nbplot += SqlManager.getPlotCount(map);
 					}
-					
+
 					return nbplot;
 				}
 			});
@@ -518,7 +544,7 @@ public class PlotMe_Core extends JavaPlugin
 		
 		for(String worldname : worlds.getKeys(false))
 		{
-			PlotMapInfo tempPlotInfo = new PlotMapInfo();
+			PlotMapInfo tempPlotInfo = new PlotMapInfo(worldname);
 			ConfigurationSection currworld = worlds.getConfigurationSection(worldname);
 			
 			tempPlotInfo.PlotAutoLimit = currworld.getInt("PlotAutoLimit", 100);
@@ -615,7 +641,7 @@ public class PlotMe_Core extends JavaPlugin
 			
 			worlds.set(worldname, currworld);
 			
-			tempPlotInfo.plots = SqlManager.getPlots(worldname.toLowerCase());
+			//SqlManager.getPlots(worldname.toLowerCase());
 			
 			plotmaps.put(worldname.toLowerCase(), tempPlotInfo);
 		}
@@ -785,7 +811,7 @@ public class PlotMe_Core extends JavaPlugin
 	
 	public void scheduleTask(Runnable task, int eachseconds, int howmanytimes)
 	{		 		 
-		cscurrentlyprocessingexpired.sendMessage("" + NAME + ChatColor.RESET + caption("MsgStartDeleteSession"));
+		cscurrentlyprocessingexpired.sendMessage(caption("MsgStartDeleteSession"));
 		
 		for(int ctr = 0; ctr < (howmanytimes / nbperdeletionprocessingexpired); ctr++)
 		{
@@ -1109,7 +1135,7 @@ public class PlotMe_Core extends JavaPlugin
 		
 		CreateConfig(filelang, properties, "PlotMe Caption configuration αω");
 		
-		if (language != "english")
+		if (!language.equalsIgnoreCase("english"))
 		{
 			filelang = new File(configpath, "caption-" + language + ".yml");
 			CreateConfig(filelang, properties, "PlotMe Caption configuration");

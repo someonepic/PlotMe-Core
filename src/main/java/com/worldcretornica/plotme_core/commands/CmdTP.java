@@ -31,6 +31,18 @@ public class CmdTP extends PlotCommand
 						String world = args[2];
 						
 						w = Bukkit.getWorld(world);
+						
+						if(w == null)
+						{
+							for(World bworld : Bukkit.getWorlds())
+							{
+								if(bworld.getName().startsWith(world))
+								{
+									w = bworld;
+									break;
+								}
+							}
+						}
 					}
 					else
 					{
@@ -44,19 +56,20 @@ public class CmdTP extends PlotCommand
 						}
 					}
 					
-					if(!PlotMeCoreManager.isValidId(w, id))
+					
+					if(w == null || !PlotMeCoreManager.isPlotWorld(w))
 					{
-						if(PlotMe_Core.allowWorldTeleport)
-							Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandTp") + " <" + Util.C("WordId") + "> [" + Util.C("WordWorld") + "] " + RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandTp") + " 5;-1 ");
-						else
-							Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandTp") + " <" + Util.C("WordId") + "> " + RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandTp") + " 5;-1 ");
-						return true;
+						Util.Send(p, RED + Util.C("MsgNoPlotworldFound"));
 					}
 					else
 					{
-						if(w == null || !PlotMeCoreManager.isPlotWorld(w))
+						if(!PlotMeCoreManager.isValidId(w, id))
 						{
-							Util.Send(p, RED + Util.C("MsgNoPlotworldFound"));
+							if(PlotMe_Core.allowWorldTeleport)
+								Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandTp") + " <" + Util.C("WordId") + "> [" + Util.C("WordWorld") + "] " + RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandTp") + " 5;-1 ");
+							else
+								Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandTp") + " <" + Util.C("WordId") + "> " + RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandTp") + " 5;-1 ");
+							return true;
 						}
 						else
 						{

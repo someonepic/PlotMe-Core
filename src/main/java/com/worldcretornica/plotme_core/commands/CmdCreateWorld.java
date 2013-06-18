@@ -52,25 +52,26 @@ public class CmdCreateWorld extends PlotCommand
 							{
 								String key = args[2];
 								String value = args[3];
-								
+
 								Map<String, String> parameters = PlotMe_Core.creationbuffer.get(cs.getName());
 								
 								if(parameters != null)
 								{
-									if(parameters.containsKey(key))
+									for(String ckey : parameters.keySet())
 									{
-										parameters.remove(key);
-										parameters.put(key, value);
-										
-										Util.Send(cs, Util.C("MsgSettingChanged") + " " + GREEN + key + RESET + "=" + AQUA + value);
-										
-										return true;
+										if(key.equalsIgnoreCase(ckey))
+										{
+											parameters.remove(ckey);
+											parameters.put(ckey, value);
+											
+											Util.Send(cs, Util.C("MsgSettingChanged") + " " + GREEN + ckey + RESET + "=" + AQUA + value);
+											
+											return true;
+										}
 									}
-									else
-									{
-										showCurrentSettings(cs, parameters);
-										return true;
-									}
+									
+									showCurrentSettings(cs, parameters);
+									return true;
 								}
 							}
 						}

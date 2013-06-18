@@ -1,17 +1,14 @@
 package com.worldcretornica.plotme_core.commands;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.PlotFinishedComparator;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.SqlManager;
 import com.worldcretornica.plotme_core.utils.MinecraftFontWidthCalculator;
 import com.worldcretornica.plotme_core.utils.Util;
 
@@ -30,10 +27,6 @@ public class CmdDoneList extends PlotCommand
 			}
 			else
 			{
-				
-				HashMap<String, Plot> plots = pmi.plots;
-				List<Plot> finishedplots = new ArrayList<Plot>();
-				int nbfinished = 0;
 				int maxpage = 0;
 				int pagesize = 8;
 				int page = 1;
@@ -46,20 +39,17 @@ public class CmdDoneList extends PlotCommand
 					}catch(NumberFormatException ex){}
 				}
 				
-				for(String id : plots.keySet())
+				maxpage = (int) Math.ceil((double) SqlManager.getFinishedPlotCount(p.getWorld().getName()) / (double)pagesize);
+				
+				if(page < 0)
 				{
-					Plot plot = plots.get(id);
-					
-					if(plot.finished)
-					{
-						finishedplots.add(plot);
-						nbfinished++;
-					}
+					page = 1;
+				}else if(page > maxpage)
+				{
+					page = maxpage;
 				}
 				
-				Collections.sort(finishedplots, new PlotFinishedComparator());
-				
-				maxpage = (int) Math.ceil(((double)nbfinished/(double)pagesize));
+				List<Plot> finishedplots = SqlManager.getDonePlots(p.getWorld().getName(), page, pagesize);
 				
 				if(finishedplots.size() == 0)
 				{
