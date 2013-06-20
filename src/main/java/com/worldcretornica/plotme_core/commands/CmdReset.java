@@ -7,6 +7,7 @@ import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
 
+import com.worldcretornica.plotme_core.ClearReason;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMeCoreManager;
@@ -48,7 +49,7 @@ public class CmdReset extends PlotCommand
 							World w = p.getWorld();
 							
 							PlotMeCoreManager.setBiome(w, id, Biome.PLAINS);
-							PlotMeCoreManager.clear(w, plot, p);
+							PlotMeCoreManager.clear(w, plot, p, ClearReason.Reset);
 							//RemoveLWC(w, plot);
 							
 							if(PlotMeCoreManager.isEconomyEnabled(p))
@@ -118,7 +119,7 @@ public class CmdReset extends PlotCommand
 							
 							SqlManager.deletePlot(PlotMeCoreManager.getIdX(id), PlotMeCoreManager.getIdZ(id), w.getName().toLowerCase());
 							
-							Util.Send(p, Util.C("MsgPlotReset"));
+							//Util.Send(p, Util.C("MsgPlotReset"));
 							
 							if(isAdv)
 								PlotMe_Core.self.getLogger().info(LOG + name + " " + Util.C("MsgResetPlot") + " " + id);

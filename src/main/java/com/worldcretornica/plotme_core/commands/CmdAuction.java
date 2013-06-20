@@ -44,13 +44,13 @@ public class CmdAuction extends PlotCommand
 								
 								if(plot.auctionned)
 								{
-									if(!plot.currentbidder.equalsIgnoreCase("") && !PlotMe_Core.cPerms(p, "PlotMe.admin.auction"))
+									if(!plot.currentbidder.equals("") && !PlotMe_Core.cPerms(p, "PlotMe.admin.auction"))
 									{
 										Util.Send(p, RED + Util.C("MsgPlotHasBidsAskAdmin"));
 									}
 									else
 									{
-										if(!plot.currentbidder.equalsIgnoreCase(""))
+										if(!plot.currentbidder.equals(""))
 										{
 											EconomyResponse er = PlotMe_Core.economy.depositPlayer(plot.currentbidder, plot.currentbid);
 											

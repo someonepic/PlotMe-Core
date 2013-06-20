@@ -1,5 +1,7 @@
 package com.worldcretornica.plotme_core.utils;
 
+import java.util.Map;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -9,11 +11,36 @@ public class Util
 {
 	private static final String LOG = "[" + PlotMe_Core.NAME + " Event] ";
 	private static final ChatColor GREEN = ChatColor.GREEN;
+	private static Map<String, String> captions = null;
 	
-	public static String C(String caption)
+	public static void setCaptions(Map<String, String> cap)
 	{
-		return PlotMe_Core.caption(caption);
+		captions = cap;
 	}
+	
+	public static void Dispose()
+	{
+		captions.clear();
+		captions = null;
+	}
+	
+	public static String C(String s)
+	{
+		if(captions.containsKey(s))
+		{
+			return addColor(captions.get(s));
+		}
+		else
+		{
+			PlotMe_Core.self.getLogger().warning("Missing caption: " + s);
+			return "ERROR:Missing caption '" + s + "'";
+		}
+	}
+	
+	public static String addColor(String string) 
+	{
+		return ChatColor.translateAlternateColorCodes('&', string);
+    }
 	
 	public static StringBuilder whitespace(int length) 
 	{
@@ -77,7 +104,7 @@ public class Util
 		{
 			token = token.substring(0, 1).toUpperCase() + token.substring(1);
 			
-			if(biome.equalsIgnoreCase(""))
+			if(biome.equals(""))
 			{
 				biome = token;
 			}

@@ -10,6 +10,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import com.worldcretornica.plotme_core.ClearReason;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMeCoreManager;
@@ -123,7 +124,7 @@ public class PlotManager
 	
 	public static void clear(World w, Plot plot)
 	{
-		PlotMeCoreManager.clear(w, plot, null);
+		PlotMeCoreManager.clear(w, plot, null, ClearReason.Clear);
 	}
 	
 	public static void clear(Location bottom, Location top)
@@ -289,11 +290,6 @@ public class PlotManager
 	public static Plot getPlotById(Block b)
 	{
 		return PlotMeCoreManager.getPlotById(b);
-	}
-	
-	public static void deleteNextExpired(World w, CommandSender sender)
-	{
-		PlotMeCoreManager.deleteNextExpired(w, sender);
 	}
 
 	public static World getFirstWorld()

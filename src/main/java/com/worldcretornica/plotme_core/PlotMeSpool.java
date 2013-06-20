@@ -1,72 +1,69 @@
 package com.worldcretornica.plotme_core;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
-
 import com.worldcretornica.plotme_core.utils.Util;
 
 public class PlotMeSpool implements Runnable
 {
-	private String currentClearWorld = "";
-	private String currentClearPlotId = "";
 	private Long[] currentClear = null;
-	private String[] plottoclear = null;
+	public PlotToClear plottoclear = null;
 
 	private long timer = 0;
+	private boolean mustStop = false;
 	
 	@Override
 	public void run() 
 	{
-		while(PlotMe_Core.self != null && PlotMe_Core.self.isEnabled())
+		while(!mustStop && PlotMe_Core.self != null && PlotMe_Core.self.isEnabled())
 		{
 			//Plots to clear
-			if(currentClearPlotId.equals(""))
+			if(plottoclear == null)
 			{
-				if(!PlotMe_Core.plotsToClear.isEmpty())
+				plottoclear = PlotMe_Core.plotsToClear.poll();
+				
+				if(plottoclear != null)
 				{
-					plottoclear = (String[]) PlotMe_Core.plotsToClear.toArray()[0];
+					World w = Bukkit.getWorld(plottoclear.world);
 					
-					World w = Bukkit.getWorld(plottoclear[0]);
-					
-					currentClearWorld = plottoclear[0];
-					currentClearPlotId = plottoclear[1];
-					currentClear = PlotMeCoreManager.getGenMan(w).clear(w, plottoclear[1], 50000, true, null);
+					currentClear = PlotMeCoreManager.getGenMan(w).clear(w, plottoclear.plotid, 50000, true, null);
 					timer = System.currentTimeMillis();
 					ShowProgress();
 				}
 			}
 			else
 			{
-				World w = Bukkit.getWorld(currentClearWorld);
-				currentClear = PlotMeCoreManager.getGenMan(w).clear(w, currentClearPlotId, 50000, false, currentClear);
+				World w = Bukkit.getWorld(plottoclear.world);
+				currentClear = PlotMeCoreManager.getGenMan(w).clear(w, plottoclear.plotid, 50000, false, currentClear);
 			}
 			
-			if(!currentClearPlotId.equals("") && (timer + 20000 < System.currentTimeMillis()))
+			if(plottoclear != null)
 			{
-				timer = System.currentTimeMillis();
-				
-				ShowProgress();
-			}
-			
-			//Clear finished, adjust walls and remove LWC
-			if(!currentClearPlotId.equals("") && currentClear == null)
-			{
-				World w = Bukkit.getWorld(currentClearWorld);
-				if(w != null)
+				if(currentClear != null)
 				{
-					PlotMeCoreManager.getGenMan(currentClearWorld).adjustPlotFor(w, currentClearPlotId, true, false, false, false);
-					PlotMeCoreManager.RemoveLWC(w, currentClearPlotId);
-					PlotMeCoreManager.getGenMan(currentClearWorld).refreshPlotChunks(w, currentClearPlotId);
+					if((timer + 20000 < System.currentTimeMillis()))
+					{
+						timer = System.currentTimeMillis();
+						
+						ShowProgress();
+					}
 				}
-				
-				Msg("Plot " + currentClearPlotId + " cleared");
-				
-				currentClearWorld = "";
-				currentClearPlotId = "";
-				PlotMe_Core.plotsToClear.remove(plottoclear);
-				
+				//Clear finished, adjust walls and remove LWC
+				else
+				{
+					World w = Bukkit.getWorld(plottoclear.world);
+					if(w != null)
+					{
+						PlotMeCoreManager.getGenMan(plottoclear.world).adjustPlotFor(w, plottoclear.plotid, true, false, false, false);
+						PlotMeCoreManager.RemoveLWC(w, plottoclear.plotid);
+						PlotMeCoreManager.getGenMan(plottoclear.world).refreshPlotChunks(w, plottoclear.plotid);
+					}
+					
+					Msg("Plot " + plottoclear.plotid + " cleared");
+					plottoclear = null;
+				}
 			}
 			
 			//Sleep
@@ -77,6 +74,11 @@ public class PlotMeSpool implements Runnable
 		}
 	}
 
+	public void Stop()
+	{
+		mustStop = true;
+	}
+	
 	private boolean doSleep()
 	{
 		try 
@@ -86,7 +88,7 @@ public class PlotMeSpool implements Runnable
 		}
 		catch (InterruptedException e) 
 		{
-			PlotMe_Core.self.getLogger().severe("The spool sleep was interrupted");
+			PlotMe_Core.self.getLogger().severe(Util.C("ErrSpoolInterrupted"));
 			e.printStackTrace();
 			return false;
 		}
@@ -94,16 +96,7 @@ public class PlotMeSpool implements Runnable
 	
 	private void Msg(String text)
 	{
-		Player p = Bukkit.getPlayer(plottoclear[2]);
-		
-		if(p != null)
-		{
-			Util.Send(p, text);
-		}
-		else
-		{
-			PlotMe_Core.self.getLogger().info(text);
-		}
+		Util.Send(plottoclear.commandsender, text);
 	}
 	
 	private void ShowProgress()
@@ -112,20 +105,58 @@ public class PlotMeSpool implements Runnable
 		long total = getTotalPlotBlocks();
 		double percent = ((double) done) / ((double) total) * 100;
 		
-		Msg("Plot " + currentClearPlotId + " cleared at " + Math.round(percent) + "% (" + done + "/" + total + " blocks)");
+		Msg(Util.C("WordPlot") + " " + ChatColor.GREEN + plottoclear.plotid + ChatColor.RESET + " " + Util.C("WordIn") + " " +
+				ChatColor.GREEN + plottoclear.world + ChatColor.RESET + " " +
+				Util.C("WordIs") + " " + ChatColor.GREEN + ((double)Math.round(percent*10)/10) + "% " + ChatColor.RESET + Util.C("WordCleared") + 
+				" (" + ChatColor.GREEN + format(done) + ChatColor.RESET + "/" + ChatColor.GREEN + format(total) + ChatColor.RESET + " " + Util.C("WordBlocks") + ")");
 	}
 	
 	private long getTotalPlotBlocks()
 	{
-		World w = Bukkit.getWorld(plottoclear[0]);
-		Location bottom = PlotMeCoreManager.getGenMan(w).getPlotBottomLoc(w, currentClearPlotId);
-		Location top = PlotMeCoreManager.getGenMan(w).getPlotTopLoc(w, currentClearPlotId);
+		World w = Bukkit.getWorld(plottoclear.world);
+		Location bottom = PlotMeCoreManager.getGenMan(w).getPlotBottomLoc(w, plottoclear.plotid);
+		Location top = PlotMeCoreManager.getGenMan(w).getPlotTopLoc(w, plottoclear.plotid);
+		//PlotMe_Core.self.getLogger().info("(" + top.getBlockX() + "-" + bottom.getBlockX() + ")*(" + top.getBlockY() + "-" + bottom.getBlockY() + ")*(" + top.getBlockZ() + "-" + bottom.getBlockZ() + ")");
 		
-		return (top.getBlockX() - bottom.getBlockX()) * (top.getBlockY() - bottom.getBlockY()) * (top.getBlockZ() - bottom.getBlockZ());
+		return (top.getBlockX() - bottom.getBlockX() + 1) * (top.getBlockY() - bottom.getBlockY() + 1) * (top.getBlockZ() - bottom.getBlockZ() + 1);
 	}
 	
 	private long getDoneBlocks()
 	{		
 		return currentClear[3];
+	}
+	
+	private String format(Long count)
+	{
+		double buffer;
+		
+		if(count > 1000000000000L)
+		{
+			buffer = ((double)count / 1000000000000L);
+			buffer = ((double)Math.round(buffer*10)/10);
+			return buffer + "T";
+		}
+		if(count > 1000000000)
+		{
+			buffer = ((double)count / 1000000000);
+			buffer = ((double)Math.round(buffer*10)/10);
+			return buffer + "G";
+		}
+		else if(count > 1000000)
+		{
+			buffer = ((double)count / 1000000);
+			buffer = ((double)Math.round(buffer*10)/10);
+			return buffer + "M";
+		}
+		else if(count > 1000)
+		{
+			buffer = ((double)count / 1000);
+			buffer = ((double)Math.round(buffer*10)/10);
+			return buffer + "k";
+		}
+		else
+		{
+			return count.toString();
+		}
 	}
 }

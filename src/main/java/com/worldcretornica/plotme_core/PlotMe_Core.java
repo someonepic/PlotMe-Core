@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -19,11 +18,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import multiworld.MultiWorldPlugin;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -50,6 +50,7 @@ import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
 import com.worldcretornica.plotme_core.listener.PlotDenyListener;
 import com.worldcretornica.plotme_core.listener.PlotListener;
 import com.worldcretornica.plotme_core.listener.PlotWorldEditListener;
+import com.worldcretornica.plotme_core.utils.Util;
 
 public class PlotMe_Core extends JavaPlugin
 {
@@ -79,7 +80,7 @@ public class PlotMe_Core extends JavaPlugin
     public static Boolean usinglwc = false;
     
     private static HashSet<String> playersignoringwelimit = null;
-    private static HashMap<String, String> captions;
+    
     
     public static World worldcurrentlyprocessingexpired;
     public static CommandSender cscurrentlyprocessingexpired;
@@ -95,19 +96,29 @@ public class PlotMe_Core extends JavaPlugin
     public static Map<String, Map<String, String>> creationbuffer = null;
     
     //Spool stuff
-    public static Set<String[]> plotsToClear = null;
-	public static BukkitTask spoolTask = null;
+    public static ConcurrentLinkedQueue<PlotToClear> plotsToClear = null;
+    public static Set<PlotMeSpool> spools = null;
+	public static Set<BukkitTask> spoolTasks = null;
     
     public void onDisable()
 	{	
-    	spoolTask.cancel();
-    	spoolTask = null;
+    	for(PlotMeSpool spool : spools)
+    	{
+    		spool.Stop();
+    		spool = null;
+    	}
+    	spools.clear();
+    	for(BukkitTask bt : spoolTasks)
+    	{
+	    	bt.cancel();
+	    	bt = null;
+    	}
+    	spoolTasks = null;
 		SqlManager.closeConnection();
+		Util.Dispose();
 		NAME = null;
-		//PREFIX = null;
 		VERSION = null;
 		WEBSITE = null;
-		//logger = null;
 		usemySQL = null;
 		mySQLuname = null;
 		mySQLpass = null;
@@ -123,7 +134,6 @@ public class PlotMe_Core extends JavaPlugin
 		economy = null;
 		usinglwc = null;
 		playersignoringwelimit = null;
-		captions = null;
 		worldcurrentlyprocessingexpired = null;
 		cscurrentlyprocessingexpired = null;
 		counterexpired = null;
@@ -176,15 +186,20 @@ public class PlotMe_Core extends JavaPlugin
 		}
 		
 		creationbuffer = new HashMap<String, Map<String,String>>();
-		plotsToClear = Collections.synchronizedSet(new HashSet<String[]>());
+		plotsToClear = new ConcurrentLinkedQueue<PlotToClear>();
 		
 		getCommand("plotme").setExecutor(new PMCommand());
 		
 	
-		//Start the spool
-		getLogger().info("PLOTME TEST 1");
-		spoolTask = Bukkit.getServer().getScheduler().runTaskAsynchronously(this, new PlotMeSpool());
-		getLogger().info("PLOTME TEST 2");
+		//Start the spools
+		spoolTasks = new HashSet<BukkitTask>();
+		spools = new HashSet<PlotMeSpool>();
+		for(int i = 1 ; i <= 3; i++)
+		{
+			PlotMeSpool pms = new PlotMeSpool();
+			spools.add(pms);
+			spoolTasks.add(Bukkit.getServer().getScheduler().runTaskAsynchronously(this, pms));
+		}
 		
 		doMetric();
 	}
@@ -811,7 +826,7 @@ public class PlotMe_Core extends JavaPlugin
 	
 	public void scheduleTask(Runnable task, int eachseconds, int howmanytimes)
 	{		 		 
-		cscurrentlyprocessingexpired.sendMessage(caption("MsgStartDeleteSession"));
+		cscurrentlyprocessingexpired.sendMessage(Util.C("MsgStartDeleteSession"));
 		
 		for(int ctr = 0; ctr < (howmanytimes / nbperdeletionprocessingexpired); ctr++)
 		{
@@ -968,6 +983,9 @@ public class PlotMe_Core extends JavaPlugin
 		properties.put("MsgCreateWorldParameters4", "to change settings");
 		properties.put("MsgCreateWorldParameters5", "to cancel world creation");
 		properties.put("MsgSettingChanged", "Setting changed");
+		properties.put("MsgPlotLockedClear", "The plot is currently locked because it is being cleared.");
+		properties.put("MsgPlotLockedReset", "The plot is currently locked because it is being reset.");
+		properties.put("MsgPlotLockedExpired", "The plot is currently locked because it is being reset for having expired.");
 		
 		properties.put("ConsoleHelpMain", " ---==PlotMe Console Help Page==---");
 		properties.put("ConsoleHelpReload", " - Reloads the plugin and its configuration files");
@@ -1054,6 +1072,10 @@ public class PlotMe_Core extends JavaPlugin
 		properties.put("WordGenerator", "generator");
 		properties.put("WordConfig", "config");
 		properties.put("WordValue", "value");
+		properties.put("WordIs", "is");
+		properties.put("WordCleared", "cleared");
+		properties.put("WordBlocks", "blocks");
+		properties.put("WordIn", "in");
 		
 		properties.put("SignOwner", "Owner:");
 		properties.put("SignId", "ID:");
@@ -1132,6 +1154,7 @@ public class PlotMe_Core extends JavaPlugin
 		properties.put("ErrMVDisabled", "Cannot create new world, multiverse is disabled");
 		properties.put("ErrWorldExists", "Cannot create new world, name chosen already exists");
 		properties.put("ErrInvalidWorldName", "Cannot create new world, invalid world name chosen.");
+		properties.put("ErrSpoolInterrupted", "The spool sleep was interrupted");
 		
 		CreateConfig(filelang, properties, "PlotMe Caption configuration αω");
 		
@@ -1154,11 +1177,12 @@ public class PlotMe_Core extends JavaPlugin
 				@SuppressWarnings("unchecked")
 				LinkedHashMap<String, String> data = (LinkedHashMap<String, String>) obj;
 							    
-			    captions = new HashMap<String, String>();
+			    Map<String, String> captions = new HashMap<String, String>();
 				for(String key : data.keySet())
 				{
 					captions.put(key, data.get(key));
 				}
+				Util.setCaptions(captions);
 		    }
 		} catch (FileNotFoundException e) {
 			getLogger().severe("File not found: " + e.getMessage());
@@ -1245,23 +1269,6 @@ public class PlotMe_Core extends JavaPlugin
 		}
 	}
 	
-	public static String caption(String s)
-	{
-		if(captions.containsKey(s))
-		{
-			return addColor(captions.get(s));
-		}
-		else
-		{
-			self.getLogger().warning("Missing caption: " + s);
-			return "ERROR:Missing caption '" + s + "'";
-		}
-	}
-	
-	public static String addColor(String string) 
-	{
-		return ChatColor.translateAlternateColorCodes('&', string);
-    }
 	
 	public void scheduleProtectionRemoval(final Location bottom, final Location top)
 	{

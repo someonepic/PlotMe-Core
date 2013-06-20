@@ -5,6 +5,7 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import com.worldcretornica.plotme_core.ClearReason;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMeCoreManager;
@@ -73,11 +74,11 @@ public class CmdClear extends PlotCommand
 									}
 								}						
 								
-								PlotMeCoreManager.clear(w, plot, p);
+								PlotMeCoreManager.clear(w, plot, p, ClearReason.Clear);
 								//RemoveLWC(w, plot, p);
 								//PlotMeCoreManager.regen(w, plot);
 								
-								Util.Send(p, Util.C("MsgPlotCleared") + " " + Util.moneyFormat(-price));
+								//Util.Send(p, Util.C("MsgPlotCleared") + " " + Util.moneyFormat(-price));
 								
 								if(isAdv)
 									PlotMe_Core.self.getLogger().info(LOG + playername + " " + Util.C("MsgClearedPlot") + " " + id + ((price != 0) ? " " + Util.C("WordFor") + " " + price : ""));

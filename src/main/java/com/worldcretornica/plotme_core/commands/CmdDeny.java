@@ -35,7 +35,7 @@ public class CmdDeny extends PlotCommand
 				{
 					if(!PlotMeCoreManager.isPlotAvailable(id, p))
 					{
-						if(args.length < 2 || args[1].equalsIgnoreCase(""))
+						if(args.length < 2 || args[1].equals(""))
 						{
 							Util.Send(p, Util.C("WordUsage") + " " + RED + "/plotme " + Util.C("CommandDeny") + " <" + Util.C("WordPlayer") + ">");
 						}

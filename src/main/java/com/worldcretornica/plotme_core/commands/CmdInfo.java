@@ -51,7 +51,7 @@ public class CmdInfo extends PlotCommand
 						
 						if(PlotMeCoreManager.isEconomyEnabled(p))
 						{
-							if(plot.currentbidder.equalsIgnoreCase(""))
+							if(plot.currentbidder.equals(""))
 							{
 								p.sendMessage(GREEN + Util.C("InfoAuctionned") + ": " + AQUA + ((plot.auctionned) ? Util.C("WordYes") + 
 										GREEN + " " + Util.C("InfoMinimumBid") + ": " + AQUA + Util.round(plot.currentbid) : Util.C("WordNo")) +
