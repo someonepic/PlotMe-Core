@@ -19,7 +19,7 @@ public class CmdMove extends PlotCommand
 			}
 			else
 			{
-				if(args.length < 3 || args[1].equalsIgnoreCase("") || args[2].equalsIgnoreCase(""))
+				if(args.length < 3 || args[1].equals("") || args[2].equals(""))
 				{
 					Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandMove") + " <" + Util.C("WordIdFrom") + "> <" + Util.C("WordIdTo") + "> " + 
 							RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandMove") + " 0;1 2;-1");

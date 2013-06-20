@@ -33,27 +33,32 @@ public class PlotWorldEdit {
 		
 		LocalSession session = PlotMe_Core.we.getSession(p);
 				
-		if(!id.equalsIgnoreCase(""))
-		{		
-			Plot plot = PlotMeCoreManager.getPlotById(p, id);
+		if(!id.equals(""))
+		{
+			PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(w.getName(), id);
 			
-			if(plot != null && plot.isAllowed(p.getName()))
-			{			
-				bottom = PlotMeCoreManager.getPlotBottomLoc(w, id);
-				top = PlotMeCoreManager.getPlotTopLoc(w, id);
+			if(ptc == null)
+			{
+				Plot plot = PlotMeCoreManager.getPlotById(p, id);
 				
-				BukkitPlayer player = PlotMe_Core.we.wrapPlayer(p);
-				LocalWorld world = player.getWorld();
-						
-				Vector pos1 = new Vector(bottom.getBlockX(), bottom.getBlockY(), bottom.getBlockZ());
-				Vector pos2 = new Vector(top.getBlockX(), top.getBlockY(), top.getBlockZ());
-						
-				CuboidRegion cr = new CuboidRegion(world, pos1, pos2);
-				
-				RegionMask rm = new RegionMask(cr);
-				
-				session.setMask(rm);
-				return;
+				if(plot != null && plot.isAllowed(p.getName()))
+				{			
+					bottom = PlotMeCoreManager.getPlotBottomLoc(w, id);
+					top = PlotMeCoreManager.getPlotTopLoc(w, id);
+					
+					BukkitPlayer player = PlotMe_Core.we.wrapPlayer(p);
+					LocalWorld world = player.getWorld();
+							
+					Vector pos1 = new Vector(bottom.getBlockX(), bottom.getBlockY(), bottom.getBlockZ());
+					Vector pos2 = new Vector(top.getBlockX(), top.getBlockY(), top.getBlockZ());
+							
+					CuboidRegion cr = new CuboidRegion(world, pos1, pos2);
+					
+					RegionMask rm = new RegionMask(cr);
+					
+					session.setMask(rm);
+					return;
+				}
 			}
 		}
 		

@@ -23,7 +23,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
-
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
 import com.onarandombox.MultiverseCore.MultiverseCore;
@@ -195,8 +194,6 @@ public class PlotMeCoreManager
 		
 		worlds.set(worldname, currworld);
 		
-		//tempPlotInfo.plots = new HashMap<String, Plot>(); //SqlManager.getPlots(worldname.toLowerCase());
-		
 		PlotMe_Core.plotmaps.put(worldname.toLowerCase(), tempPlotInfo);
 		
 		try
@@ -209,7 +206,6 @@ public class PlotMeCoreManager
 			e.printStackTrace();
 			return false;
 		}
-		
 		
 		
 		//Are we using multiworld?
@@ -511,22 +507,6 @@ public class PlotMeCoreManager
 			return;
 				
 		pmi.addPlot(id, plot);
-	}
-	
-	public static void deleteNextExpired(World w, CommandSender sender)
-	{
-		Plot expiredplot = SqlManager.getExpiredPlot(w.getName());
-		
-		clear(w, expiredplot, sender);
-		
-		String id = expiredplot.id;
-		
-		removePlot(w, id);
-			
-		getGenMan(w).removeOwnerDisplay(w, id);
-		getGenMan(w).removeSellerDisplay(w, id);
-		
-		SqlManager.deletePlot(getIdX(id), getIdZ(id), w.getName().toLowerCase());
 	}
 
 	public static World getFirstWorld()
@@ -848,35 +828,35 @@ public class PlotMeCoreManager
 		String line4 = "";
 		String id = plot.id;
 				
-		if((PlotMe_Core.caption("SignId") + id).length() > 16)
+		if((Util.C("SignId") + id).length() > 16)
 		{
-			line1 = (PlotMe_Core.caption("SignId") + id).substring(0, 16);
-			if((PlotMe_Core.caption("SignId") + id).length() > 32)
+			line1 = (Util.C("SignId") + id).substring(0, 16);
+			if((Util.C("SignId") + id).length() > 32)
 			{
-				line2 = (PlotMe_Core.caption("SignId") + id).substring(16, 32);
+				line2 = (Util.C("SignId") + id).substring(16, 32);
 			}
 			else
 			{
-				line2 = (PlotMe_Core.caption("SignId") + id).substring(16);
+				line2 = (Util.C("SignId") + id).substring(16);
 			}
 		}
 		else
 		{
-			line1 = PlotMe_Core.caption("SignId") + id;
+			line1 = Util.C("SignId") + id;
 		}
-		if((PlotMe_Core.caption("SignOwner") + plot.owner).length() > 16)
+		if((Util.C("SignOwner") + plot.owner).length() > 16)
 		{
-			line3 = (PlotMe_Core.caption("SignOwner") + plot.owner).substring(0, 16);
-			if((PlotMe_Core.caption("SignOwner") + plot.owner).length() > 32)
+			line3 = (Util.C("SignOwner") + plot.owner).substring(0, 16);
+			if((Util.C("SignOwner") + plot.owner).length() > 32)
 			{
-				line4 = (PlotMe_Core.caption("SignOwner") + plot.owner).substring(16, 32);
+				line4 = (Util.C("SignOwner") + plot.owner).substring(16, 32);
 			}
 			else
 			{
-				line4 = (PlotMe_Core.caption("SignOwner") + plot.owner).substring(16);
+				line4 = (Util.C("SignOwner") + plot.owner).substring(16);
 			}
 		}else{
-			line3 = PlotMe_Core.caption("SignOwner") + plot.owner;
+			line3 = Util.C("SignOwner") + plot.owner;
 			line4 = "";
 		}
 		
@@ -897,13 +877,13 @@ public class PlotMeCoreManager
 		{
 			if(plot.forsale)
 			{
-				line1 = PlotMe_Core.caption("SignForSale");
-				line2 = PlotMe_Core.caption("SignPrice");
+				line1 = Util.C("SignForSale");
+				line2 = Util.C("SignPrice");
 				if(plot.customprice % 1 == 0)
-					line3 = PlotMe_Core.caption("SignPriceColor") + Math.round(plot.customprice);
+					line3 = Util.C("SignPriceColor") + Math.round(plot.customprice);
 				else
-					line3 = PlotMe_Core.caption("SignPriceColor") + plot.customprice;
-				line4 = "/plotme " + PlotMe_Core.caption("CommandBuy");
+					line3 = Util.C("SignPriceColor") + plot.customprice;
+				line4 = "/plotme " + Util.C("CommandBuy");
 			}
 			
 			getGenMan(w).setSellerDisplay(w, plot.id, line1, line2, line3, line4);
@@ -915,16 +895,16 @@ public class PlotMeCoreManager
 			
 			if(plot.auctionned)
 			{				
-				line1 = PlotMe_Core.caption("SignOnAuction");
+				line1 = Util.C("SignOnAuction");
 				if(plot.currentbidder.equals(""))
-					line2 = PlotMe_Core.caption("SignMinimumBid");
+					line2 = Util.C("SignMinimumBid");
 				else
-					line2 = PlotMe_Core.caption("SignCurrentBid");
+					line2 = Util.C("SignCurrentBid");
 				if(plot.currentbid % 1 == 0)
-					line3 = PlotMe_Core.caption("SignCurrentBidColor") + Math.round(plot.currentbid);
+					line3 = Util.C("SignCurrentBidColor") + Math.round(plot.currentbid);
 				else
-					line3 = PlotMe_Core.caption("SignCurrentBidColor") + plot.currentbid;
-				line4 = "/plotme " + PlotMe_Core.caption("CommandBid") + " <x>";
+					line3 = Util.C("SignCurrentBidColor") + plot.currentbid;
+				line4 = "/plotme " + Util.C("CommandBid") + " <x>";
 			}
 			
 			getGenMan(w).setAuctionDisplay(w, plot.id, line1, line2, line3, line4);
@@ -1018,7 +998,7 @@ public class PlotMeCoreManager
 		SqlManager.updatePlot(getIdX(id), getIdZ(id), plot.world, "biome", b.name());
 	}
 	
-	public static void clear(World w, Plot plot, CommandSender cs)
+	public static void clear(World w, Plot plot, CommandSender cs, ClearReason reason)
 	{
 		String id = plot.id;
 		
@@ -1043,7 +1023,7 @@ public class PlotMeCoreManager
 		SqlManager.updatePlot(idX, idZ, world, "currentbid", 0);
 		SqlManager.updatePlot(idX, idZ, world, "currentbidder", "");
 				
-		PlotMe_Core.plotsToClear.add(new String[]{world, id, cs.getName()});
+		PlotMe_Core.plotsToClear.offer(new PlotToClear(world, id, cs, reason));
 	}
 	
 	public static boolean isPlotAvailable(String id, World world)
@@ -1213,5 +1193,30 @@ public class PlotMeCoreManager
 	public static void regen(World w, Plot plot, CommandSender sender) 
 	{
 		getGenMan(w).regen(w, plot.id, sender);
+	}
+	
+	public static PlotToClear getPlotLockInfo(String w, String id)
+	{
+		if(PlotMe_Core.spools != null)
+		{
+			for(PlotMeSpool spool : PlotMe_Core.spools)
+			{
+				PlotToClear ptc = spool.plottoclear;
+				if(ptc != null && ptc.world.equalsIgnoreCase(w) && ptc.plotid.equalsIgnoreCase(id))
+				{
+					return ptc;
+				}
+			}
+		}
+		
+		for(PlotToClear ptc : PlotMe_Core.plotsToClear.toArray(new PlotToClear[0]))
+		{
+			if(ptc.world.equalsIgnoreCase(w) && ptc.plotid.equalsIgnoreCase(id))
+			{
+				return ptc;
+			}
+		}
+		
+		return null;
 	}
 }

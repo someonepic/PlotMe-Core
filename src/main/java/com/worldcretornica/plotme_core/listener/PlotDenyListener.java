@@ -27,7 +27,7 @@ public class PlotDenyListener implements Listener
 			
 			String idTo = PlotMeCoreManager.getPlotId(to);
 			
-			if(!idTo.equalsIgnoreCase(""))
+			if(!idTo.equals(""))
 			{
 				Plot plot = PlotMeCoreManager.getPlotById(p, idTo);
 				
@@ -50,7 +50,7 @@ public class PlotDenyListener implements Listener
 			
 			String idTo = PlotMeCoreManager.getPlotId(to);
 			
-			if(!idTo.equalsIgnoreCase(""))
+			if(!idTo.equals(""))
 			{
 				Plot plot = PlotMeCoreManager.getPlotById(p, idTo);
 				
@@ -71,7 +71,7 @@ public class PlotDenyListener implements Listener
 		{
 			String id = PlotMeCoreManager.getPlotId(p.getLocation());
 			
-			if(!id.equalsIgnoreCase(""))
+			if(!id.equals(""))
 			{
 				Plot plot = PlotMeCoreManager.getPlotById(p, id);
 				

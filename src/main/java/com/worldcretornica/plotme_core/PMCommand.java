@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.commands.*;
+import com.worldcretornica.plotme_core.utils.Util;
 
 public class PMCommand implements CommandExecutor
 {
@@ -84,7 +85,7 @@ public class PMCommand implements CommandExecutor
 	
 	private String C(String caption)
 	{
-		return PlotMe_Core.caption(caption);
+		return Util.C(caption);
 	}
 	
 	public boolean onCommand(CommandSender s, Command c, String l, String[] args)

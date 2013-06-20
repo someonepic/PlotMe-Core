@@ -5,6 +5,8 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 
+import com.worldcretornica.plotme_core.utils.Util;
+
 public class PlotRunnableDeleteExpire implements Runnable 
 {
 	public void run()
@@ -24,7 +26,7 @@ public class PlotRunnableDeleteExpire implements Runnable
 				
 				for(Plot expiredplot : expiredplots)
 				{										
-					PlotMeCoreManager.clear(w, expiredplot, PlotMe_Core.cscurrentlyprocessingexpired);
+					PlotMeCoreManager.clear(w, expiredplot, PlotMe_Core.cscurrentlyprocessingexpired, ClearReason.Expired);
 					
 					String id = expiredplot.id;
 					ids += ChatColor.RED + id + ChatColor.RESET + ", ";
@@ -43,12 +45,12 @@ public class PlotRunnableDeleteExpire implements Runnable
 					ids = ids.substring(0, ids.length() - 2);
 				}
 				
-				PlotMe_Core.cscurrentlyprocessingexpired.sendMessage(PlotMe_Core.caption("MsgDeletedExpiredPlots") + " " + ids);
+				PlotMe_Core.cscurrentlyprocessingexpired.sendMessage(Util.C("MsgDeletedExpiredPlots") + " " + ids);
 			}
 			
 			if(PlotMe_Core.counterexpired == 0)
 			{
-				PlotMe_Core.cscurrentlyprocessingexpired.sendMessage(PlotMe_Core.caption("MsgDeleteSessionFinished"));
+				PlotMe_Core.cscurrentlyprocessingexpired.sendMessage(Util.C("MsgDeleteSessionFinished"));
 				PlotMe_Core.worldcurrentlyprocessingexpired = null;
 				PlotMe_Core.cscurrentlyprocessingexpired = null;
 			}
