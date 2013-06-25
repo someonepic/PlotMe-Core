@@ -4,23 +4,26 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdReload extends PlotCommand 
 {
+	public CmdReload(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(CommandSender s, String[] args)
 	{
-		if (!(s instanceof Player) || PlotMe_Core.cPerms((Player) s, "PlotMe.admin.reload"))
+		if (!(s instanceof Player) || plugin.cPerms((Player) s, "PlotMe.admin.reload"))
 		{
-			PlotMe_Core.self.initialize();
-			Util.Send(s, Util.C("MsgReloadedSuccess"));
+			plugin.initialize();
+			s.sendMessage(C("MsgReloadedSuccess"));
 			
 			if(isAdv)
-				PlotMe_Core.self.getLogger().info(LOG + s.getName() + " " + Util.C("MsgReloadedConfigurations"));
+				plugin.getLogger().info(LOG + s.getName() + " " + C("MsgReloadedConfigurations"));
 		}
 		else
 		{
-			Util.Send(s, RED + Util.C("MsgPermissionDenied"));
+			s.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

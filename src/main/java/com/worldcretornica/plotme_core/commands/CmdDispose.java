@@ -8,62 +8,63 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.SqlManager;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdDispose extends PlotCommand 
 {
+	public CmdDispose(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args) 
 	{
-		if (PlotMe_Core.cPerms(p, "PlotMe.admin.dispose") || PlotMe_Core.cPerms(p, "PlotMe.use.dispose"))
+		if (plugin.cPerms(p, "PlotMe.admin.dispose") || plugin.cPerms(p, "PlotMe.use.dispose"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 			}
 			else
 			{
-				String id = PlotMeCoreManager.getPlotId(p.getLocation());
+				String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 				if(id.equals(""))
 				{
-					Util.Send(p, RED + Util.C("MsgNoPlotFound"));
+					p.sendMessage(RED + C("MsgNoPlotFound"));
 				}
 				else
 				{
-					if(!PlotMeCoreManager.isPlotAvailable(id, p))
+					if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 					{
-						Plot plot = PlotMeCoreManager.getPlotById(p,id);
+						Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 						
 						if(plot.protect)
 						{
-							Util.Send(p, RED + Util.C("MsgPlotProtectedNotDisposed"));
+							p.sendMessage(RED + C("MsgPlotProtectedNotDisposed"));
 						}
 						else
 						{
 							String name = p.getName();
 							
-							if(plot.owner.equalsIgnoreCase(name) || PlotMe_Core.cPerms(p, "PlotMe.admin.dispose"))
+							if(plot.owner.equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.dispose"))
 							{
-								PlotMapInfo pmi = PlotMeCoreManager.getMap(p);
+								PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
 								
 								double cost = pmi.DisposePrice;
 								
-								if(PlotMeCoreManager.isEconomyEnabled(p))
+								if(plugin.getPlotMeCoreManager().isEconomyEnabled(p))
 								{
-									if(cost != 0 && PlotMe_Core.economy.getBalance(name) < cost)
+									if(cost != 0 && plugin.getEconomy().getBalance(name) < cost)
 									{
-										Util.Send(p, RED + Util.C("MsgNotEnoughDispose"));
+										p.sendMessage(RED + C("MsgNotEnoughDispose"));
 										return true;
 									}
 									
-									EconomyResponse er = PlotMe_Core.economy.withdrawPlayer(name, cost);
+									EconomyResponse er = plugin.getEconomy().withdrawPlayer(name, cost);
 									
 									if(!er.transactionSuccess())
 									{	
-										Util.Send(p, RED + er.errorMessage);
-										Util.warn(er.errorMessage);
+										p.sendMessage(RED + er.errorMessage);
+										Util().warn(er.errorMessage);
 										return true;
 									}
 								
@@ -73,12 +74,12 @@ public class CmdDispose extends PlotCommand
 										
 										if(!currentbidder.equals(""))
 										{
-											EconomyResponse er2 = PlotMe_Core.economy.depositPlayer(currentbidder, plot.currentbid);
+											EconomyResponse er2 = plugin.getEconomy().depositPlayer(currentbidder, plot.currentbid);
 											
 											if(!er2.transactionSuccess())
 											{
-												Util.Send(p, RED + er2.errorMessage);
-												Util.warn(er2.errorMessage);
+												p.sendMessage(RED + er2.errorMessage);
+												Util().warn(er2.errorMessage);
 											}
 											else
 											{
@@ -86,8 +87,8 @@ public class CmdDispose extends PlotCommand
 											    {
 											        if(player.getName().equalsIgnoreCase(currentbidder))
 											        {
-											            Util.Send(player, Util.C("WordPlot") + 
-											            		" " + id + " " + Util.C("MsgOwnedBy") + " " + plot.owner + " " + Util.C("MsgWasDisposed") + " " + Util.moneyFormat(cost));
+											            player.sendMessage(C("WordPlot") + 
+											            		" " + id + " " + C("MsgOwnedBy") + " " + plot.owner + " " + C("MsgWasDisposed") + " " + Util().moneyFormat(cost));
 											            break;
 											        }
 											    }
@@ -98,38 +99,38 @@ public class CmdDispose extends PlotCommand
 									
 								World w = p.getWorld();
 								
-								if(!PlotMeCoreManager.isPlotAvailable(id, p))
+								if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 								{
-									PlotMeCoreManager.removePlot(w, id);
+									plugin.getPlotMeCoreManager().removePlot(w, id);
 								}
 								
-								PlotMeCoreManager.removeOwnerSign(w, id);
-								PlotMeCoreManager.removeSellSign(w, id);
-								PlotMeCoreManager.removeAuctionSign(w, id);
+								plugin.getPlotMeCoreManager().removeOwnerSign(w, id);
+								plugin.getPlotMeCoreManager().removeSellSign(w, id);
+								plugin.getPlotMeCoreManager().removeAuctionSign(w, id);
 								
-								SqlManager.deletePlot(PlotMeCoreManager.getIdX(id), PlotMeCoreManager.getIdZ(id), w.getName().toLowerCase());
+								plugin.getSqlManager().deletePlot(plugin.getPlotMeCoreManager().getIdX(id), plugin.getPlotMeCoreManager().getIdZ(id), w.getName().toLowerCase());
 								
-								Util.Send(p, Util.C("MsgPlotDisposedAnyoneClaim"));
+								p.sendMessage(C("MsgPlotDisposedAnyoneClaim"));
 								
 								if(isAdv)
-									PlotMe_Core.self.getLogger().info(LOG + name + " " + Util.C("MsgDisposedPlot") + " " + id);
+									plugin.getLogger().info(LOG + name + " " + C("MsgDisposedPlot") + " " + id);
 							}
 							else
 							{
-								Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgNotYoursCannotDispose"));
+								p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgNotYoursCannotDispose"));
 							}
 						}
 					}
 					else
 					{
-						Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgHasNoOwner"));
+						p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgHasNoOwner"));
 					}
 				}
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

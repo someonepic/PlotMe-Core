@@ -8,69 +8,70 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.SqlManager;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdComment extends PlotCommand 
 {
+	public CmdComment(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if (PlotMe_Core.cPerms(p, "PlotMe.use.comment"))
+		if (plugin.cPerms(p, "PlotMe.use.comment"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 			}
 			else
 			{
 				if(args.length < 2)
 				{
-					Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandComment") + " <" + Util.C("WordText") + ">");
+					p.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandComment") + " <" + C("WordText") + ">");
 				}
 				else
 				{
-					String id = PlotMeCoreManager.getPlotId(p.getLocation());
+					String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 					
 					if(id.equals(""))
 					{
-						Util.Send(p, RED + Util.C("MsgNoPlotFound"));
+						p.sendMessage(RED + C("MsgNoPlotFound"));
 					}
 					else
 					{
-						if(!PlotMeCoreManager.isPlotAvailable(id, p))
+						if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 						{
 							World w = p.getWorld();
-							PlotMapInfo pmi = PlotMeCoreManager.getMap(w);
+							PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
 							String playername = p.getName();
 							
 							double price = 0;
 							
-							if(PlotMeCoreManager.isEconomyEnabled(w))
+							if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 							{
 								price = pmi.AddCommentPrice;
-								double balance = PlotMe_Core.economy.getBalance(playername);
+								double balance = plugin.getEconomy().getBalance(playername);
 								
 								if(balance >= price)
 								{
-									EconomyResponse er = PlotMe_Core.economy.withdrawPlayer(playername, price);
+									EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
 									
 									if(!er.transactionSuccess())
 									{
-										Util.Send(p, RED + er.errorMessage);
-										Util.warn(er.errorMessage);
+										p.sendMessage(RED + er.errorMessage);
+										Util().warn(er.errorMessage);
 										return true;
 									}
 								}
 								else
 								{
-									Util.Send(p, RED + Util.C("MsgNotEnoughComment") + " " + Util.C("WordMissing") + " " + RESET + Util.moneyFormat(price - balance, false));
+									p.sendMessage(RED + C("MsgNotEnoughComment") + " " + C("WordMissing") + " " + RESET + Util().moneyFormat(price - balance, false));
 									return true;
 								}
 							}
 							
-							Plot plot = PlotMeCoreManager.getPlotById(p, id);
+							Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
 							
 							String text = StringUtils.join(args," ");
 							text = text.substring(text.indexOf(" "));
@@ -80,16 +81,16 @@ public class CmdComment extends PlotCommand
 							comment[1] = text;
 							
 							plot.comments.add(comment);
-							SqlManager.addPlotComment(comment, plot.comments.size(), PlotMeCoreManager.getIdX(id), PlotMeCoreManager.getIdZ(id), plot.world);
+							plugin.getSqlManager().addPlotComment(comment, plot.comments.size(), plugin.getPlotMeCoreManager().getIdX(id), plugin.getPlotMeCoreManager().getIdZ(id), plot.world);
 							
-							Util.Send(p, Util.C("MsgCommentAdded") + " " + Util.moneyFormat(-price));
+							p.sendMessage(C("MsgCommentAdded") + " " + Util().moneyFormat(-price));
 							
 							if(isAdv)
-								PlotMe_Core.self.getLogger().info(LOG + playername + " " + Util.C("MsgCommentedPlot") + " " + id + ((price != 0) ? " " + Util.C("WordFor") + " " + price : ""));
+								plugin.getLogger().info(LOG + playername + " " + C("MsgCommentedPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
 						}
 						else
 						{
-							Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgHasNoOwner"));
+							p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgHasNoOwner"));
 						}
 					}
 				}
@@ -97,7 +98,7 @@ public class CmdComment extends PlotCommand
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

@@ -16,12 +16,16 @@ import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.PlotWorldEdit;
 
 public class PlotWorldEditListener implements Listener 
 {
+	private PlotMe_Core plugin = null;
+	
+	public PlotWorldEditListener(PlotMe_Core instance)
+	{
+		plugin = instance;
+	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onPlayerMove(final PlayerMoveEvent event)
@@ -34,7 +38,7 @@ public class PlotWorldEditListener implements Listener
 		
 		if(to == null)
 		{
-			PlotWorldEdit.removeMask(p);
+			plugin.getPlotWorldEdit().removeMask(p);
 		}
 		else
 		{
@@ -48,8 +52,8 @@ public class PlotWorldEditListener implements Listener
 				}
 				else if(from.getBlockX() != to.getBlockX() || from.getBlockZ() != to.getBlockZ())
 				{
-					String idFrom = PlotMeCoreManager.getPlotId(from);
-					idTo = PlotMeCoreManager.getPlotId(to);
+					String idFrom = plugin.getPlotMeCoreManager().getPlotId(from);
+					idTo = plugin.getPlotMeCoreManager().getPlotId(to);
 					
 					if(!idFrom.equalsIgnoreCase(idTo))
 					{
@@ -60,15 +64,15 @@ public class PlotWorldEditListener implements Listener
 			
 			if(changemask)
 			{
-				if(PlotMeCoreManager.isPlotWorld(to.getWorld()))
+				if(plugin.getPlotMeCoreManager().isPlotWorld(to.getWorld()))
 				{
-					if(!PlotMe_Core.isIgnoringWELimit(p))
+					if(!plugin.getPlotMeCoreManager().isPlayerIgnoringWELimit(p.getName()))
 					{
-						PlotWorldEdit.setMask(p, idTo);
+						plugin.getPlotWorldEdit().setMask(p, idTo);
 					}
 					else
 					{
-						PlotWorldEdit.removeMask(p);
+						plugin.getPlotWorldEdit().removeMask(p);
 					}
 				}
 			}
@@ -79,16 +83,16 @@ public class PlotWorldEditListener implements Listener
 	public void onPlayerJoin(final PlayerJoinEvent event)
 	{
 		Player p = event.getPlayer();
-		if(PlotMeCoreManager.isPlotWorld(p))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(p))
 		{
-			if(!PlotMe_Core.isIgnoringWELimit(p))
-				PlotWorldEdit.setMask(p);
+			if(!plugin.getPlotMeCoreManager().isPlayerIgnoringWELimit(p.getName()))
+				plugin.getPlotWorldEdit().setMask(p);
 			else
-				PlotWorldEdit.removeMask(p);
+				plugin.getPlotWorldEdit().removeMask(p);
 		}
 		else
 		{
-			PlotWorldEdit.removeMask(p);
+			plugin.getPlotWorldEdit().removeMask(p);
 		}
 	}
 	
@@ -101,17 +105,17 @@ public class PlotWorldEditListener implements Listener
 		
 		if(to == null)
 		{
-			PlotWorldEdit.removeMask(p);
+			plugin.getPlotWorldEdit().removeMask(p);
 		}
 		else
 		{
-			if(from != null && PlotMeCoreManager.isPlotWorld(from) && !PlotMeCoreManager.isPlotWorld(to))
+			if(from != null && plugin.getPlotMeCoreManager().isPlotWorld(from) && !plugin.getPlotMeCoreManager().isPlotWorld(to))
 			{
-				PlotWorldEdit.removeMask(p);
+				plugin.getPlotWorldEdit().removeMask(p);
 			}
-			else if(PlotMeCoreManager.isPlotWorld(to))
+			else if(plugin.getPlotMeCoreManager().isPlotWorld(to))
 			{
-				PlotWorldEdit.setMask(p);
+				plugin.getPlotWorldEdit().setMask(p);
 			}
 		}
 	}
@@ -125,17 +129,17 @@ public class PlotWorldEditListener implements Listener
 		
 		if(to == null)
 		{
-			PlotWorldEdit.removeMask(p);
+			plugin.getPlotWorldEdit().removeMask(p);
 		}
 		else
 		{
-			if(from != null && PlotMeCoreManager.isPlotWorld(from) && !PlotMeCoreManager.isPlotWorld(to))
+			if(from != null && plugin.getPlotMeCoreManager().isPlotWorld(from) && !plugin.getPlotMeCoreManager().isPlotWorld(to))
 			{
-				PlotWorldEdit.removeMask(p);
+				plugin.getPlotWorldEdit().removeMask(p);
 			}
-			else if(PlotMeCoreManager.isPlotWorld(to))
+			else if(plugin.getPlotMeCoreManager().isPlotWorld(to))
 			{
-				PlotWorldEdit.setMask(p);
+				plugin.getPlotWorldEdit().setMask(p);
 			}
 		}
 	}
@@ -145,7 +149,7 @@ public class PlotWorldEditListener implements Listener
 	{		
 		Player p = event.getPlayer();
 		
-		if(PlotMeCoreManager.isPlotWorld(p) && !PlotMe_Core.isIgnoringWELimit(p))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.getPlotMeCoreManager().isPlayerIgnoringWELimit(p.getName()))
 		{
 			if(event.getMessage().startsWith("//gmask"))
 			{
@@ -153,7 +157,7 @@ public class PlotWorldEditListener implements Listener
 			}
 			else if(event.getMessage().startsWith("//up"))
 			{
-				Plot plot = PlotMeCoreManager.getPlotById(p);
+				Plot plot = plugin.getPlotMeCoreManager().getPlotById(p);
 				
 				if(plot == null || !plot.isAllowed(p.getName()))
 				{
@@ -168,16 +172,16 @@ public class PlotWorldEditListener implements Listener
 	{
 		Player p = event.getPlayer();
 
-		if(!PlotMe_Core.cPerms(p, "plotme.admin.buildanywhere") && PlotMeCoreManager.isPlotWorld(p) && !PlotMe_Core.isIgnoringWELimit(p))
+		if(!plugin.cPerms(p, "plotme.admin.buildanywhere") && plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.getPlotMeCoreManager().isPlayerIgnoringWELimit(p.getName()))
 		{
 			if((event.getAction() == Action.LEFT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_BLOCK) 
 					&& p.getItemInHand() != null && p.getItemInHand().getType() != Material.AIR)
 			{
 				Block b = event.getClickedBlock();
-				Plot plot = PlotMeCoreManager.getPlotById(b);
+				Plot plot = plugin.getPlotMeCoreManager().getPlotById(b);
 				
 				if(plot != null && plot.isAllowed(p.getName()))
-					PlotWorldEdit.setMask(p, b.getLocation());
+					plugin.getPlotWorldEdit().setMask(p, b.getLocation());
 				else
 					event.setCancelled(true);
 			}

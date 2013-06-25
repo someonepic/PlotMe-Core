@@ -5,6 +5,8 @@ import java.util.List;
 
 public class PlotMapInfo 
 {
+	private PlotMe_Core plotmecore = null;
+	
 	private HashMap<String, Plot> _plots;
 	private String _world;
 	
@@ -37,13 +39,15 @@ public class PlotMapInfo
 	public boolean DisableExplosion;
 	public boolean DisableIgnition;
 	
-	public PlotMapInfo()
+	public PlotMapInfo(PlotMe_Core instance)
 	{
+		plotmecore = instance;
 		_plots = new HashMap<String, Plot>();
 	}
 	
-	public PlotMapInfo(String world)
+	public PlotMapInfo(PlotMe_Core instance, String world)
 	{
+		plotmecore = instance;
 		_world = world;
 		_plots = new HashMap<String, Plot>();
 	}
@@ -52,7 +56,7 @@ public class PlotMapInfo
 	{
 		if(!_plots.containsKey(id))
 		{
-			Plot plot = SqlManager.getPlot(_world, id);
+			Plot plot = plotmecore.getSqlManager().getPlot(_world, id);
 			if (plot == null)
 				return null;
 			

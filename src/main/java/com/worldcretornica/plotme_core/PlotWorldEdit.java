@@ -8,45 +8,55 @@ import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.LocalWorld;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.bukkit.BukkitPlayer;
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.masks.RegionMask;
 import com.sk89q.worldedit.regions.CuboidRegion;
 
-public class PlotWorldEdit {
+public class PlotWorldEdit 
+{
+	private PlotMe_Core plugin;
+	private WorldEditPlugin we;
 	
-	public static void setMask(Player p)
+	public PlotWorldEdit(PlotMe_Core instance, WorldEditPlugin wep)
+	{
+		plugin = instance;
+		we = wep;
+	}
+	
+	public void setMask(Player p)
 	{
 		setMask(p, p.getLocation());
 	}
 	
-	public static void setMask(Player p, Location l)
+	public void setMask(Player p, Location l)
 	{
-		String id = PlotMeCoreManager.getPlotId(l);
+		String id = plugin.getPlotMeCoreManager().getPlotId(l);
 		setMask(p, id);
 	}
 	
-	public static void setMask(Player p, String id)
+	public void setMask(Player p, String id)
 	{
 		World w = p.getWorld();
 		
 		Location bottom = null;
 		Location top = null;
 		
-		LocalSession session = PlotMe_Core.we.getSession(p);
+		LocalSession session = we.getSession(p);
 				
 		if(!id.equals(""))
 		{
-			PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(w.getName(), id);
+			PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(w.getName(), id);
 			
 			if(ptc == null)
 			{
-				Plot plot = PlotMeCoreManager.getPlotById(p, id);
+				Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
 				
 				if(plot != null && plot.isAllowed(p.getName()))
 				{			
-					bottom = PlotMeCoreManager.getPlotBottomLoc(w, id);
-					top = PlotMeCoreManager.getPlotTopLoc(w, id);
+					bottom = plugin.getPlotMeCoreManager().getPlotBottomLoc(w, id);
+					top = plugin.getPlotMeCoreManager().getPlotTopLoc(w, id);
 					
-					BukkitPlayer player = PlotMe_Core.we.wrapPlayer(p);
+					BukkitPlayer player = we.wrapPlayer(p);
 					LocalWorld world = player.getWorld();
 							
 					Vector pos1 = new Vector(bottom.getBlockX(), bottom.getBlockY(), bottom.getBlockZ());
@@ -70,7 +80,7 @@ public class PlotWorldEdit {
 		
 		if(session.getMask() == null)
 		{
-			BukkitPlayer player = PlotMe_Core.we.wrapPlayer(p);
+			BukkitPlayer player = we.wrapPlayer(p);
 			LocalWorld world = player.getWorld();
 					
 			Vector pos1 = new Vector(bottom.getBlockX(), bottom.getBlockY(), bottom.getBlockZ());
@@ -84,9 +94,9 @@ public class PlotWorldEdit {
 		}
 	}
 
-	public static void removeMask(Player p)
+	public void removeMask(Player p)
 	{
-		LocalSession session = PlotMe_Core.we.getSession(p);
+		LocalSession session = we.getSession(p);
 		session.setMask(null);
 	}	
 }

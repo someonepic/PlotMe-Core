@@ -8,20 +8,21 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.SqlManager;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdHome extends PlotCommand 
 {
+	public CmdHome(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if (PlotMe_Core.cPerms(p, "PlotMe.use.home") || PlotMe_Core.cPerms(p, "PlotMe.admin.home.other"))
+		if (plugin.cPerms(p, "PlotMe.use.home") || plugin.cPerms(p, "PlotMe.admin.home.other"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p) && !PlotMe_Core.allowWorldTeleport)
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.getAllowWorldTeleport())
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 			}
 			else
 			{
@@ -30,9 +31,9 @@ public class CmdHome extends PlotCommand
 				int nb = 1;
 				World w;
 				
-				if(!PlotMeCoreManager.isPlotWorld(p) && PlotMe_Core.allowWorldTeleport)
+				if(!plugin.getPlotMeCoreManager().isPlotWorld(p) && plugin.getAllowWorldTeleport())
 				{
-					w = PlotMeCoreManager.getFirstWorld();
+					w = plugin.getPlotMeCoreManager().getFirstWorld();
 				}
 				else
 				{
@@ -44,8 +45,8 @@ public class CmdHome extends PlotCommand
 					try{
 						if(args[0].split(":").length == 1 || args[0].split(":")[1].equals(""))
 						{
-							Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandHome") + ":# " + 
-									RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandHome") + ":1");
+							p.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandHome") + ":# " + 
+									RESET + C("WordExample") + ": " + RED + "/plotme " + C("CommandHome") + ":1");
 							return true;
 						}
 						else
@@ -54,8 +55,8 @@ public class CmdHome extends PlotCommand
 						}
 					}catch(Exception ex)
 					{
-						Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandHome") + ":# " + 
-								RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandHome") + ":1");
+						p.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandHome") + ":# " + 
+								RESET + C("WordExample") + ": " + RED + "/plotme " + C("CommandHome") + ":1");
 						return true;
 					}
 				}
@@ -64,7 +65,7 @@ public class CmdHome extends PlotCommand
 				{
 					if(Bukkit.getWorld(args[1]) == null)
 					{
-						if(PlotMe_Core.cPerms(p, "PlotMe.admin.home.other"))
+						if(plugin.cPerms(p, "PlotMe.admin.home.other"))
 						{
 							playername = args[1];
 						}
@@ -79,7 +80,7 @@ public class CmdHome extends PlotCommand
 				{
 					if(Bukkit.getWorld(args[2]) == null)
 					{
-						Util.Send(p, RED + args[2] + Util.C("MsgWorldNotPlot"));
+						p.sendMessage(RED + args[2] + C("MsgWorldNotPlot"));
 						return true;
 					}
 					else
@@ -88,50 +89,50 @@ public class CmdHome extends PlotCommand
 					}
 				}
 				
-				if(!PlotMeCoreManager.isPlotWorld(w))
+				if(!plugin.getPlotMeCoreManager().isPlotWorld(w))
 				{
-						Util.Send(p, RED + w.getName() + Util.C("MsgWorldNotPlot"));
+						p.sendMessage(RED + w.getName() + C("MsgWorldNotPlot"));
 				}
 				else
 				{
 					int i = nb - 1;
 							
-					for(Plot plot : SqlManager.getOwnedPlots(w.getName(), playername))
+					for(Plot plot : plugin.getSqlManager().getOwnedPlots(w.getName(), playername))
 					{
 						if(plot.owner.equalsIgnoreCase(playername))
 						{
 							if(i == 0)
 							{							
-								PlotMapInfo pmi = PlotMeCoreManager.getMap(w);
+								PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
 								
 								double price = 0;
 														
-								if(PlotMeCoreManager.isEconomyEnabled(w))
+								if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 								{
 									price = pmi.PlotHomePrice;
-									double balance = PlotMe_Core.economy.getBalance(playername);
+									double balance = plugin.getEconomy().getBalance(playername);
 									
 									if(balance >= price)
 									{
-										EconomyResponse er = PlotMe_Core.economy.withdrawPlayer(playername, price);
+										EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
 										
 										if(!er.transactionSuccess())
 										{
-											Util.Send(p, RED + er.errorMessage);
+											p.sendMessage(RED + er.errorMessage);
 											return true;
 										}
 									}
 									else
 									{
-										Util.Send(p, RED + Util.C("MsgNotEnoughTp") + " " + Util.C("WordMissing") + " " + RESET + Util.moneyFormat(price - balance, false));
+										p.sendMessage(RED + C("MsgNotEnoughTp") + " " + C("WordMissing") + " " + RESET + Util().moneyFormat(price - balance, false));
 										return true;
 									}
 								}
 								
-								p.teleport(PlotMeCoreManager.getPlotHome(w, plot.id));
+								p.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, plot.id));
 								
 								if(price != 0)
-									Util.Send(p, Util.moneyFormat(-price));
+									p.sendMessage(Util().moneyFormat(-price));
 								
 								return true;
 							}else{
@@ -146,18 +147,18 @@ public class CmdHome extends PlotCommand
 						{
 							if(!playername.equalsIgnoreCase(p.getName()))
 							{
-								Util.Send(p, RED + playername + " " + Util.C("MsgDoesNotHavePlot") + " #" + nb);
+								p.sendMessage(RED + playername + " " + C("MsgDoesNotHavePlot") + " #" + nb);
 							}else{
-								Util.Send(p, RED + Util.C("MsgPlotNotFound") + " #" + nb);
+								p.sendMessage(RED + C("MsgPlotNotFound") + " #" + nb);
 							}
 						}
 						else if(!playername.equalsIgnoreCase(p.getName()))
 						{
-							Util.Send(p, RED + playername + " " + Util.C("MsgDoesNotHavePlot"));
+							p.sendMessage(RED + playername + " " + C("MsgDoesNotHavePlot"));
 						}
 						else
 						{
-							Util.Send(p, RED + Util.C("MsgYouHaveNoPlot"));
+							p.sendMessage(RED + C("MsgYouHaveNoPlot"));
 						}
 					}
 				}
@@ -165,7 +166,7 @@ public class CmdHome extends PlotCommand
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

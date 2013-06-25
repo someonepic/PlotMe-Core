@@ -10,26 +10,31 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
 
 public class PlotDenyListener implements Listener
 {
+	private PlotMe_Core plugin = null;
+	
+	public PlotDenyListener(PlotMe_Core instance)
+	{
+		plugin = instance;
+	}
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerMove(final PlayerMoveEvent event)
 	{
 		Player p = event.getPlayer();
 		
-		if(PlotMeCoreManager.isPlotWorld(p) && !PlotMe_Core.cPerms(p, "plotme.admin.bypassdeny"))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.cPerms(p, "plotme.admin.bypassdeny"))
 		{
 			Location to = event.getTo();
 			
-			String idTo = PlotMeCoreManager.getPlotId(to);
+			String idTo = plugin.getPlotMeCoreManager().getPlotId(to);
 			
 			if(!idTo.equals(""))
 			{
-				Plot plot = PlotMeCoreManager.getPlotById(p, idTo);
+				Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, idTo);
 				
 				if(plot != null && plot.isDenied(p.getName()))
 				{
@@ -44,19 +49,19 @@ public class PlotDenyListener implements Listener
 	{
 		Player p = event.getPlayer();
 		
-		if(PlotMeCoreManager.isPlotWorld(p) && !PlotMe_Core.cPerms(p, "plotme.admin.bypassdeny"))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.cPerms(p, "plotme.admin.bypassdeny"))
 		{
 			Location to = event.getTo();
 			
-			String idTo = PlotMeCoreManager.getPlotId(to);
+			String idTo = plugin.getPlotMeCoreManager().getPlotId(to);
 			
 			if(!idTo.equals(""))
 			{
-				Plot plot = PlotMeCoreManager.getPlotById(p, idTo);
+				Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, idTo);
 				
 				if(plot != null && plot.isDenied(p.getName()))
 				{
-					event.setTo(PlotMeCoreManager.getPlotHome(p.getWorld(), plot.id));
+					event.setTo(plugin.getPlotMeCoreManager().getPlotHome(p.getWorld(), plot.id));
 				}
 			}
 		}
@@ -67,17 +72,17 @@ public class PlotDenyListener implements Listener
 	{
 		Player p = event.getPlayer();
 		
-		if(PlotMeCoreManager.isPlotWorld(p) && !PlotMe_Core.cPerms(p, "plotme.admin.bypassdeny"))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.cPerms(p, "plotme.admin.bypassdeny"))
 		{
-			String id = PlotMeCoreManager.getPlotId(p.getLocation());
+			String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 			
 			if(!id.equals(""))
 			{
-				Plot plot = PlotMeCoreManager.getPlotById(p, id);
+				Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
 				
 				if(plot != null && plot.isDenied(p.getName()))
 				{
-					p.teleport(PlotMeCoreManager.getPlotHome(p.getWorld(), plot.id));
+					p.teleport(plugin.getPlotMeCoreManager().getPlotHome(p.getWorld(), plot.id));
 				}
 			}
 		}

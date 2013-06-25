@@ -3,26 +3,28 @@ package com.worldcretornica.plotme_core.commands;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdMove extends PlotCommand 
 {
+	public CmdMove(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if (PlotMe_Core.cPerms(p, "PlotMe.admin.move"))
+		if (plugin.cPerms(p, "PlotMe.admin.move"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 			}
 			else
 			{
 				if(args.length < 3 || args[1].equals("") || args[2].equals(""))
 				{
-					Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandMove") + " <" + Util.C("WordIdFrom") + "> <" + Util.C("WordIdTo") + "> " + 
-							RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandMove") + " 0;1 2;-1");
+					p.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandMove") + " <" + C("WordIdFrom") + "> <" + C("WordIdTo") + "> " + 
+							RESET + C("WordExample") + ": " + RED + "/plotme " + C("CommandMove") + " 0;1 2;-1");
 				}
 				else
 				{
@@ -30,30 +32,30 @@ public class CmdMove extends PlotCommand
 					String plot2 = args[2];
 					World w = p.getWorld();
 					
-					if(!PlotMeCoreManager.isValidId(w, plot1) || !PlotMeCoreManager.isValidId(w, plot2))
+					if(!plugin.getPlotMeCoreManager().isValidId(w, plot1) || !plugin.getPlotMeCoreManager().isValidId(w, plot2))
 					{
-						Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandMove") + " <" + Util.C("WordIdFrom") + "> <" + Util.C("WordIdTo") + "> " + 
-								RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandMove") + " 0;1 2;-1");
+						p.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandMove") + " <" + C("WordIdFrom") + "> <" + C("WordIdTo") + "> " + 
+								RESET + C("WordExample") + ": " + RED + "/plotme " + C("CommandMove") + " 0;1 2;-1");
 						return true;
 					}
 					else
 					{
-						if(PlotMeCoreManager.movePlot(p.getWorld(), plot1, plot2))
+						if(plugin.getPlotMeCoreManager().movePlot(p.getWorld(), plot1, plot2))
 						{
-							Util.Send(p, Util.C("MsgPlotMovedSuccess"));
+							p.sendMessage(C("MsgPlotMovedSuccess"));
 							
 							if(isAdv)
-								PlotMe_Core.self.getLogger().info(LOG + p.getName() + " " + Util.C("MsgExchangedPlot") + " " + plot1 + " " + Util.C("MsgAndPlot") + " " + plot2);
+								plugin.getLogger().info(LOG + p.getName() + " " + C("MsgExchangedPlot") + " " + plot1 + " " + C("MsgAndPlot") + " " + plot2);
 						}
 						else
-							Util.Send(p, RED + Util.C("ErrMovingPlot"));
+							p.sendMessage(RED + C("ErrMovingPlot"));
 					}
 				}
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

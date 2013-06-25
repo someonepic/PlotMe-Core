@@ -6,74 +6,76 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdProtect extends PlotCommand
 {
+	public CmdProtect(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args) 
 	{
-		if(PlotMe_Core.cPerms(p, "PlotMe.admin.protect") || PlotMe_Core.cPerms(p, "PlotMe.use.protect"))
+		if(plugin.cPerms(p, "PlotMe.admin.protect") || plugin.cPerms(p, "PlotMe.use.protect"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 				return true;
 			}
 			else
 			{
-				String id = PlotMeCoreManager.getPlotId(p.getLocation());
+				String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 				
 				if(id.equals(""))
 				{
-					Util.Send(p, RED + Util.C("MsgNoPlotFound"));
+					p.sendMessage(RED + C("MsgNoPlotFound"));
 				}
 				else
 				{
-					if(!PlotMeCoreManager.isPlotAvailable(id, p))
+					if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 					{
-						Plot plot = PlotMeCoreManager.getPlotById(p,id);
+						Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 						
 						String name = p.getName();
 						
-						if(plot.owner.equalsIgnoreCase(name) || PlotMe_Core.cPerms(p, "PlotMe.admin.protect"))
+						if(plot.owner.equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.protect"))
 						{
 							if(plot.protect)
 							{
 								plot.protect = false;
-								PlotMeCoreManager.adjustWall(p.getLocation());
+								plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
 								
 								plot.updateField("protected", false);
 								
-								Util.Send(p, Util.C("MsgPlotNoLongerProtected"));
+								p.sendMessage(C("MsgPlotNoLongerProtected"));
 								
 								if(isAdv)
-									PlotMe_Core.self.getLogger().info(LOG + name + " " + Util.C("MsgUnprotectedPlot") + " " + id);
+									plugin.getLogger().info(LOG + name + " " + C("MsgUnprotectedPlot") + " " + id);
 							}
 							else
 							{
-								PlotMapInfo pmi = PlotMeCoreManager.getMap(p);
+								PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
 								
 								double cost = 0;
 								
-								if(PlotMeCoreManager.isEconomyEnabled(p))
+								if(plugin.getPlotMeCoreManager().isEconomyEnabled(p))
 								{
 									cost = pmi.ProtectPrice;
 									
-									if(PlotMe_Core.economy.getBalance(name) < cost)
+									if(plugin.getEconomy().getBalance(name) < cost)
 									{
-										Util.Send(p, RED + Util.C("MsgNotEnoughProtectPlot"));
+										p.sendMessage(RED + C("MsgNotEnoughProtectPlot"));
 										return true;
 									}
 									else
 									{
-										EconomyResponse er = PlotMe_Core.economy.withdrawPlayer(name, cost);
+										EconomyResponse er = plugin.getEconomy().withdrawPlayer(name, cost);
 										
 										if(!er.transactionSuccess())
 										{
-											Util.Send(p, RED + er.errorMessage);
-											Util.warn(er.errorMessage);
+											p.sendMessage(RED + er.errorMessage);
+											Util().warn(er.errorMessage);
 											return true;
 										}
 									}
@@ -81,32 +83,32 @@ public class CmdProtect extends PlotCommand
 								}
 								
 								plot.protect = true;
-								PlotMeCoreManager.adjustWall(p.getLocation());
+								plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
 								
 								plot.updateField("protected", true);
 								
-								Util.Send(p, Util.C("MsgPlotNowProtected") + " " + Util.moneyFormat(-cost));
+								p.sendMessage(C("MsgPlotNowProtected") + " " + Util().moneyFormat(-cost));
 								
 								if(isAdv)
-									PlotMe_Core.self.getLogger().info(LOG + name + " " + Util.C("MsgProtectedPlot") + " " + id);
+									plugin.getLogger().info(LOG + name + " " + C("MsgProtectedPlot") + " " + id);
 								
 							}
 						}
 						else
 						{
-							Util.Send(p, RED + Util.C("MsgDoNotOwnPlot"));
+							p.sendMessage(RED + C("MsgDoNotOwnPlot"));
 						}
 					}
 					else
 					{
-						Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgHasNoOwner"));
+						p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgHasNoOwner"));
 					}
 				}
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

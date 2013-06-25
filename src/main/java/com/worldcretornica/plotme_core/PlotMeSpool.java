@@ -4,31 +4,36 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class PlotMeSpool implements Runnable
 {
+	private PlotMe_Core plugin = null;
 	private Long[] currentClear = null;
 	public PlotToClear plottoclear = null;
 
 	private long timer = 0;
 	private boolean mustStop = false;
 	
+	public PlotMeSpool(PlotMe_Core instance)
+	{
+		plugin = instance;
+	}
+	
 	@Override
 	public void run() 
 	{
-		while(!mustStop && PlotMe_Core.self != null && PlotMe_Core.self.isEnabled())
+		while(!mustStop && plugin != null && plugin.isEnabled())
 		{
 			//Plots to clear
 			if(plottoclear == null)
 			{
-				plottoclear = PlotMe_Core.plotsToClear.poll();
+				plottoclear = plugin.pollPlotsToClear();
 				
 				if(plottoclear != null)
 				{
 					World w = Bukkit.getWorld(plottoclear.world);
 					
-					currentClear = PlotMeCoreManager.getGenMan(w).clear(w, plottoclear.plotid, 50000, true, null);
+					currentClear = plugin.getGenManager(w).clear(w, plottoclear.plotid, 50000, true, null);
 					timer = System.currentTimeMillis();
 					ShowProgress();
 				}
@@ -36,7 +41,7 @@ public class PlotMeSpool implements Runnable
 			else
 			{
 				World w = Bukkit.getWorld(plottoclear.world);
-				currentClear = PlotMeCoreManager.getGenMan(w).clear(w, plottoclear.plotid, 50000, false, currentClear);
+				currentClear = plugin.getGenManager(w).clear(w, plottoclear.plotid, 50000, false, currentClear);
 			}
 			
 			if(plottoclear != null)
@@ -56,9 +61,9 @@ public class PlotMeSpool implements Runnable
 					World w = Bukkit.getWorld(plottoclear.world);
 					if(w != null)
 					{
-						PlotMeCoreManager.getGenMan(plottoclear.world).adjustPlotFor(w, plottoclear.plotid, true, false, false, false);
-						PlotMeCoreManager.RemoveLWC(w, plottoclear.plotid);
-						PlotMeCoreManager.getGenMan(plottoclear.world).refreshPlotChunks(w, plottoclear.plotid);
+						plugin.getGenManager(plottoclear.world).adjustPlotFor(w, plottoclear.plotid, true, false, false, false);
+						plugin.getPlotMeCoreManager().RemoveLWC(w, plottoclear.plotid);
+						plugin.getGenManager(plottoclear.world).refreshPlotChunks(w, plottoclear.plotid);
 					}
 					
 					Msg("Plot " + plottoclear.plotid + " cleared");
@@ -88,7 +93,7 @@ public class PlotMeSpool implements Runnable
 		}
 		catch (InterruptedException e) 
 		{
-			PlotMe_Core.self.getLogger().severe(Util.C("ErrSpoolInterrupted"));
+			plugin.getLogger().severe(plugin.getUtil().C("ErrSpoolInterrupted"));
 			e.printStackTrace();
 			return false;
 		}
@@ -96,7 +101,7 @@ public class PlotMeSpool implements Runnable
 	
 	private void Msg(String text)
 	{
-		Util.Send(plottoclear.commandsender, text);
+		plottoclear.commandsender.sendMessage(text);
 	}
 	
 	private void ShowProgress()
@@ -105,17 +110,17 @@ public class PlotMeSpool implements Runnable
 		long total = getTotalPlotBlocks();
 		double percent = ((double) done) / ((double) total) * 100;
 		
-		Msg(Util.C("WordPlot") + " " + ChatColor.GREEN + plottoclear.plotid + ChatColor.RESET + " " + Util.C("WordIn") + " " +
+		Msg(plugin.getUtil().C("WordPlot") + " " + ChatColor.GREEN + plottoclear.plotid + ChatColor.RESET + " " + plugin.getUtil().C("WordIn") + " " +
 				ChatColor.GREEN + plottoclear.world + ChatColor.RESET + " " +
-				Util.C("WordIs") + " " + ChatColor.GREEN + ((double)Math.round(percent*10)/10) + "% " + ChatColor.RESET + Util.C("WordCleared") + 
-				" (" + ChatColor.GREEN + format(done) + ChatColor.RESET + "/" + ChatColor.GREEN + format(total) + ChatColor.RESET + " " + Util.C("WordBlocks") + ")");
+				plugin.getUtil().C("WordIs") + " " + ChatColor.GREEN + ((double)Math.round(percent*10)/10) + "% " + ChatColor.RESET + plugin.getUtil().C("WordCleared") + 
+				" (" + ChatColor.GREEN + format(done) + ChatColor.RESET + "/" + ChatColor.GREEN + format(total) + ChatColor.RESET + " " + plugin.getUtil().C("WordBlocks") + ")");
 	}
 	
 	private long getTotalPlotBlocks()
 	{
 		World w = Bukkit.getWorld(plottoclear.world);
-		Location bottom = PlotMeCoreManager.getGenMan(w).getPlotBottomLoc(w, plottoclear.plotid);
-		Location top = PlotMeCoreManager.getGenMan(w).getPlotTopLoc(w, plottoclear.plotid);
+		Location bottom = plugin.getGenManager(w).getPlotBottomLoc(w, plottoclear.plotid);
+		Location top = plugin.getGenManager(w).getPlotTopLoc(w, plottoclear.plotid);
 		//PlotMe_Core.self.getLogger().info("(" + top.getBlockX() + "-" + bottom.getBlockX() + ")*(" + top.getBlockY() + "-" + bottom.getBlockY() + ")*(" + top.getBlockZ() + "-" + bottom.getBlockZ() + ")");
 		
 		return (top.getBlockX() - bottom.getBlockX() + 1) * (top.getBlockY() - bottom.getBlockY() + 1) * (top.getBlockZ() - bottom.getBlockZ() + 1);

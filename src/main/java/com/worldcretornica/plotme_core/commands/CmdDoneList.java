@@ -6,23 +6,24 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.SqlManager;
 import com.worldcretornica.plotme_core.utils.MinecraftFontWidthCalculator;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdDoneList extends PlotCommand 
 {
+	public CmdDoneList(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args) 
 	{
-		if(PlotMe_Core.cPerms(p, "PlotMe.admin.done"))
+		if(plugin.cPerms(p, "PlotMe.admin.done"))
 		{
-			PlotMapInfo pmi = PlotMeCoreManager.getMap(p);
+			PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
 			
 			if(pmi == null)
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 				return true;
 			}
 			else
@@ -39,7 +40,7 @@ public class CmdDoneList extends PlotCommand
 					}catch(NumberFormatException ex){}
 				}
 				
-				maxpage = (int) Math.ceil((double) SqlManager.getFinishedPlotCount(p.getWorld().getName()) / (double)pagesize);
+				maxpage = (int) Math.ceil((double) plugin.getSqlManager().getFinishedPlotCount(p.getWorld().getName()) / (double)pagesize);
 				
 				if(page < 0)
 				{
@@ -49,15 +50,15 @@ public class CmdDoneList extends PlotCommand
 					page = maxpage;
 				}
 				
-				List<Plot> finishedplots = SqlManager.getDonePlots(p.getWorld().getName(), page, pagesize);
+				List<Plot> finishedplots = plugin.getSqlManager().getDonePlots(p.getWorld().getName(), page, pagesize);
 				
 				if(finishedplots.size() == 0)
 				{
-					Util.Send(p, Util.C("MsgNoPlotsFinished"));
+					p.sendMessage(C("MsgNoPlotsFinished"));
 				}
 				else
 				{
-					Util.Send(p, Util.C("MsgFinishedPlotsPage") + " " + page + "/" + maxpage);
+					p.sendMessage(C("MsgFinishedPlotsPage") + " " + page + "/" + maxpage);
 					
 					for(int i = (page-1) * pagesize; i < finishedplots.size() && i < (page * pagesize); i++)
 					{	
@@ -67,7 +68,7 @@ public class CmdDoneList extends PlotCommand
 						
 						int textLength = MinecraftFontWidthCalculator.getStringWidth(starttext);						
 						
-						String line = starttext + Util.whitespace(550 - textLength) + "@" + plot.finisheddate;
+						String line = starttext + Util().whitespace(550 - textLength) + "@" + plot.finisheddate;
 
 						p.sendMessage(line);
 					}
@@ -76,7 +77,7 @@ public class CmdDoneList extends PlotCommand
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

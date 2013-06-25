@@ -3,43 +3,48 @@ package com.worldcretornica.plotme_core.commands;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdWEAnywhere extends PlotCommand 
 {
+	public CmdWEAnywhere(PlotMe_Core instance) 
+	{
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if(PlotMe_Core.cPerms(p, "PlotMe.admin.weanywhere"))
+		if(plugin.cPerms(p, "PlotMe.admin.weanywhere"))
 		{
 			String name = p.getName();
 			
-			if(PlotMe_Core.isIgnoringWELimit(p) && !PlotMe_Core.defaultWEAnywhere || !PlotMe_Core.isIgnoringWELimit(p) && PlotMe_Core.defaultWEAnywhere)
+			if(plugin.getPlotMeCoreManager().isPlayerIgnoringWELimit(p.getName()) && !plugin.getDefaultWEAnywhere() || 
+					!plugin.getPlotMeCoreManager().isPlayerIgnoringWELimit(p.getName()) && plugin.getDefaultWEAnywhere())
 			{
-				PlotMe_Core.removeIgnoreWELimit(p);
+				plugin.getPlotMeCoreManager().removePlayerIgnoringWELimit(p.getName());
 			}
 			else
 			{
-				PlotMe_Core.addIgnoreWELimit(p);					
+				plugin.getPlotMeCoreManager().addPlayerIgnoringWELimit(p.getName());					
 			}
 			
-			if(PlotMe_Core.isIgnoringWELimit(p))
+			if(plugin.getPlotMeCoreManager().isPlayerIgnoringWELimit(p.getName()))
 			{
-				Util.Send(p, Util.C("MsgWorldEditAnywhere"));
+				p.sendMessage(C("MsgWorldEditAnywhere"));
 				
 				if(isAdv)
-					PlotMe_Core.self.getLogger().info(LOG + name + " enabled WorldEdit anywhere");
+					plugin.getLogger().info(LOG + name + " enabled WorldEdit anywhere");
 			}
 			else
 			{
-				Util.Send(p, Util.C("MsgWorldEditInYourPlots"));
+				p.sendMessage(C("MsgWorldEditInYourPlots"));
 				
 				if(isAdv)
-					PlotMe_Core.self.getLogger().info(LOG + name + " disabled WorldEdit anywhere");
+					plugin.getLogger().info(LOG + name + " disabled WorldEdit anywhere");
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

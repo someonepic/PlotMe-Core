@@ -9,36 +9,38 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdSell extends PlotCommand 
 {
+	public CmdSell(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args) 
 	{
-		if(PlotMeCoreManager.isEconomyEnabled(p))
+		if(plugin.getPlotMeCoreManager().isEconomyEnabled(p))
 		{
-			PlotMapInfo pmi = PlotMeCoreManager.getMap(p);
+			PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
 			
 			if(pmi.CanSellToBank || pmi.CanPutOnSale)
 			{
-				if(PlotMe_Core.cPerms(p, "PlotMe.use.sell") || PlotMe_Core.cPerms(p, "PlotMe.admin.sell"))
+				if(plugin.cPerms(p, "PlotMe.use.sell") || plugin.cPerms(p, "PlotMe.admin.sell"))
 				{
 					Location l = p.getLocation();
-					String id = PlotMeCoreManager.getPlotId(l);
+					String id = plugin.getPlotMeCoreManager().getPlotId(l);
 					
 					if(id.equals(""))
 					{
-						Util.Send(p, RED + Util.C("MsgNoPlotFound"));
+						p.sendMessage(RED + C("MsgNoPlotFound"));
 					}
 					else
 					{
-						if(!PlotMeCoreManager.isPlotAvailable(id, p))
+						if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 						{
-							Plot plot = PlotMeCoreManager.getPlotById(p,id);
+							Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 							
-							if(plot.owner.equalsIgnoreCase(p.getName()) || PlotMe_Core.cPerms(p, "PlotMe.admin.sell"))
+							if(plot.owner.equalsIgnoreCase(p.getName()) || plugin.cPerms(p, "PlotMe.admin.sell"))
 							{
 								World w = p.getWorld();
 								String name = p.getName();
@@ -51,13 +53,13 @@ public class CmdSell extends PlotCommand
 									plot.updateField("customprice", 0);
 									plot.updateField("forsale", false);
 									
-									PlotMeCoreManager.adjustWall(l);
-									PlotMeCoreManager.setSellSign(w, plot);
+									plugin.getPlotMeCoreManager().adjustWall(l);
+									plugin.getPlotMeCoreManager().setSellSign(w, plot);
 									
-									Util.Send(p, Util.C("MsgPlotNoLongerSale"));
+									p.sendMessage(C("MsgPlotNoLongerSale"));
 									
 									if(isAdv)
-										PlotMe_Core.self.getLogger().info(LOG + name + " " + Util.C("MsgRemovedPlot") + " " + id + " " + Util.C("MsgFromBeingSold"));
+										plugin.getLogger().info(LOG + name + " " + C("MsgRemovedPlot") + " " + id + " " + C("MsgFromBeingSold"));
 								}
 								else
 								{
@@ -82,20 +84,20 @@ public class CmdSell extends PlotCommand
 												{
 													if(pmi.CanSellToBank)
 													{
-														Util.Send(p, Util.C("WordUsage") + ": " + RED + " /plotme " + Util.C("CommandSellBank") + "|<" + Util.C("WordAmount") + ">");
-														p.sendMessage("  " + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandSellBank") + " " + RESET + " or " + RED + " /plotme " + Util.C("CommandSell") + " 200");
+														p.sendMessage(C("WordUsage") + ": " + RED + " /plotme " + C("CommandSellBank") + "|<" + C("WordAmount") + ">");
+														p.sendMessage("  " + C("WordExample") + ": " + RED + "/plotme " + C("CommandSellBank") + " " + RESET + " or " + RED + " /plotme " + C("CommandSell") + " 200");
 													}
 													else
 													{
-														Util.Send(p, Util.C("WordUsage") + ": " + RED + 
-																" /plotme " + Util.C("CommandSell") + " <" + Util.C("WordAmount") + ">" + RESET + 
-																" " + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandSell") + " 200");
+														p.sendMessage(C("WordUsage") + ": " + RED + 
+																" /plotme " + C("CommandSell") + " <" + C("WordAmount") + ">" + RESET + 
+																" " + C("WordExample") + ": " + RED + "/plotme " + C("CommandSell") + " 200");
 													}
 												}
 											}
 											else
 											{
-												Util.Send(p, RED + Util.C("MsgCannotCustomPriceDefault") + " " + price);
+												p.sendMessage(RED + C("MsgCannotCustomPriceDefault") + " " + price);
 												return true;
 											}
 										}
@@ -105,7 +107,7 @@ public class CmdSell extends PlotCommand
 									{
 										if(!pmi.CanSellToBank)
 										{
-											Util.Send(p, RED + Util.C("MsgCannotSellToBank"));
+											p.sendMessage(RED + C("MsgCannotSellToBank"));
 										}
 										else
 										{
@@ -116,12 +118,12 @@ public class CmdSell extends PlotCommand
 											{
 												double bid = plot.currentbid;
 												
-												EconomyResponse er = PlotMe_Core.economy.depositPlayer(currentbidder, bid);
+												EconomyResponse er = plugin.getEconomy().depositPlayer(currentbidder, bid);
 												
 												if(!er.transactionSuccess())
 												{
-													Util.Send(p, RED + er.errorMessage);
-													Util.warn(er.errorMessage);
+													p.sendMessage(RED + er.errorMessage);
+													Util().warn(er.errorMessage);
 												}
 												else
 												{
@@ -129,7 +131,7 @@ public class CmdSell extends PlotCommand
 													{
 														if(player.getName().equalsIgnoreCase(currentbidder))
 														{
-															Util.Send(player, Util.C("WordPlot") + " " + id + " " + Util.C("MsgOwnedBy") + " " + plot.owner + " " + Util.C("MsgSoldToBank") + " " + Util.moneyFormat(bid));
+															player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + " " + C("MsgSoldToBank") + " " + Util().moneyFormat(bid));
 															break;
 														}
 													}
@@ -138,7 +140,7 @@ public class CmdSell extends PlotCommand
 											
 											double sellprice = pmi.SellToBankPrice;
 											
-											EconomyResponse er = PlotMe_Core.economy.depositPlayer(name, sellprice);
+											EconomyResponse er = plugin.getEconomy().depositPlayer(name, sellprice);
 											
 											if(er.transactionSuccess())
 											{
@@ -151,8 +153,8 @@ public class CmdSell extends PlotCommand
 																								
 												plot.removeAllAllowed();
 												
-												PlotMeCoreManager.setOwnerSign(w, plot);
-												PlotMeCoreManager.setSellSign(w, plot);
+												plugin.getPlotMeCoreManager().setOwnerSign(w, plot);
+												plugin.getPlotMeCoreManager().setSellSign(w, plot);
 												
 												plot.updateField("owner", plot.owner);
 												plot.updateField("forsale", true);
@@ -161,15 +163,15 @@ public class CmdSell extends PlotCommand
 												plot.updateField("currentbidder", "");
 												plot.updateField("currentbid", 0);
 												
-												Util.Send(p, Util.C("MsgPlotSold") + " " + Util.moneyFormat(sellprice));
+												p.sendMessage(C("MsgPlotSold") + " " + Util().moneyFormat(sellprice));
 												
 												if(isAdv)
-													PlotMe_Core.self.getLogger().info(LOG + name + " " + Util.C("MsgSoldToBankPlot") + " " + id + " " + Util.C("WordFor") + " " + sellprice);
+													plugin.getLogger().info(LOG + name + " " + C("MsgSoldToBankPlot") + " " + id + " " + C("WordFor") + " " + sellprice);
 											}
 											else
 											{
-												Util.Send(p, " " + er.errorMessage);
-												Util.warn(er.errorMessage);
+												p.sendMessage(" " + er.errorMessage);
+												Util().warn(er.errorMessage);
 											}
 										}
 									}
@@ -177,7 +179,7 @@ public class CmdSell extends PlotCommand
 									{
 										if(price < 0)
 										{
-											Util.Send(p, RED + Util.C("MsgInvalidAmount"));
+											p.sendMessage(RED + C("MsgInvalidAmount"));
 										}
 										else
 										{
@@ -187,41 +189,41 @@ public class CmdSell extends PlotCommand
 											plot.updateField("customprice", price);
 											plot.updateField("forsale", true);
 											
-											PlotMeCoreManager.adjustWall(l);
-											PlotMeCoreManager.setSellSign(w, plot);
+											plugin.getPlotMeCoreManager().adjustWall(l);
+											plugin.getPlotMeCoreManager().setSellSign(w, plot);
 											
-											Util.Send(p, Util.C("MsgPlotForSale"));
+											p.sendMessage(C("MsgPlotForSale"));
 											
 											if(isAdv)
-												PlotMe_Core.self.getLogger().info(LOG + name + " " + Util.C("MsgPutOnSalePlot") + " " + id + " " + Util.C("WordFor") + " " + price);
+												plugin.getLogger().info(LOG + name + " " + C("MsgPutOnSalePlot") + " " + id + " " + C("WordFor") + " " + price);
 										}
 									}
 								}
 							}
 							else
 							{
-								Util.Send(p, RED + Util.C("MsgDoNotOwnPlot"));
+								p.sendMessage(RED + C("MsgDoNotOwnPlot"));
 							}
 						}
 						else
 						{
-							Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgHasNoOwner"));
+							p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgHasNoOwner"));
 						}
 					}
 				}
 				else
 				{
-					Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+					p.sendMessage(RED + C("MsgPermissionDenied"));
 				}
 			}
 			else
 			{
-				Util.Send(p, RED + Util.C("MsgSellingPlotsIsDisabledWorld"));
+				p.sendMessage(RED + C("MsgSellingPlotsIsDisabledWorld"));
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgEconomyDisabledWorld"));
+			p.sendMessage(RED + C("MsgEconomyDisabledWorld"));
 		}
 		return true;
 	}

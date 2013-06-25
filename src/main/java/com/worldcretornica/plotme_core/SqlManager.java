@@ -16,15 +16,22 @@ import org.bukkit.World;
 
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
 
-public class SqlManager {
-
+public class SqlManager 
+{
+	private PlotMe_Core plugin = null;
+	
+	private Boolean usemySQL;
+	private String mySQLuname;
+	private String mySQLpass;
+	private String mySQLconn;
+	
 	private static Connection conn = null;
 	
-	public final static String sqlitedb = "plots.db";
+	public final String sqlitedb = "plots.db";
 	
 	//todo add update to table for customprice, forsale
 	
-    private final static String PLOT_TABLE = "CREATE TABLE `plotmePlots` ("
+    private final String PLOT_TABLE = "CREATE TABLE `plotmePlots` ("
 		    + "`idX` INTEGER,"
 		    + "`idZ` INTEGER,"
 		    + "`owner` varchar(32) NOT NULL,"
@@ -47,7 +54,7 @@ public class SqlManager {
 	        + "PRIMARY KEY (idX, idZ, world) "
 	        + ");";
     
-    private final static String COMMENT_TABLE = "CREATE TABLE `plotmeComments` ("
+    private final String COMMENT_TABLE = "CREATE TABLE `plotmeComments` ("
 	    	+ "`idX` INTEGER,"
 		    + "`idZ` INTEGER,"
 	    	+ "`world` varchar(32) NOT NULL,"
@@ -57,7 +64,7 @@ public class SqlManager {
 	        + "PRIMARY KEY (idX, idZ, world, commentid) "
 	    	+ ");";
     
-    private final static String ALLOWED_TABLE = "CREATE TABLE `plotmeAllowed` ("
+    private final String ALLOWED_TABLE = "CREATE TABLE `plotmeAllowed` ("
     		+ "`idX` INTEGER,"
     	    + "`idZ` INTEGER,"
     	    + "`world` varchar(32) NOT NULL,"
@@ -65,40 +72,49 @@ public class SqlManager {
 	        + "PRIMARY KEY (idX, idZ, world, player) "
     	    + ");";
     
-    private final static String DENIED_TABLE = "CREATE TABLE `plotmeDenied` ("
+    private final String DENIED_TABLE = "CREATE TABLE `plotmeDenied` ("
     		+ "`idX` INTEGER,"
     	    + "`idZ` INTEGER,"
     	    + "`world` varchar(32) NOT NULL,"
     	    + "`player` varchar(32) NOT NULL,"
 	        + "PRIMARY KEY (idX, idZ, world, player) "
     	    + ");";
-		
-    public static Connection initialize() 
+	
+    public SqlManager(PlotMe_Core instance, boolean usemysql, String sqlusername, String sqlpassword, String sqlconnection)
+    {
+    	plugin = instance;
+    	this.mySQLconn = sqlconnection;
+    	this.mySQLpass = sqlpassword;
+    	this.mySQLuname = sqlusername;
+    	this.usemySQL = usemysql;
+    }
+    
+    public Connection initialize() 
     {
         try 
         {
-        	if(PlotMe_Core.usemySQL) 
+        	if(usemySQL) 
         	{
         		Class.forName("com.mysql.jdbc.Driver");
-        		conn = DriverManager.getConnection(PlotMe_Core.mySQLconn, PlotMe_Core.mySQLuname, PlotMe_Core.mySQLpass);
+        		conn = DriverManager.getConnection(mySQLconn, mySQLuname, mySQLpass);
         		conn.setAutoCommit(false);
         	} 
         	else 
         	{
         		Class.forName("org.sqlite.JDBC");
-        		conn = DriverManager.getConnection("jdbc:sqlite:" + PlotMe_Core.configpath + "/plots.db");
+        		conn = DriverManager.getConnection("jdbc:sqlite:" + plugin.getConfigPath() + "/plots.db");
         		conn.setAutoCommit(false);
         	}
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("SQL exception on initialize :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("SQL exception on initialize :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         catch (ClassNotFoundException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("You need the SQLite/MySQL library. :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("You need the SQLite/MySQL library. :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         }
         
         createTable();
@@ -106,9 +122,9 @@ public class SqlManager {
         return conn;
     }
     
-    public static String getSchema()
+    public String getSchema()
     {
-    	String conn = PlotMe_Core.mySQLconn;
+    	String conn = mySQLconn;
     	
     	if(conn.lastIndexOf("/") > 0)
     		return conn.substring(conn.lastIndexOf("/") + 1);
@@ -116,7 +132,7 @@ public class SqlManager {
     		return "";
     }
     
-    public static void UpdateTables()
+    public void UpdateTables()
     {
         Statement statement = null;
         ResultSet set = null;
@@ -129,7 +145,7 @@ public class SqlManager {
             
             String schema = getSchema();
         	            
-            if(PlotMe_Core.usemySQL)
+            if(usemySQL)
             {
             	/*** START Version 0.8 changes ***/
             	//CustomPrice
@@ -424,8 +440,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Update table exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Update table exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -438,16 +454,16 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Update table exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Update table exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
 
-	public static Connection getConnection()
+	public Connection getConnection()
 	{
 		if(conn == null) conn = initialize();
-		if(PlotMe_Core.usemySQL) 
+		if(usemySQL) 
 		{
 			try 
 			{
@@ -455,19 +471,19 @@ public class SqlManager {
 			} 
 			catch (SQLException ex) 
 			{
-				PlotMe_Core.self.getLogger().severe("Failed to check SQL status :");
-				PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+				plugin.getLogger().severe("Failed to check SQL status :");
+				plugin.getLogger().severe("  " + ex.getMessage());
 			}
 		}
 		return conn;
 	}
 
-    public static void closeConnection()
+    public void closeConnection()
     {
 		if(conn != null) 
 		{
 			try {
-				if(PlotMe_Core.usemySQL)
+				if(usemySQL)
 				{
 					if(conn.isValid(10)) 
 					{
@@ -483,13 +499,13 @@ public class SqlManager {
 			} 
 			catch (SQLException ex) 
 			{
-				PlotMe_Core.self.getLogger().severe("Error on Connection close :");
-				PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+				plugin.getLogger().severe("Error on Connection close :");
+				plugin.getLogger().severe("  " + ex.getMessage());
 			}
 		}
     }
     
-    private static boolean tableExists(String name)
+    private boolean tableExists(String name)
     {
         ResultSet rs = null;
         try 
@@ -504,8 +520,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Table Check Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Table Check Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
             return false;
         } 
         finally 
@@ -516,13 +532,13 @@ public class SqlManager {
                     rs.close();
             } catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Table Check SQL Exception (on closing) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Table Check SQL Exception (on closing) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    private static void createTable()
+    private void createTable()
     {
     	Statement st = null;
     	try 
@@ -557,20 +573,20 @@ public class SqlManager {
     		
     		UpdateTables();
     		
-    		if(PlotMe_Core.usemySQL)
+    		if(usemySQL)
     		{ 
-    			PlotMe_Core.self.getLogger().info("Modifying database for MySQL support");
+    			plugin.getLogger().info("Modifying database for MySQL support");
     			
-    			File sqlitefile = new File(PlotMe_Core.configpath, sqlitedb);
+    			File sqlitefile = new File(plugin.getConfigPath(), sqlitedb);
     			if (!sqlitefile.exists()) {
-    				//PlotMe_Core.self.getLogger().info("Could not find old " + sqlitedb);
+    				//plotmecore.getLogger().info("Could not find old " + sqlitedb);
     				return;
     			} 
     			else 
     			{
-    				PlotMe_Core.self.getLogger().info("Trying to import plots from plots.db");
+    				plugin.getLogger().info("Trying to import plots from plots.db");
 	        		Class.forName("org.sqlite.JDBC");
-	        		Connection sqliteconn = DriverManager.getConnection("jdbc:sqlite:" + PlotMe_Core.configpath + "\\" + sqlitedb);
+	        		Connection sqliteconn = DriverManager.getConnection("jdbc:sqlite:" + plugin.getConfigPath() + "\\" + sqlitedb);
 
 	        		sqliteconn.setAutoCommit(false);
 	        		Statement slstatement = sqliteconn.createStatement();
@@ -653,7 +669,7 @@ public class SqlManager {
 	        				comments.add(comment);
 	        			}
 	        			
-	        			Plot plot = new Plot(owner, world, biome, expireddate, finished, allowed,
+	        			Plot plot = new Plot(plugin, owner, world, biome, expireddate, finished, allowed,
 	        					 comments, "" + idX + ";" + idZ, customprice, forsale, finisheddate, 
 	        					 protect, currentbidder, currentbid, auctionned, denied, auctionneddate);
 	        			addPlot(plot, idX, idZ, topX, bottomX, topZ, bottomZ);
@@ -661,7 +677,7 @@ public class SqlManager {
 	        			size++;
 	        		}
 	        		
-	        		PlotMe_Core.self.getLogger().info("Imported " + size + " plots from " + sqlitedb);
+	        		plugin.getLogger().info("Imported " + size + " plots from " + sqlitedb);
 	        		if (slstatement != null)
         				slstatement.close();
 	        		if (slAllowed != null)
@@ -681,23 +697,23 @@ public class SqlManager {
     				if (sqliteconn != null)
         				sqliteconn.close();
     				
-	        		PlotMe_Core.self.getLogger().info("Renaming " + sqlitedb + " to " + sqlitedb + ".old");
-	        		if (!sqlitefile.renameTo(new File(PlotMe_Core.configpath, sqlitedb + ".old"))) 
+    				plugin.getLogger().info("Renaming " + sqlitedb + " to " + sqlitedb + ".old");
+	        		if (!sqlitefile.renameTo(new File(plugin.getConfigPath(), sqlitedb + ".old"))) 
 	        		{
-	        			PlotMe_Core.self.getLogger().severe("Failed to rename " + sqlitedb + "! Please rename this manually!");
+	        			plugin.getLogger().severe("Failed to rename " + sqlitedb + "! Please rename this manually!");
 	    			}
     			}
     		}
     	} 
     	catch (SQLException ex) 
     	{
-    		PlotMe_Core.self.getLogger().severe("Create Table Exception :");
-    		PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+    		plugin.getLogger().severe("Create Table Exception :");
+    		plugin.getLogger().severe("  " + ex.getMessage());
     	} 
     	catch (ClassNotFoundException ex) 
     	{
-    		PlotMe_Core.self.getLogger().severe("You need the SQLite library :");
-    		PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+    		plugin.getLogger().severe("You need the SQLite library :");
+    		plugin.getLogger().severe("  " + ex.getMessage());
     	} 
     	finally 
     	{
@@ -709,19 +725,19 @@ public class SqlManager {
     		} 
     		catch (SQLException ex) 
     		{
-    			PlotMe_Core.self.getLogger().severe("Could not create the table (on close) :");
-    			PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+    			plugin.getLogger().severe("Could not create the table (on close) :");
+    			plugin.getLogger().severe("  " + ex.getMessage());
     		}
     	}
     }
     
-    public static void addPlot(Plot plot, int idX, int idZ, World w)
+    public void addPlot(Plot plot, int idX, int idZ, World w)
     {
-    	IPlotMe_GeneratorManager gm = PlotMeCoreManager.getGenMan(w);
+    	IPlotMe_GeneratorManager gm = plugin.getPlotMeCoreManager().getGenMan(w);
     	addPlot(plot, idX, idZ, gm.topX(plot.id, w), gm.bottomX(plot.id, w), gm.topZ(plot.id, w), gm.bottomZ(plot.id, w));
     }
         
-    public static void addPlot(Plot plot, int idX, int idZ, int topX, int bottomX, int topZ, int bottomZ)
+    public void addPlot(Plot plot, int idX, int idZ, int topX, int bottomX, int topZ, int bottomZ)
     {
         PreparedStatement ps = null;
         Connection conn;
@@ -760,8 +776,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Insert Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Insert Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -774,13 +790,13 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Insert Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Insert Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static void updatePlot(int idX, int idZ, String world, String field, Object value)
+    public void updatePlot(int idX, int idZ, String world, String field, Object value)
     {
         PreparedStatement ps = null;
         Connection conn;
@@ -804,8 +820,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Insert Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Insert Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -818,13 +834,13 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Insert Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Insert Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static void addPlotAllowed(String player, int idX, int idZ, String world)
+    public void addPlotAllowed(String player, int idX, int idZ, String world)
     {
     	PreparedStatement ps = null;
         Connection conn;
@@ -846,8 +862,8 @@ public class SqlManager {
             conn.commit();
             
         } catch (SQLException ex) {
-        	PlotMe_Core.self.getLogger().severe("Insert Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Insert Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -860,13 +876,13 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Insert Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Insert Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static void addPlotDenied(String player, int idX, int idZ, String world)
+    public void addPlotDenied(String player, int idX, int idZ, String world)
     {
     	PreparedStatement ps = null;
         Connection conn;
@@ -888,8 +904,8 @@ public class SqlManager {
             conn.commit();
             
         } catch (SQLException ex) {
-        	PlotMe_Core.self.getLogger().severe("Insert Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Insert Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -902,13 +918,13 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Insert Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Insert Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static void addPlotBid(String player, double bid, int idX, int idZ, String world)
+    public void addPlotBid(String player, double bid, int idX, int idZ, String world)
     {
     	PreparedStatement ps = null;
         Connection conn;
@@ -933,8 +949,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Insert Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Insert Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -947,13 +963,13 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Insert Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Insert Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static void addPlotComment(String[] comment, int commentid, int idX, int idZ, String world)
+    public void addPlotComment(String[] comment, int commentid, int idX, int idZ, String world)
     {
     	PreparedStatement ps = null;
         Connection conn;
@@ -979,8 +995,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Insert Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Insert Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -992,13 +1008,13 @@ public class SqlManager {
                 }
             } catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Insert Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Insert Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static void deletePlot(int idX, int idZ, String world)
+    public void deletePlot(int idX, int idZ, String world)
     {
         PreparedStatement ps = null;
         ResultSet set = null;
@@ -1030,8 +1046,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Delete Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Delete Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1048,13 +1064,13 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Delete Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Delete Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static void deletePlotComment(int idX, int idZ, int commentid, String world)
+    public void deletePlotComment(int idX, int idZ, int commentid, String world)
     {
         PreparedStatement ps = null;
         ResultSet set = null;
@@ -1073,8 +1089,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Delete Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Delete Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1090,13 +1106,13 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Delete Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Delete Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static void deletePlotAllowed(int idX, int idZ, String player, String world)
+    public void deletePlotAllowed(int idX, int idZ, String player, String world)
     {
         PreparedStatement ps = null;
         ResultSet set = null;
@@ -1116,8 +1132,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Delete Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Delete Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1134,13 +1150,13 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Delete Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Delete Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static void deletePlotDenied(int idX, int idZ, String player, String world)
+    public void deletePlotDenied(int idX, int idZ, String player, String world)
     {
         PreparedStatement ps = null;
         ResultSet set = null;
@@ -1160,8 +1176,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Delete Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Delete Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1178,13 +1194,13 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Delete Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Delete Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static void deletePlotBid(int idX, int idZ, String player, String world)
+    public void deletePlotBid(int idX, int idZ, String player, String world)
     {
         PreparedStatement ps = null;
         ResultSet set = null;
@@ -1204,8 +1220,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Delete Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Delete Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1222,13 +1238,13 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Delete Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Delete Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static void deleteAllPlotBids(int idX, int idZ, String world)
+    public void deleteAllPlotBids(int idX, int idZ, String world)
     {
         PreparedStatement ps = null;
         ResultSet set = null;
@@ -1247,8 +1263,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Delete Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Delete Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1265,13 +1281,13 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Delete Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Delete Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
     }
     
-    public static Plot getPlot(String world, String id) 
+    public Plot getPlot(String world, String id) 
     {
         Plot plot = null;
         PreparedStatement statementPlot = null;
@@ -1283,8 +1299,8 @@ public class SqlManager {
         ResultSet setDenied = null;
 		ResultSet setComments = null;
 
-		int idX = PlotMeCoreManager.getIdX(id);
-		int idZ = PlotMeCoreManager.getIdZ(id);
+		int idX = plugin.getPlotMeCoreManager().getIdX(id);
+		int idZ = plugin.getPlotMeCoreManager().getIdZ(id);
 		
         try 
         {
@@ -1364,15 +1380,15 @@ public class SqlManager {
     				comments.add(comment);
     			}
     			
-    			plot = new Plot(owner, world, biome, expireddate, finished, allowed,
+    			plot = new Plot(plugin, owner, world, biome, expireddate, finished, allowed,
     					 comments, "" + idX + ";" + idZ, customprice, forsale, finisheddate, protect, 
     					 currentbidder, currentbid, auctionned, denied, auctionneddate);
             }
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Plot load Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("Plot load Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1397,8 +1413,8 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Plot load Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("Plot load Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
         return plot;
@@ -1487,12 +1503,12 @@ public class SqlManager {
     					 currentbidder, currentbid, auctionned, denied, auctionneddate);
                 ret.put("" + idX + ";" + idZ, plot);
             }
-            PlotMe_Core.self.getLogger().info(size + " plots loaded in " + world);
+            plotmecore.getLogger().info(size + " plots loaded in " + world);
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("Load Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plotmecore.getLogger().severe("Load Exception :");
+        	plotmecore.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1517,14 +1533,14 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("Load Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plotmecore.getLogger().severe("Load Exception (on close) :");
+            	plotmecore.getLogger().severe("  " + ex.getMessage());
             }
         }
         return ret;
     }    */
     
-    public static long getPlotCount(String world) 
+    public long getPlotCount(String world) 
     {
         PreparedStatement ps = null;
         ResultSet setNbPlots = null;
@@ -1546,8 +1562,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("PlotCount Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("PlotCount Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1560,15 +1576,15 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("PlotCount Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("PlotCount Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
         return nbplots;
     }
     
     
-    public static int getPlotCount(String world, String owner) 
+    public int getPlotCount(String world, String owner) 
     {
         PreparedStatement ps = null;
         ResultSet setNbPlots = null;
@@ -1591,8 +1607,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("PlotCount Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("PlotCount Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1605,8 +1621,8 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("PlotCount Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("PlotCount Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
         return nbplots;
@@ -1614,7 +1630,7 @@ public class SqlManager {
     
     
     
-    public static long getFinishedPlotCount(String world) 
+    public long getFinishedPlotCount(String world) 
     {
         PreparedStatement ps = null;
         ResultSet setNbPlots = null;
@@ -1636,8 +1652,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("FinishedPlotCount Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("FinishedPlotCount Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1650,14 +1666,14 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("FinishedPlotCount Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("FinishedPlotCount Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
         return nbplots;
     }
     
-    public static long getExpiredPlotCount(String world) 
+    public long getExpiredPlotCount(String world) 
     {
         PreparedStatement ps = null;
         ResultSet setNbPlots = null;
@@ -1684,8 +1700,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("ExpiredPlotCount Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("ExpiredPlotCount Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1698,14 +1714,14 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("ExpiredPlotCount Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("ExpiredPlotCount Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
         return nbplots;
     }
     
-    public static List<Plot> getDonePlots(String world, int Page, int NbPerPage) 
+    public List<Plot> getDonePlots(String world, int Page, int NbPerPage) 
     {
     	List<Plot> ret = new ArrayList<Plot>();
         PreparedStatement statementPlot = null;
@@ -1730,7 +1746,7 @@ public class SqlManager {
 
     			String finisheddate = setPlots.getString("finisheddate");
     			    			
-    			Plot plot = new Plot();
+    			Plot plot = new Plot(plugin);
     			plot.owner = owner;
     			plot.id = idX + ";" + idZ;
     			plot.finisheddate = finisheddate;
@@ -1740,8 +1756,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("DonePlots Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("DonePlots Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1754,14 +1770,14 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("DonePlots Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("DonePlots Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
         return ret;
     }
     
-    public static List<Plot> getExpiredPlots(String world, int Page, int NbPerPage) 
+    public List<Plot> getExpiredPlots(String world, int Page, int NbPerPage) 
     {
     	List<Plot> ret = new ArrayList<Plot>();
         PreparedStatement statementPlot = null;
@@ -1795,7 +1811,7 @@ public class SqlManager {
     				expireddate = setPlots.getDate("expireddate");
     			}catch(Exception e){}
     			    			
-    			Plot plot = new Plot();
+    			Plot plot = new Plot(plugin);
     			plot.owner = owner;
     			plot.id = idX + ";" + idZ;
     			plot.expireddate = expireddate;
@@ -1805,8 +1821,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("ExpiredPlots Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("ExpiredPlots Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1819,14 +1835,14 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("ExpiredPlots Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("ExpiredPlots Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
         return ret;
     }
     
-    public static Plot getExpiredPlot(String world) 
+    public Plot getExpiredPlot(String world) 
     {
         PreparedStatement statementPlot = null;
         ResultSet setPlots = null;
@@ -1857,7 +1873,7 @@ public class SqlManager {
     				expireddate = setPlots.getDate("expireddate");
     			}catch(Exception e){}
     			    			
-    			Plot plot = new Plot();
+    			Plot plot = new Plot(plugin);
     			plot.owner = owner;
     			plot.id = idX + ";" + idZ;
     			plot.expireddate = expireddate;
@@ -1867,8 +1883,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("ExpiredPlots Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("ExpiredPlots Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -1881,14 +1897,14 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("ExpiredPlots Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("ExpiredPlots Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
         return null;
     }
     
-    public static List<Plot> getPlayerPlots(String owner) 
+    public List<Plot> getPlayerPlots(String owner) 
     {
     	List<Plot> ret = new ArrayList<Plot>();
         PreparedStatement statementPlot = null;
@@ -1980,7 +1996,7 @@ public class SqlManager {
     				comments.add(comment);
     			}
     			
-    			Plot plot = new Plot(owner, world, biome, expireddate, finished, allowed,
+    			Plot plot = new Plot(plugin, owner, world, biome, expireddate, finished, allowed,
     					 comments, "" + idX + ";" + idZ, customprice, forsale, finisheddate, protect, 
     					 currentbidder, currentbid, auctionned, denied, auctionneddate);
     				
@@ -1989,8 +2005,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("DonePlots Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("DonePlots Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -2003,14 +2019,14 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("DonePlots Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("DonePlots Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
         return ret;
     }
     
-    public static List<Plot> getOwnedPlots(String w, String owner) 
+    public List<Plot> getOwnedPlots(String w, String owner) 
     {
     	List<Plot> ret = new ArrayList<Plot>();
         PreparedStatement statementPlot = null;
@@ -2101,7 +2117,7 @@ public class SqlManager {
     				comments.add(comment);
     			}
     			
-    			Plot plot = new Plot(owner, world, biome, expireddate, finished, allowed,
+    			Plot plot = new Plot(plugin, owner, world, biome, expireddate, finished, allowed,
     					 comments, "" + idX + ";" + idZ, customprice, forsale, finisheddate, protect, 
     					 currentbidder, currentbid, auctionned, denied, auctionneddate);
     				
@@ -2110,8 +2126,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("DonePlots Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("DonePlots Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -2124,14 +2140,14 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("DonePlots Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("DonePlots Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
         return ret;
     }
     
-    public static String getFirstWorld(String owner) 
+    public String getFirstWorld(String owner) 
     {
         PreparedStatement statementPlot = null;
         ResultSet setPlots = null;
@@ -2152,8 +2168,8 @@ public class SqlManager {
         } 
         catch (SQLException ex) 
         {
-        	PlotMe_Core.self.getLogger().severe("DonePlots Exception :");
-        	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+        	plugin.getLogger().severe("DonePlots Exception :");
+        	plugin.getLogger().severe("  " + ex.getMessage());
         } 
         finally 
         {
@@ -2166,8 +2182,8 @@ public class SqlManager {
             } 
             catch (SQLException ex) 
             {
-            	PlotMe_Core.self.getLogger().severe("DonePlots Exception (on close) :");
-            	PlotMe_Core.self.getLogger().severe("  " + ex.getMessage());
+            	plugin.getLogger().severe("DonePlots Exception (on close) :");
+            	plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
         return "";

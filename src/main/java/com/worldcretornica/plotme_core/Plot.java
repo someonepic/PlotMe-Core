@@ -12,8 +12,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 
-public class Plot implements Comparable<Plot> {
-
+public class Plot implements Comparable<Plot> 
+{
+	private PlotMe_Core plotmecore = null;
+	
 	public String owner;
 	public String world;
 	private HashSet<String> allowed;
@@ -32,8 +34,9 @@ public class Plot implements Comparable<Plot> {
 	public double currentbid;
 	public String auctionneddate;
 
-	public Plot()
+	public Plot(PlotMe_Core instance)
 	{
+		plotmecore = instance;
 		owner = "";
 		world = "";
 		id = "";
@@ -56,8 +59,9 @@ public class Plot implements Comparable<Plot> {
 		currentbid = 0;
 	}
 		
-	public Plot(String own, World wor, String tid, int days)
+	public Plot(PlotMe_Core instance, String own, World wor, String tid, int days)
 	{
+		plotmecore = instance;
 		owner = own;
 		world = wor.getName();
 		allowed = new HashSet<String>();
@@ -85,10 +89,11 @@ public class Plot implements Comparable<Plot> {
 		currentbid = 0;
 	}
 	
-	public Plot(String o, String w, String bio, Date exp, boolean fini, HashSet<String> al,
+	public Plot(PlotMe_Core instance, String o, String w, String bio, Date exp, boolean fini, HashSet<String> al,
 			List<String[]> comm, String tid, double custprice, boolean sale, String finishdt, boolean prot, String bidder, 
 			Double bid, boolean isauctionned, HashSet<String> den, String auctdate)
 	{
+		plotmecore = instance;
 		owner = o;
 		world = w;
 		biome = Biome.valueOf(bio);
@@ -215,7 +220,7 @@ public class Plot implements Comparable<Plot> {
 		if(!isAllowed(name))
 		{
 			allowed.add(name);
-			SqlManager.addPlotAllowed(name, PlotMeCoreManager.getIdX(id), PlotMeCoreManager.getIdZ(id), world);
+			plotmecore.getSqlManager().addPlotAllowed(name, plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), world);
 		}
 	}
 	
@@ -224,7 +229,7 @@ public class Plot implements Comparable<Plot> {
 		if(!isDenied(name))
 		{
 			denied.add(name);
-			SqlManager.addPlotDenied(name, PlotMeCoreManager.getIdX(id), PlotMeCoreManager.getIdZ(id), world);
+			plotmecore.getSqlManager().addPlotDenied(name, plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), world);
 		}
 	}
 	
@@ -244,7 +249,7 @@ public class Plot implements Comparable<Plot> {
 		if(!found.equals(""))
 		{
 			allowed.remove(found);
-			SqlManager.deletePlotAllowed(PlotMeCoreManager.getIdX(id), PlotMeCoreManager.getIdZ(id), found, world);
+			plotmecore.getSqlManager().deletePlotAllowed(plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), found, world);
 		}
 	}
 	
@@ -264,7 +269,7 @@ public class Plot implements Comparable<Plot> {
 		if(!found.equals(""))
 		{
 			denied.remove(found);
-			SqlManager.deletePlotDenied(PlotMeCoreManager.getIdX(id), PlotMeCoreManager.getIdZ(id), found, world);
+			plotmecore.getSqlManager().deletePlotDenied(plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), found, world);
 		}
 	}
 	
@@ -272,7 +277,7 @@ public class Plot implements Comparable<Plot> {
 	{
 		for(String n : allowed)
 		{
-			SqlManager.deletePlotAllowed(PlotMeCoreManager.getIdX(id), PlotMeCoreManager.getIdZ(id), n, world);
+			plotmecore.getSqlManager().deletePlotAllowed(plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), n, world);
 		}
 		allowed = new HashSet<String>();
 	}
@@ -281,7 +286,7 @@ public class Plot implements Comparable<Plot> {
 	{
 		for(String n : denied)
 		{
-			SqlManager.deletePlotDenied(PlotMeCoreManager.getIdX(id), PlotMeCoreManager.getIdZ(id), n, world);
+			plotmecore.getSqlManager().deletePlotDenied(plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), n, world);
 		}
 		denied = new HashSet<String>();
 	}
@@ -365,7 +370,7 @@ public class Plot implements Comparable<Plot> {
 	
 	public void updateField(String field, Object value)
 	{
-		SqlManager.updatePlot(PlotMeCoreManager.getIdX(id), PlotMeCoreManager.getIdZ(id), world, field, value);
+		plotmecore.getSqlManager().updatePlot(plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), world, field, value);
 	}
 	
 	/*private static Map<String, Double> sortByValues(final Map<String, Double> map) 

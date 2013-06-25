@@ -3,26 +3,28 @@ package com.worldcretornica.plotme_core.commands;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
 import com.worldcretornica.plotme_core.PlotRunnableDeleteExpire;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdResetExpired extends PlotCommand 
 {
+	public CmdResetExpired(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(CommandSender s, String[] args)
 	{
-		if(PlotMe_Core.cPerms(s, "PlotMe.admin.resetexpired"))
+		if(plugin.cPerms(s, "PlotMe.admin.resetexpired"))
 		{
 			if(args.length <= 1)
 			{
-				Util.Send(s, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandResetExpired") + " <" + Util.C("WordWorld") + "> " + RESET + "Example: " + RED + "/plotme " + Util.C("CommandResetExpired") + " plotworld ");
+				s.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandResetExpired") + " <" + C("WordWorld") + "> " + RESET + "Example: " + RED + "/plotme " + C("CommandResetExpired") + " plotworld ");
 			}
 			else
 			{
-				if(PlotMe_Core.worldcurrentlyprocessingexpired != null)
+				if(plugin.getWorldCurrentlyProcessingExpired() != null)
 				{
-					Util.Send(s, PlotMe_Core.cscurrentlyprocessingexpired.getName() + " " + Util.C("MsgAlreadyProcessingPlots"));
+					s.sendMessage(plugin.getCommandSenderCurrentlyProcessingExpired().getName() + " " + C("MsgAlreadyProcessingPlots"));
 				}
 				else
 				{
@@ -30,24 +32,24 @@ public class CmdResetExpired extends PlotCommand
 					
 					if(w == null)
 					{
-						Util.Send(s, RED + Util.C("WordWorld") + " '" + args[1] + "' " + Util.C("MsgDoesNotExistOrNotLoaded"));
+						s.sendMessage(RED + C("WordWorld") + " '" + args[1] + "' " + C("MsgDoesNotExistOrNotLoaded"));
 						return true;
 					}
 					else
 					{					
-						if(!PlotMeCoreManager.isPlotWorld(w))
+						if(!plugin.getPlotMeCoreManager().isPlotWorld(w))
 						{
-							Util.Send(s, RED + Util.C("MsgNotPlotWorld"));
+							s.sendMessage(RED + C("MsgNotPlotWorld"));
 							return true;
 						}
 						else
 						{
-							PlotMe_Core.worldcurrentlyprocessingexpired = w;
-							PlotMe_Core.cscurrentlyprocessingexpired = s;
-							PlotMe_Core.counterexpired = 50;
-							PlotMe_Core.nbperdeletionprocessingexpired = 5;
+							plugin.setWorldCurrentlyProcessingExpired(w);
+							plugin.setCommandSenderCurrentlyProcessingExpired(s);
+							plugin.setCounterExpired(50);
+							plugin.setNbPerDeletionProcessingExpired(5);
 							
-							PlotMe_Core.self.scheduleTask(new PlotRunnableDeleteExpire(), 5, 50);
+							plugin.scheduleTask(new PlotRunnableDeleteExpire(plugin), 5, 50);
 						}
 					}
 				}
@@ -55,7 +57,7 @@ public class CmdResetExpired extends PlotCommand
 		}
 		else
 		{
-			Util.Send(s, RED + Util.C("MsgPermissionDenied"));
+			s.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

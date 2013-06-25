@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -36,62 +37,76 @@ import multiworld.worldgen.WorldGenerator;
 
 public class PlotMeCoreManager 
 {
-	public static boolean CreatePlotWorld(CommandSender cs, String worldname, String generator, Map<String, String> args)
+	private PlotMe_Core plugin = null;
+	private MultiWorldPlugin multiworld = null;
+	private MultiverseCore multiverse = null;
+	
+	private HashSet<String> playersignoringwelimit = null;
+	private Map<String, PlotMapInfo> plotmaps = null;
+	
+	public PlotMeCoreManager(PlotMe_Core instance)
+	{
+		plugin = instance;
+		setPlayersIgnoringWELimit(new HashSet<String>());
+		plotmaps = new HashMap<String, PlotMapInfo>();
+	}
+	
+	public boolean CreatePlotWorld(CommandSender cs, String worldname, String generator, Map<String, String> args)
 	{
 		//Get a seed
 		Long seed = (new java.util.Random()).nextLong();
 				
 		//Check if we have multiworld
-		if(PlotMe_Core.multiworld == null)
+		if(getMultiworld() == null)
 		{
 			if(Bukkit.getPluginManager().isPluginEnabled("MultiWorld"))
-				PlotMe_Core.multiworld = (MultiWorldPlugin)Bukkit.getPluginManager().getPlugin("MultiWorld");
+				setMultiworld((MultiWorldPlugin)Bukkit.getPluginManager().getPlugin("MultiWorld"));
 		}
 		//Check if we have multiverse
-		if(PlotMe_Core.multiverse == null)
+		if(getMultiverse() == null)
 		{
 			if(Bukkit.getPluginManager().isPluginEnabled("Multiverse-Core"))
-				PlotMe_Core.multiverse = ((MultiverseCore)Bukkit.getPluginManager().getPlugin("Multiverse-Core"));
+				setMultiverse(((MultiverseCore)Bukkit.getPluginManager().getPlugin("Multiverse-Core")));
 		}
 		
 		//Do we have one of them
-		if(PlotMe_Core.multiworld == null && PlotMe_Core.multiverse == null)
+		if(getMultiworld() == null && getMultiverse() == null)
 		{
-			cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrWorldPluginNotFound"));
+			cs.sendMessage("[" + plugin.getName() + "] " + Util().C("ErrWorldPluginNotFound"));
 			return false;
 		}
 		
 		
 		//Find generator
-		Plugin plugin = Bukkit.getPluginManager().getPlugin(generator);
+		Plugin bukkitplugin = Bukkit.getPluginManager().getPlugin(generator);
 		
 		//Make generator create settings
-		if(plugin == null)
+		if(bukkitplugin == null)
 		{
-			cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrCannotFindWorldGen") + " '" + generator + "'");
+			cs.sendMessage("[" + plugin.getName() + "] " + Util().C("ErrCannotFindWorldGen") + " '" + generator + "'");
 			return false;
 		}
 		else
 		{
-			ChunkGenerator cg = plugin.getDefaultWorldGenerator(worldname, "");
+			ChunkGenerator cg = bukkitplugin.getDefaultWorldGenerator(worldname, "");
 			if(cg != null && cg instanceof IPlotMe_ChunkGenerator)
 			{
 				//Create the generator configurations
 				if(!((IPlotMe_ChunkGenerator) cg).getManager().createConfig(worldname, args, cs))
 				{
-					cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrCannotCreateGen1") + " '" + generator + "' " + Util.C("ErrCannotCreateGen2"));
+					cs.sendMessage("[" + plugin.getName() + "] " + Util().C("ErrCannotCreateGen1") + " '" + generator + "' " + Util().C("ErrCannotCreateGen2"));
 					return false;
 				}
 			}
 			else
 			{
-				cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrCannotCreateGen1") + " '" + generator + "' " + Util.C("ErrCannotCreateGen3"));
+				cs.sendMessage("[" + plugin.getName() + "] " + Util().C("ErrCannotCreateGen1") + " '" + generator + "' " + Util().C("ErrCannotCreateGen3"));
 				return false;
 			}
 		}
 		
 		//Create manager configurations		
-		File configfile = new File(PlotMe_Core.configpath, "core-config.yml");
+		File configfile = new File(plugin.getConfigPath(), "core-config.yml");
 		
 		FileConfiguration config = new YamlConfiguration();
 		try 
@@ -101,13 +116,13 @@ public class PlotMeCoreManager
 		catch (FileNotFoundException e) {} 
 		catch (IOException e) 
 		{
-			PlotMe_Core.self.getLogger().severe("can't read configuration file");
+			plugin.getLogger().severe("can't read configuration file");
 			e.printStackTrace();
 			return false;
 		} 
 		catch (InvalidConfigurationException e) 
 		{
-			PlotMe_Core.self.getLogger().severe("invalid configuration format");
+			plugin.getLogger().severe("invalid configuration format");
 			e.printStackTrace();
 			return false;
 		}
@@ -123,7 +138,7 @@ public class PlotMeCoreManager
 			worlds = config.getConfigurationSection("worlds");
 		}
 		
-		PlotMapInfo tempPlotInfo = new PlotMapInfo(worldname);
+		PlotMapInfo tempPlotInfo = new PlotMapInfo(plugin, worldname);
 		ConfigurationSection currworld = worlds.getConfigurationSection(worldname);
 		
 		if(currworld == null)
@@ -133,8 +148,8 @@ public class PlotMeCoreManager
 		
 		tempPlotInfo.PlotAutoLimit = Integer.parseInt(args.get("PlotAutoLimit"));
 		tempPlotInfo.DaysToExpiration = Integer.parseInt(args.get("DaysToExpiration"));
-		tempPlotInfo.ProtectedBlocks = PlotMe_Core.getDefaultProtectedBlocks();
-		tempPlotInfo.PreventedItems = PlotMe_Core.getDefaultPreventedItems();
+		tempPlotInfo.ProtectedBlocks = plugin.getDefaultProtectedBlocks();
+		tempPlotInfo.PreventedItems = plugin.getDefaultPreventedItems();
 		tempPlotInfo.AutoLinkPlots = Boolean.parseBoolean(args.get("AutoLinkPlots"));
 		tempPlotInfo.DisableExplosion = Boolean.parseBoolean(args.get("DisableExplosion"));
 		tempPlotInfo.DisableIgnition = Boolean.parseBoolean(args.get("DisableIgnition"));
@@ -194,7 +209,7 @@ public class PlotMeCoreManager
 		
 		worlds.set(worldname, currworld);
 		
-		PlotMe_Core.plotmaps.put(worldname.toLowerCase(), tempPlotInfo);
+		addPlotMap(worldname.toLowerCase(), tempPlotInfo);
 		
 		try
 		{
@@ -202,18 +217,18 @@ public class PlotMeCoreManager
 		} 
 		catch (IOException e) 
 		{
-			PlotMe_Core.self.getLogger().severe("error writting configurations");
+			plugin.getLogger().severe("error writting configurations");
 			e.printStackTrace();
 			return false;
 		}
 		
 		
 		//Are we using multiworld?
-		if(PlotMe_Core.multiworld != null)
+		if(getMultiworld() != null)
 		{
 			boolean success = false;
 			
-			if(PlotMe_Core.multiworld.isEnabled())
+			if(getMultiworld().isEnabled())
 			{
 				WorldGenerator env = WorldGenerator.NORMAL;
 				
@@ -229,7 +244,7 @@ public class PlotMeCoreManager
 				
 				try 
 				{
-					success = PlotMe_Core.multiworld.getDataManager().makeWorld(worldname, env, seed, generator);
+					success = getMultiworld().getDataManager().makeWorld(worldname, env, seed, generator);
 				} 
 				catch (Exception e) 
 				{
@@ -241,8 +256,8 @@ public class PlotMeCoreManager
 				{
 					try 
 					{
-						PlotMe_Core.multiworld.getDataManager().loadWorld(worldname, true);
-						PlotMe_Core.multiworld.getDataManager().save();
+						getMultiworld().getDataManager().loadWorld(worldname, true);
+						getMultiworld().getDataManager().save();
 					} 
 					catch (Exception e) 
 					{
@@ -251,30 +266,30 @@ public class PlotMeCoreManager
 					}
 				}
 				else
-					cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrCannotCreateMW"));
+					cs.sendMessage("[" + bukkitplugin.getName() + "] " + Util().C("ErrCannotCreateMW"));
 			}
 			else
 			{
-				cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrMWDisabled"));
+				cs.sendMessage("[" + bukkitplugin.getName() + "] " + Util().C("ErrMWDisabled"));
 			}
 			return success;
 		}
 		
 		//Are we using multiverse?
-		if(PlotMe_Core.multiverse != null)
+		if(getMultiverse() != null)
 		{
 			boolean success = false;
 			
-			if(PlotMe_Core.multiverse.isEnabled())
+			if(getMultiverse().isEnabled())
 			{
-				success = PlotMe_Core.multiverse.getMVWorldManager().addWorld(worldname, Environment.NORMAL, seed.toString(), WorldType.NORMAL, true, generator);
+				success = getMultiverse().getMVWorldManager().addWorld(worldname, Environment.NORMAL, seed.toString(), WorldType.NORMAL, true, generator);
 				
 				if(!success)
-					cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrCannotCreateMV"));
+					cs.sendMessage("[" + bukkitplugin.getName() + "] " + Util().C("ErrCannotCreateMV"));
 			}
 			else
 			{
-				cs.sendMessage("[" + PlotMe_Core.NAME + "] " + Util.C("ErrMVDisabled"));
+				cs.sendMessage("[" + bukkitplugin.getName() + "] " + Util().C("ErrMVDisabled"));
 			}
 			return success;
 		}
@@ -282,74 +297,74 @@ public class PlotMeCoreManager
 		return false;
 	}
 	
-	public static int getIdX(String id)
+	public int getIdX(String id)
 	{
 		return Integer.parseInt(id.substring(0, id.indexOf(";")));
 	}
 	
-	public static int getIdZ(String id)
+	public int getIdZ(String id)
 	{
 		return Integer.parseInt(id.substring(id.indexOf(";") + 1));
 	}
 	
-	public static int getNbOwnedPlot(Player p)
+	public int getNbOwnedPlot(Player p)
 	{
 		return getNbOwnedPlot(p.getName(), p.getWorld());
 	}
 	
-	public static int getNbOwnedPlot(Player p, World w)
+	public int getNbOwnedPlot(Player p, World w)
 	{
 		return getNbOwnedPlot(p.getName(), w);
 	}
 
-	public static int getNbOwnedPlot(String name, World w)
+	public int getNbOwnedPlot(String name, World w)
 	{ 
-		return SqlManager.getPlotCount(w.getName(), name);
+		return plugin.getSqlManager().getPlotCount(w.getName(), name);
 	}
 	
-	public static boolean isEconomyEnabled(World w)
+	public boolean isEconomyEnabled(World w)
 	{
 		PlotMapInfo pmi = getMap(w);
 		
 		if(pmi == null)
 			return false;
 		else
-			return pmi.UseEconomy && PlotMe_Core.globalUseEconomy && PlotMe_Core.economy != null;
+			return pmi.UseEconomy && plugin.getGlobalUseEconomy() && plugin.getEconomy() != null;
 	}
 	
-	public static boolean isEconomyEnabled(String name)
+	public boolean isEconomyEnabled(String name)
 	{
 		PlotMapInfo pmi = getMap(name);
 		
 		if(pmi == null)
 			return false;
 		else
-			return pmi.UseEconomy && PlotMe_Core.globalUseEconomy;
+			return pmi.UseEconomy && plugin.getGlobalUseEconomy();
 	}
 	
-	public static boolean isEconomyEnabled(Player p)
+	public boolean isEconomyEnabled(Player p)
 	{
-		if(PlotMe_Core.economy == null) return false;
+		if(plugin.getEconomy() == null) return false;
 		
 		PlotMapInfo pmi = getMap(p);
 		
 		if(pmi == null)
 			return false;
 		else
-			return pmi.UseEconomy && PlotMe_Core.globalUseEconomy;
+			return pmi.UseEconomy && plugin.getGlobalUseEconomy();
 	}
 	
-	public static boolean isEconomyEnabled(Block b)
+	public boolean isEconomyEnabled(Block b)
 	{
 		PlotMapInfo pmi = getMap(b);
 		
 		if(pmi == null)
 			return false;
 		else
-			return pmi.UseEconomy && PlotMe_Core.globalUseEconomy;
+			return pmi.UseEconomy && plugin.getGlobalUseEconomy();
 	}
 	
-	public static PlotMapInfo getMap(World w)
+	public PlotMapInfo getMap(World w)
 	{
 		if(w == null)
 			return null;
@@ -357,24 +372,24 @@ public class PlotMeCoreManager
 		{			
 			String worldname = w.getName().toLowerCase();
 			
-			if(PlotMe_Core.plotmaps.containsKey(worldname))
-				return PlotMe_Core.plotmaps.get(worldname);
+			if(plotmaps.containsKey(worldname))
+				return plotmaps.get(worldname);
 			else
 				return null;
 		}
 	}
 	
-	public static PlotMapInfo getMap(String name)
+	public PlotMapInfo getMap(String name)
 	{
 		String worldname = name.toLowerCase();
 		
-		if(PlotMe_Core.plotmaps.containsKey(worldname))
-			return PlotMe_Core.plotmaps.get(worldname);
+		if(plotmaps.containsKey(worldname))
+			return plotmaps.get(worldname);
 		else
 			return null;
 	}
 	
-	public static PlotMapInfo getMap(Location l)
+	public PlotMapInfo getMap(Location l)
 	{
 		if(l == null)
 			return null;
@@ -382,14 +397,14 @@ public class PlotMeCoreManager
 		{
 			String worldname = l.getWorld().getName().toLowerCase();
 			
-			if(PlotMe_Core.plotmaps.containsKey(worldname))
-				return PlotMe_Core.plotmaps.get(worldname);
+			if(plotmaps.containsKey(worldname))
+				return plotmaps.get(worldname);
 			else
 				return null;
 		}
 	}
 	
-	public static PlotMapInfo getMap(Player p)
+	public PlotMapInfo getMap(Player p)
 	{
 		if(p == null)
 			return null;
@@ -397,14 +412,14 @@ public class PlotMeCoreManager
 		{
 			String worldname = p.getWorld().getName().toLowerCase();
 			
-			if(PlotMe_Core.plotmaps.containsKey(worldname))
-				return PlotMe_Core.plotmaps.get(worldname);
+			if(plotmaps.containsKey(worldname))
+				return plotmaps.get(worldname);
 			else
 				return null;
 		}
 	}
 	
-	public static PlotMapInfo getMap(Block b)
+	public PlotMapInfo getMap(Block b)
 	{
 		if(b == null)
 			return null;
@@ -412,14 +427,14 @@ public class PlotMeCoreManager
 		{
 			String worldname = b.getWorld().getName().toLowerCase();
 			
-			if(PlotMe_Core.plotmaps.containsKey(worldname))
-				return PlotMe_Core.plotmaps.get(worldname);
+			if(plotmaps.containsKey(worldname))
+				return plotmaps.get(worldname);
 			else
 				return null;
 		}
 	}
 	
-	public static Plot getPlotById(World w, String id)
+	public Plot getPlotById(World w, String id)
 	{
 		PlotMapInfo pmi = getMap(w);
 		
@@ -429,7 +444,7 @@ public class PlotMeCoreManager
 		return  pmi.getPlot(id);
 	}
 	
-	public static Plot getPlotById(String name, String id)
+	public Plot getPlotById(String name, String id)
 	{
 		PlotMapInfo pmi = getMap(name);
 		
@@ -439,7 +454,7 @@ public class PlotMeCoreManager
 		return  pmi.getPlot(id);
 	}
 	
-	public static Plot getPlotById(Player p, String id)
+	public Plot getPlotById(Player p, String id)
 	{
 		PlotMapInfo pmi = getMap(p);
 		
@@ -449,7 +464,7 @@ public class PlotMeCoreManager
 		return  pmi.getPlot(id);
 	}
 	
-	public static Plot getPlotById(Player p)
+	public Plot getPlotById(Player p)
 	{
 		PlotMapInfo pmi = getMap(p);
 		
@@ -459,7 +474,7 @@ public class PlotMeCoreManager
 		return pmi.getPlot(getPlotId(p));
 	}
 	
-	public static Plot getPlotById(Location l)
+	public Plot getPlotById(Location l)
 	{
 		PlotMapInfo pmi = getMap(l);
 		
@@ -469,7 +484,7 @@ public class PlotMeCoreManager
 		return pmi.getPlot(getPlotId(l));
 	}
 	
-	public static Plot getPlotById(Block b, String id)
+	public Plot getPlotById(Block b, String id)
 	{
 		PlotMapInfo pmi = getMap(b);
 		
@@ -479,7 +494,7 @@ public class PlotMeCoreManager
 		return pmi.getPlot(id);
 	}
 	
-	public static Plot getPlotById(Block b)
+	public Plot getPlotById(Block b)
 	{
 		PlotMapInfo pmi = getMap(b);
 		
@@ -489,7 +504,7 @@ public class PlotMeCoreManager
 		return pmi.getPlot(getPlotId(b.getLocation()));
 	}
 	
-	public static void removePlot(World w, String id)
+	public void removePlot(World w, String id)
 	{
 		PlotMapInfo pmi = getMap(w);
 		
@@ -499,7 +514,7 @@ public class PlotMeCoreManager
 		pmi.removePlot(id);
 	}
 	
-	public static void addPlot(World w, String id, Plot plot)
+	public void addPlot(World w, String id, Plot plot)
 	{
 		PlotMapInfo pmi = getMap(w);
 		
@@ -509,24 +524,24 @@ public class PlotMeCoreManager
 		pmi.addPlot(id, plot);
 	}
 
-	public static World getFirstWorld()
+	public World getFirstWorld()
 	{
-		if(PlotMe_Core.plotmaps != null)
+		if(plotmaps != null)
 		{
-			if(PlotMe_Core.plotmaps.keySet() != null)
+			if(plotmaps.keySet() != null)
 			{
-				if(PlotMe_Core.plotmaps.keySet().toArray().length > 0)
+				if(plotmaps.keySet().toArray().length > 0)
 				{
-					return Bukkit.getWorld((String) PlotMe_Core.plotmaps.keySet().toArray()[0]);
+					return Bukkit.getWorld((String) plotmaps.keySet().toArray()[0]);
 				}
 			}
 		}
 		return null;
 	}
 	
-	public static World getFirstWorld(String player)
+	public World getFirstWorld(String player)
 	{
-		String world = SqlManager.getFirstWorld(player);
+		String world = plugin.getSqlManager().getFirstWorld(player);
 		
 		if(!world.equals(""))
 			return Bukkit.getWorld(world);
@@ -534,7 +549,7 @@ public class PlotMeCoreManager
 			return null;
 	}
 	
-	public static boolean isPlotWorld(World w)
+	public boolean isPlotWorld(World w)
 	{
 		if(w == null)
 			return false;
@@ -543,19 +558,19 @@ public class PlotMeCoreManager
 			if(getGenMan(w) == null)
 				return false;
 			else
-				return PlotMe_Core.plotmaps.containsKey(w.getName().toLowerCase());
+				return plotmaps.containsKey(w.getName().toLowerCase());
 		}
 	}
 	
-	public static boolean isPlotWorld(String name)
+	public boolean isPlotWorld(String name)
 	{
 		if(getGenMan(name) == null)
 			return false;
 		else
-			return PlotMe_Core.plotmaps.containsKey(name.toLowerCase());
+			return plotmaps.containsKey(name.toLowerCase());
 	}
 	
-	public static boolean isPlotWorld(Location l)
+	public boolean isPlotWorld(Location l)
 	{
 		if(l == null)
 			return false;
@@ -564,11 +579,11 @@ public class PlotMeCoreManager
 			if(getGenMan(l) == null)
 				return false;
 			else
-				return PlotMe_Core.plotmaps.containsKey(l.getWorld().getName().toLowerCase());
+				return plotmaps.containsKey(l.getWorld().getName().toLowerCase());
 		}
 	}
 	
-	public static boolean isPlotWorld(Player p)
+	public boolean isPlotWorld(Player p)
 	{
 		if(p == null)
 			return false;
@@ -577,11 +592,11 @@ public class PlotMeCoreManager
 			if(getGenMan(p.getWorld()) == null)
 				return false;
 			else
-				return PlotMe_Core.plotmaps.containsKey(p.getWorld().getName().toLowerCase());
+				return plotmaps.containsKey(p.getWorld().getName().toLowerCase());
 		}
 	}
 	
-	public static boolean isPlotWorld(Block b)
+	public boolean isPlotWorld(Block b)
 	{
 		if(b == null)
 			return false;
@@ -590,11 +605,11 @@ public class PlotMeCoreManager
 			if(getGenMan(b.getWorld()) == null)
 				return false;
 			else
-				return PlotMe_Core.plotmaps.containsKey(b.getWorld().getName().toLowerCase());
+				return plotmaps.containsKey(b.getWorld().getName().toLowerCase());
 		}
 	}
 	
-	public static boolean isPlotWorld(BlockState b)
+	public boolean isPlotWorld(BlockState b)
 	{
 		if(b == null)
 			return false;
@@ -603,21 +618,21 @@ public class PlotMeCoreManager
 			if(getGenMan(b.getWorld()) == null)
 				return false;
 			else
-				return PlotMe_Core.plotmaps.containsKey(b.getWorld().getName().toLowerCase());
+				return plotmaps.containsKey(b.getWorld().getName().toLowerCase());
 		}
 	}
 	
-	public static Plot createPlot(World w, String id, String owner)
+	public Plot createPlot(World w, String id, String owner)
 	{
 		if(isPlotAvailable(id, w) && !id.equals(""))
 		{
-			Plot plot = new Plot(owner, w, id, getMap(w).DaysToExpiration);
+			Plot plot = new Plot(plugin, owner, w, id, getMap(w).DaysToExpiration);
 
 			setOwnerSign(w, plot);
 			
 			addPlot(w, id, plot);
 			
-			SqlManager.addPlot(plot, getIdX(id), getIdZ(id), w);
+			plugin.getSqlManager().addPlot(plot, getIdX(id), getIdZ(id), w);
 			return plot;
 		}
 		else
@@ -626,7 +641,7 @@ public class PlotMeCoreManager
 		}
 	}
 	
-	public static boolean movePlot(World w, String idFrom, String idTo)
+	public boolean movePlot(World w, String idFrom, String idTo)
 	{
 		/*Location plot1Bottom = getPlotBottomLoc(w, idFrom);
 		Location plot2Bottom = getPlotBottomLoc(w, idTo);
@@ -684,41 +699,41 @@ public class PlotMeCoreManager
 			{		
 				int idX = getIdX(idTo);
 				int idZ = getIdZ(idTo);
-				SqlManager.deletePlot(idX, idZ, plot2.world);
+				plugin.getSqlManager().deletePlot(idX, idZ, plot2.world);
 				removePlot(w, idFrom);
 				removePlot(w, idTo);
 				idX = getIdX(idFrom);
 				idZ = getIdZ(idFrom);
-				SqlManager.deletePlot(idX, idZ, plot1.world);
+				plugin.getSqlManager().deletePlot(idX, idZ, plot1.world);
 				
 				plot2.id = "" + idX + ";" + idZ;
-				SqlManager.addPlot(plot2, idX, idZ, w);
+				plugin.getSqlManager().addPlot(plot2, idX, idZ, w);
 				addPlot(w, idFrom, plot2);
 				
 				for(int i = 0 ; i < plot2.comments.size() ; i++)
 				{
-					SqlManager.addPlotComment(plot2.comments.get(i), i, idX, idZ, plot2.world);
+					plugin.getSqlManager().addPlotComment(plot2.comments.get(i), i, idX, idZ, plot2.world);
 				}
 				
 				for(String player : plot2.allowed())
 				{
-					SqlManager.addPlotAllowed(player, idX, idZ, plot2.world);
+					plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot2.world);
 				}
 				
 				idX = getIdX(idTo);
 				idZ = getIdZ(idTo);
 				plot1.id = "" + idX + ";" + idZ;
-				SqlManager.addPlot(plot1, idX, idZ, w);
+				plugin.getSqlManager().addPlot(plot1, idX, idZ, w);
 				addPlot(w, idTo, plot1);
 				
 				for(int i = 0 ; i < plot1.comments.size() ; i++)
 				{
-					SqlManager.addPlotComment(plot1.comments.get(i), i, idX, idZ, plot1.world);
+					plugin.getSqlManager().addPlotComment(plot1.comments.get(i), i, idX, idZ, plot1.world);
 				}
 				
 				for(String player : plot1.allowed())
 				{
-					SqlManager.addPlotAllowed(player, idX, idZ, plot1.world);
+					plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot1.world);
 				}
 				
 				setOwnerSign(w, plot1);
@@ -731,22 +746,22 @@ public class PlotMeCoreManager
 			{				
 				int idX = getIdX(idFrom);
 				int idZ = getIdZ(idFrom);
-				SqlManager.deletePlot(idX, idZ, plot1.world);
+				plugin.getSqlManager().deletePlot(idX, idZ, plot1.world);
 				removePlot(w, idFrom);
 				idX = getIdX(idTo);
 				idZ = getIdZ(idTo);
 				plot1.id = "" + idX + ";" + idZ;
-				SqlManager.addPlot(plot1, idX, idZ, w);
+				plugin.getSqlManager().addPlot(plot1, idX, idZ, w);
 				addPlot(w, idTo, plot1);
 				
 				for(int i = 0 ; i < plot1.comments.size() ; i++)
 				{
-					SqlManager.addPlotComment(plot1.comments.get(i), i, idX, idZ, plot1.world);
+					plugin.getSqlManager().addPlotComment(plot1.comments.get(i), i, idX, idZ, plot1.world);
 				}
 				
 				for(String player : plot1.allowed())
 				{
-					SqlManager.addPlotAllowed(player, idX, idZ, plot1.world);
+					plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot1.world);
 				}
 				
 				setOwnerSign(w, plot1);
@@ -762,23 +777,23 @@ public class PlotMeCoreManager
 			{
 				int idX = getIdX(idTo);
 				int idZ = getIdZ(idTo);
-				SqlManager.deletePlot(idX, idZ, plot2.world);
+				plugin.getSqlManager().deletePlot(idX, idZ, plot2.world);
 				removePlot(w, idTo);
 				
 				idX = getIdX(idFrom);
 				idZ = getIdZ(idFrom);
 				plot2.id = "" + idX + ";" + idZ;
-				SqlManager.addPlot(plot2, idX, idZ, w);
+				plugin.getSqlManager().addPlot(plot2, idX, idZ, w);
 				addPlot(w, idFrom, plot2);
 				
 				for(int i = 0 ; i < plot2.comments.size() ; i++)
 				{
-					SqlManager.addPlotComment(plot2.comments.get(i), i, idX, idZ, plot2.world);
+					plugin.getSqlManager().addPlotComment(plot2.comments.get(i), i, idX, idZ, plot2.world);
 				}
 				
 				for(String player : plot2.allowed())
 				{
-					SqlManager.addPlotAllowed(player, idX, idZ, plot2.world);
+					plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot2.world);
 				}
 				
 				setOwnerSign(w, plot2);
@@ -791,9 +806,9 @@ public class PlotMeCoreManager
 		return true;
 	}
 	
-	public static void RemoveLWC(World w, String id)
+	public void RemoveLWC(World w, String id)
 	{
-		if(PlotMe_Core.usinglwc)
+		if(plugin.getUsinglwc())
 		{
 			Location bottom = getGenMan(w).getBottom(w, id);
 			Location top = getGenMan(w).getTop(w, id);
@@ -805,7 +820,7 @@ public class PlotMeCoreManager
 	    	final int z2 = top.getBlockZ();
 			final String wname = w.getName();
 	    	
-			Bukkit.getScheduler().runTaskAsynchronously(PlotMe_Core.self, new Runnable() 
+			Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() 
 			{	
 				public void run() 
 				{
@@ -820,7 +835,7 @@ public class PlotMeCoreManager
 	    }
 	}
 	
-	public static void setOwnerSign(World w, Plot plot)
+	public void setOwnerSign(World w, Plot plot)
 	{			
 		String line1 = "";
 		String line2 = "";
@@ -828,42 +843,42 @@ public class PlotMeCoreManager
 		String line4 = "";
 		String id = plot.id;
 				
-		if((Util.C("SignId") + id).length() > 16)
+		if((Util().C("SignId") + id).length() > 16)
 		{
-			line1 = (Util.C("SignId") + id).substring(0, 16);
-			if((Util.C("SignId") + id).length() > 32)
+			line1 = (Util().C("SignId") + id).substring(0, 16);
+			if((Util().C("SignId") + id).length() > 32)
 			{
-				line2 = (Util.C("SignId") + id).substring(16, 32);
+				line2 = (Util().C("SignId") + id).substring(16, 32);
 			}
 			else
 			{
-				line2 = (Util.C("SignId") + id).substring(16);
+				line2 = (Util().C("SignId") + id).substring(16);
 			}
 		}
 		else
 		{
-			line1 = Util.C("SignId") + id;
+			line1 = Util().C("SignId") + id;
 		}
-		if((Util.C("SignOwner") + plot.owner).length() > 16)
+		if((Util().C("SignOwner") + plot.owner).length() > 16)
 		{
-			line3 = (Util.C("SignOwner") + plot.owner).substring(0, 16);
-			if((Util.C("SignOwner") + plot.owner).length() > 32)
+			line3 = (Util().C("SignOwner") + plot.owner).substring(0, 16);
+			if((Util().C("SignOwner") + plot.owner).length() > 32)
 			{
-				line4 = (Util.C("SignOwner") + plot.owner).substring(16, 32);
+				line4 = (Util().C("SignOwner") + plot.owner).substring(16, 32);
 			}
 			else
 			{
-				line4 = (Util.C("SignOwner") + plot.owner).substring(16);
+				line4 = (Util().C("SignOwner") + plot.owner).substring(16);
 			}
 		}else{
-			line3 = Util.C("SignOwner") + plot.owner;
+			line3 = Util().C("SignOwner") + plot.owner;
 			line4 = "";
 		}
 		
 		getGenMan(w).setOwnerDisplay(w, plot.id, line1, line2, line3, line4);
 	}
 	
-	public static void setSellSign(World w, Plot plot)
+	public void setSellSign(World w, Plot plot)
 	{
 		String line1 = "";
 		String line2 = "";
@@ -877,13 +892,13 @@ public class PlotMeCoreManager
 		{
 			if(plot.forsale)
 			{
-				line1 = Util.C("SignForSale");
-				line2 = Util.C("SignPrice");
+				line1 = Util().C("SignForSale");
+				line2 = Util().C("SignPrice");
 				if(plot.customprice % 1 == 0)
-					line3 = Util.C("SignPriceColor") + Math.round(plot.customprice);
+					line3 = Util().C("SignPriceColor") + Math.round(plot.customprice);
 				else
-					line3 = Util.C("SignPriceColor") + plot.customprice;
-				line4 = "/plotme " + Util.C("CommandBuy");
+					line3 = Util().C("SignPriceColor") + plot.customprice;
+				line4 = "/plotme " + Util().C("CommandBuy");
 			}
 			
 			getGenMan(w).setSellerDisplay(w, plot.id, line1, line2, line3, line4);
@@ -895,23 +910,23 @@ public class PlotMeCoreManager
 			
 			if(plot.auctionned)
 			{				
-				line1 = Util.C("SignOnAuction");
+				line1 = Util().C("SignOnAuction");
 				if(plot.currentbidder.equals(""))
-					line2 = Util.C("SignMinimumBid");
+					line2 = Util().C("SignMinimumBid");
 				else
-					line2 = Util.C("SignCurrentBid");
+					line2 = Util().C("SignCurrentBid");
 				if(plot.currentbid % 1 == 0)
-					line3 = Util.C("SignCurrentBidColor") + Math.round(plot.currentbid);
+					line3 = Util().C("SignCurrentBidColor") + Math.round(plot.currentbid);
 				else
-					line3 = Util.C("SignCurrentBidColor") + plot.currentbid;
-				line4 = "/plotme " + Util.C("CommandBid") + " <x>";
+					line3 = Util().C("SignCurrentBidColor") + plot.currentbid;
+				line4 = "/plotme " + Util().C("CommandBid") + " <x>";
 			}
 			
 			getGenMan(w).setAuctionDisplay(w, plot.id, line1, line2, line3, line4);
 		}
 	}
 	
-	public static void adjustLinkedPlots(String id, World world)
+	public void adjustLinkedPlots(String id, World world)
 	{		
 		//TODO
 		Map<String, Plot> plots = new HashMap<String, Plot>(); //getPlots(world);
@@ -989,16 +1004,16 @@ public class PlotMeCoreManager
 		}
 	}
 	
-	public static void setBiome(World w, Plot plot, Biome b)
+	public void setBiome(World w, Plot plot, Biome b)
 	{
 		String id = plot.id;
 		
 		getGenMan(w).setBiome(w, id, b);
 		
-		SqlManager.updatePlot(getIdX(id), getIdZ(id), plot.world, "biome", b.name());
+		plugin.getSqlManager().updatePlot(getIdX(id), getIdZ(id), plot.world, "biome", b.name());
 	}
 	
-	public static void clear(World w, Plot plot, CommandSender cs, ClearReason reason)
+	public void clear(World w, Plot plot, CommandSender cs, ClearReason reason)
 	{
 		String id = plot.id;
 		
@@ -1016,27 +1031,29 @@ public class PlotMeCoreManager
 		int idX = getIdX(id);
 		int idZ = getIdZ(id);
 		
-		SqlManager.updatePlot(idX, idZ, world, "forsale", false);
-		SqlManager.updatePlot(idX, idZ, world, "protected", false);
-		SqlManager.updatePlot(idX, idZ, world, "auctionned", false);
-		SqlManager.updatePlot(idX, idZ, world, "auctionneddate", "");
-		SqlManager.updatePlot(idX, idZ, world, "currentbid", 0);
-		SqlManager.updatePlot(idX, idZ, world, "currentbidder", "");
+		SqlManager sm = plugin.getSqlManager();
+		
+		sm.updatePlot(idX, idZ, world, "forsale", false);
+		sm.updatePlot(idX, idZ, world, "protected", false);
+		sm.updatePlot(idX, idZ, world, "auctionned", false);
+		sm.updatePlot(idX, idZ, world, "auctionneddate", "");
+		sm.updatePlot(idX, idZ, world, "currentbid", 0);
+		sm.updatePlot(idX, idZ, world, "currentbidder", "");
 				
-		PlotMe_Core.plotsToClear.offer(new PlotToClear(world, id, cs, reason));
+		plugin.addPlotToClear(new PlotToClear(world, id, cs, reason));
 	}
 	
-	public static boolean isPlotAvailable(String id, World world)
+	public boolean isPlotAvailable(String id, World world)
 	{
 		return isPlotAvailable(id, world.getName().toLowerCase());
 	}
 	
-	public static boolean isPlotAvailable(String id, Player p)
+	public boolean isPlotAvailable(String id, Player p)
 	{
 		return isPlotAvailable(id, p.getWorld().getName().toLowerCase());
 	}
 	
-	public static boolean isPlotAvailable(String id, String world)
+	public boolean isPlotAvailable(String id, String world)
 	{
 		PlotMapInfo pmi = getMap(world);
 		
@@ -1055,7 +1072,7 @@ public class PlotMeCoreManager
 		}
 	}
 
-	public static String getPlotId(Location l) 
+	public String getPlotId(Location l) 
 	{
 		if(getGenMan(l) == null)
 			return "";
@@ -1072,7 +1089,7 @@ public class PlotMeCoreManager
 		}
 	}
 	
-	public static String getPlotId(Player p) 
+	public String getPlotId(Player p) 
 	{
 		if(getGenMan(p.getLocation()) == null)
 			return "";
@@ -1087,32 +1104,32 @@ public class PlotMeCoreManager
 		}
 	}
 	
-	public static IPlotMe_GeneratorManager getGenMan(World w)
+	public IPlotMe_GeneratorManager getGenMan(World w)
 	{
-		return PlotMe_Core.getGenManager(w);
+		return plugin.getGenManager(w);
 	}
 	
-	public static IPlotMe_GeneratorManager getGenMan(Location l)
+	public IPlotMe_GeneratorManager getGenMan(Location l)
 	{
-		return PlotMe_Core.getGenManager(l.getWorld());
+		return plugin.getGenManager(l.getWorld());
 	}
 	
-	public static IPlotMe_GeneratorManager getGenMan(String s)
+	public IPlotMe_GeneratorManager getGenMan(String s)
 	{
-		return PlotMe_Core.getGenManager(s);
+		return plugin.getGenManager(s);
 	}
 
-	public static Location getPlotBottomLoc(World w, String id) 
+	public Location getPlotBottomLoc(World w, String id) 
 	{
 		return getGenMan(w).getPlotBottomLoc(w, id);
 	}
 
-	public static Location getPlotTopLoc(World w, String id) 
+	public Location getPlotTopLoc(World w, String id) 
 	{
 		return getGenMan(w).getPlotTopLoc(w, id);
 	}
 
-	public static void adjustWall(Location l) 
+	public void adjustWall(Location l) 
 	{
 		Plot plot = getPlotById(l);
 		String id = getPlotId(l);
@@ -1128,78 +1145,78 @@ public class PlotMeCoreManager
 		}
 	}
 	
-	public static void adjustWall(World w, Plot plot) 
+	public void adjustWall(World w, Plot plot) 
 	{
 		String id = plot.id;
 		getGenMan(w).adjustPlotFor(w, id, true, plot.protect, plot.auctionned, plot.forsale);
 	}
 
-	public static void removeOwnerSign(World w, String id) 
+	public void removeOwnerSign(World w, String id) 
 	{
 		getGenMan(w).removeOwnerDisplay(w, id);
 	}
 
-	public static void removeSellSign(World w, String id) 
+	public void removeSellSign(World w, String id) 
 	{
 		getGenMan(w).removeSellerDisplay(w, id);
 	}
 
-	public static void removeAuctionSign(World w, String id) 
+	public void removeAuctionSign(World w, String id) 
 	{
 		getGenMan(w).removeAuctionDisplay(w, id);
 	}
 
-	public static boolean isValidId(World w, String id) 
+	public boolean isValidId(World w, String id) 
 	{
 		return getGenMan(w).isValidId(id);
 	}
 
-	public static int bottomX(String id, World w) 
+	public int bottomX(String id, World w) 
 	{
 		return getGenMan(w).bottomX(id, w);
 	}
 
-	public static int topX(String id, World w) 
+	public int topX(String id, World w) 
 	{
 		return getGenMan(w).topX(id, w);
 	}
 
-	public static int bottomZ(String id, World w) 
+	public int bottomZ(String id, World w) 
 	{
 		return getGenMan(w).bottomZ(id, w);
 	}
 	
-	public static int topZ(String id, World w) 
+	public int topZ(String id, World w) 
 	{
 		return getGenMan(w).topZ(id, w);
 	}
 
-	public static void setBiome(World w, String id, Biome biome) 
+	public void setBiome(World w, String id, Biome biome) 
 	{
 		getGenMan(w).setBiome(w, id, biome);
-		SqlManager.updatePlot(getIdX(id), getIdZ(id), w.getName(), "biome", biome.name());
+		plugin.getSqlManager().updatePlot(getIdX(id), getIdZ(id), w.getName(), "biome", biome.name());
 	}
 
-	public static Location getPlotHome(World w, String id) 
+	public Location getPlotHome(World w, String id) 
 	{
 		return getGenMan(w).getPlotHome(w, id);
 	}
 
-	public static List<Player> getPlayersInPlot(World w, String id) 
+	public List<Player> getPlayersInPlot(World w, String id) 
 	{
 		return getGenMan(w).getPlayersInPlot(w, id);
 	}
 
-	public static void regen(World w, Plot plot, CommandSender sender) 
+	public void regen(World w, Plot plot, CommandSender sender) 
 	{
 		getGenMan(w).regen(w, plot.id, sender);
 	}
 	
-	public static PlotToClear getPlotLockInfo(String w, String id)
+	public PlotToClear getPlotLockInfo(String w, String id)
 	{
-		if(PlotMe_Core.spools != null)
+		if(plugin.spools != null)
 		{
-			for(PlotMeSpool spool : PlotMe_Core.spools)
+			for(PlotMeSpool spool : plugin.spools)
 			{
 				PlotToClear ptc = spool.plottoclear;
 				if(ptc != null && ptc.world.equalsIgnoreCase(w) && ptc.plotid.equalsIgnoreCase(id))
@@ -1209,14 +1226,67 @@ public class PlotMeCoreManager
 			}
 		}
 		
-		for(PlotToClear ptc : PlotMe_Core.plotsToClear.toArray(new PlotToClear[0]))
-		{
-			if(ptc.world.equalsIgnoreCase(w) && ptc.plotid.equalsIgnoreCase(id))
-			{
-				return ptc;
-			}
-		}
-		
-		return null;
+		return plugin.getPlotLocked(w, id);
+	}
+	
+	public HashSet<String> getPlayersIgnoringWELimit() {
+		return playersignoringwelimit;
+	}
+
+	public void setPlayersIgnoringWELimit(HashSet<String> playersignoringwelimit) 
+	{
+		this.playersignoringwelimit = playersignoringwelimit;
+	}
+	
+	public void addPlayerIgnoringWELimit(String player)
+	{
+		if(!isPlayerIgnoringWELimit(player))
+			this.playersignoringwelimit.add(player);
+	}
+	
+	public void removePlayerIgnoringWELimit(String player)
+	{
+		if(isPlayerIgnoringWELimit(player))
+			this.playersignoringwelimit.remove(player);
+	}
+	
+	public boolean isPlayerIgnoringWELimit(String player)
+	{
+		return this.playersignoringwelimit.contains(player);
+	}
+
+	public Map<String, PlotMapInfo> getPlotMaps() {
+		return plotmaps;
+	}
+
+	public void addPlotMap(String world, PlotMapInfo map)
+	{
+		this.plotmaps.put(world, map);
+	}
+	
+	public void removePlotMap(String world)
+	{
+		this.plotmaps.remove(world);
+	}
+	
+	private Util Util()
+	{
+		return plugin.getUtil();
+	}
+
+	public MultiWorldPlugin getMultiworld() {
+		return multiworld;
+	}
+
+	public void setMultiworld(MultiWorldPlugin multiworld) {
+		this.multiworld = multiworld;
+	}
+
+	public MultiverseCore getMultiverse() {
+		return multiverse;
+	}
+
+	public void setMultiverse(MultiverseCore multiverse) {
+		this.multiverse = multiverse;
 	}
 }

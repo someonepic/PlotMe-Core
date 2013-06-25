@@ -8,30 +8,32 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdBiome extends PlotCommand 
 {
+	public CmdBiome(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if (PlotMe_Core.cPerms(p, "PlotMe.use.biome"))
+		if (plugin.cPerms(p, "PlotMe.use.biome"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 			}
 			else
 			{
-				String id = PlotMeCoreManager.getPlotId(p.getLocation());
+				String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 				if(id.equals(""))
 				{
-					p.sendMessage(RED + Util.C("MsgNoPlotFound"));
+					p.sendMessage(RED + C("MsgNoPlotFound"));
 				}
 				else
 				{
-					if(!PlotMeCoreManager.isPlotAvailable(id, p))
+					if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 					{
 						World w = p.getWorld();
 						
@@ -49,78 +51,78 @@ public class CmdBiome extends PlotCommand
 							
 							if(biome == null)
 							{
-								Util.Send(p, RED + args[1] + RESET + " " + Util.C("MsgIsInvalidBiome"));
+								p.sendMessage(RED + args[1] + RESET + " " + C("MsgIsInvalidBiome"));
 							}
 							else
 							{
-								Plot plot = PlotMeCoreManager.getPlotById(p,id);
+								Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 								String playername = p.getName();
 								
-								if(plot.owner.equalsIgnoreCase(playername) || PlotMe_Core.cPerms(p, "PlotMe.admin"))
+								if(plot.owner.equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin"))
 								{
-									PlotMapInfo pmi = PlotMeCoreManager.getMap(w);
+									PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
 									
 									double price = 0;
 									
-									if(PlotMeCoreManager.isEconomyEnabled(w))
+									if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 									{
 										price = pmi.BiomeChangePrice;
-										double balance = PlotMe_Core.economy.getBalance(playername);
+										double balance = plugin.getEconomy().getBalance(playername);
 										
 										if(balance >= price)
 										{
-											EconomyResponse er = PlotMe_Core.economy.withdrawPlayer(playername, price);
+											EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
 											
 											if(!er.transactionSuccess())
 											{
-												Util.Send(p, RED + er.errorMessage);
-												Util.warn(er.errorMessage);
+												p.sendMessage(RED + er.errorMessage);
+												Util().warn(er.errorMessage);
 												return true;
 											}
 										}
 										else
 										{
-											Util.Send(p, RED + Util.C("MsgNotEnoughBiome") + " " + Util.C("WordMissing") + " " + RESET + Util.moneyFormat(price - balance, false));
+											p.sendMessage(RED + C("MsgNotEnoughBiome") + " " + C("WordMissing") + " " + RESET + Util().moneyFormat(price - balance, false));
 											return true;
 										}
 									}
 									
-									PlotMeCoreManager.setBiome(w, id, biome);
+									plugin.getPlotMeCoreManager().setBiome(w, id, biome);
 									plot.biome = biome;
 									
 									
 								
-									Util.Send(p, Util.C("MsgBiomeSet") + " " + ChatColor.BLUE + Util.FormatBiome(biome.name()) + " " + Util.moneyFormat(-price));
+									p.sendMessage(C("MsgBiomeSet") + " " + ChatColor.BLUE + Util().FormatBiome(biome.name()) + " " + Util().moneyFormat(-price));
 									
 									if(isAdv)
 									{
-										PlotMe_Core.self.getLogger().info(LOG + playername + " " + Util.C("MsgChangedBiome") + " " + id + " " + Util.C("WordTo") + " " + 
-												Util.FormatBiome(biome.name()) + ((price != 0) ? " " + Util.C("WordFor") + " " + price : ""));
+										plugin.getLogger().info(LOG + playername + " " + C("MsgChangedBiome") + " " + id + " " + C("WordTo") + " " + 
+												Util().FormatBiome(biome.name()) + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
 									}
 								}
 								else
 								{
-									Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgNotYoursNotAllowedBiome"));
+									p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgNotYoursNotAllowedBiome"));
 								}
 							}
 						}
 						else
 						{
-							Plot plot = PlotMe_Core.plotmaps.get(w.getName().toLowerCase()).getPlot(id);
+							Plot plot = plugin.getPlotMeCoreManager().getMap(w).getPlot(id);
 							
-							Util.Send(p, Util.C("MsgPlotUsingBiome") + " " + ChatColor.BLUE + Util.FormatBiome(plot.biome.name()));
+							p.sendMessage(C("MsgPlotUsingBiome") + " " + ChatColor.BLUE + Util().FormatBiome(plot.biome.name()));
 						}
 					}
 					else
 					{
-						Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgHasNoOwner"));
+						p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgHasNoOwner"));
 					}
 				}
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

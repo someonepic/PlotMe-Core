@@ -10,15 +10,18 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.PlotMe_Core;
 import com.worldcretornica.plotme_core.utils.MinecraftFontWidthCalculator;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdBiomeList extends PlotCommand 
 {
+	public CmdBiomeList(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(CommandSender s, String[] args)
 	{
-		if (!(s instanceof Player) || PlotMe_Core.cPerms((Player) s, "PlotMe.use.biome"))
+		if (!(s instanceof Player) || plugin.cPerms((Player) s, "PlotMe.use.biome"))
 		{
-			Util.Send(s, Util.C("WordBiomes") + " : ");
+			s.sendMessage(C("WordBiomes") + " : ");
 			
 			//int i = 0;
 			StringBuilder line = new StringBuilder();
@@ -54,20 +57,20 @@ public class CmdBiomeList extends PlotCommand
 				String b;
 				int nameLength;
 				
-				b = Util.FormatBiome(column1.get(ctr));
+				b = Util().FormatBiome(column1.get(ctr));
 				nameLength = MinecraftFontWidthCalculator.getStringWidth(b);
-				line.append(b).append(Util.whitespace(432 - nameLength));
+				line.append(b).append(Util().whitespace(432 - nameLength));
 				
 				if(ctr < column2.size())
 				{
-					b = Util.FormatBiome(column2.get(ctr));
+					b = Util().FormatBiome(column2.get(ctr));
 					nameLength = MinecraftFontWidthCalculator.getStringWidth(b);
-					line.append(b).append(Util.whitespace(432 - nameLength));
+					line.append(b).append(Util().whitespace(432 - nameLength));
 				}
 				
 				if(ctr < column3.size())
 				{
-					b = Util.FormatBiome(column3.get(ctr));
+					b = Util().FormatBiome(column3.get(ctr));
 					line.append(b);
 				}
 				
@@ -93,7 +96,7 @@ public class CmdBiomeList extends PlotCommand
 		}
 		else
 		{
-			Util.Send(s, RED + Util.C("MsgPermissionDenied"));
+			s.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

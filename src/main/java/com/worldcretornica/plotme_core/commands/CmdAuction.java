@@ -8,56 +8,58 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdAuction extends PlotCommand
 {
+	public CmdAuction(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args) 
 	{
-		if(PlotMeCoreManager.isEconomyEnabled(p))
+		if(plugin.getPlotMeCoreManager().isEconomyEnabled(p))
 		{
-			PlotMapInfo pmi = PlotMeCoreManager.getMap(p);
+			PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
 			
 			if(pmi.CanPutOnSale)
 			{
-				if(PlotMe_Core.cPerms(p, "PlotMe.use.auction") || PlotMe_Core.cPerms(p, "PlotMe.admin.auction"))
+				if(plugin.cPerms(p, "PlotMe.use.auction") || plugin.cPerms(p, "PlotMe.admin.auction"))
 				{
-					String id = PlotMeCoreManager.getPlotId(p.getLocation());
+					String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 					
 					if(id.equals(""))
 					{
-						Util.Send(p, RED + Util.C("MsgNoPlotFound"));
+						p.sendMessage(RED + C("MsgNoPlotFound"));
 					}
 					else
 					{
-						if(!PlotMeCoreManager.isPlotAvailable(id, p))
+						if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 						{
-							Plot plot = PlotMeCoreManager.getPlotById(p,id);
+							Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 							
 							String name = p.getName();
 							
-							if(plot.owner.equalsIgnoreCase(name) || PlotMe_Core.cPerms(p, "PlotMe.admin.auction"))
+							if(plot.owner.equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.auction"))
 							{
 								World w = p.getWorld();
 								
 								if(plot.auctionned)
 								{
-									if(!plot.currentbidder.equals("") && !PlotMe_Core.cPerms(p, "PlotMe.admin.auction"))
+									if(!plot.currentbidder.equals("") && !plugin.cPerms(p, "PlotMe.admin.auction"))
 									{
-										Util.Send(p, RED + Util.C("MsgPlotHasBidsAskAdmin"));
+										p.sendMessage(RED + C("MsgPlotHasBidsAskAdmin"));
 									}
 									else
 									{
 										if(!plot.currentbidder.equals(""))
 										{
-											EconomyResponse er = PlotMe_Core.economy.depositPlayer(plot.currentbidder, plot.currentbid);
+											EconomyResponse er = plugin.getEconomy().depositPlayer(plot.currentbidder, plot.currentbid);
 											
 											if(!er.transactionSuccess())
 											{
-												Util.Send(p, RED + er.errorMessage);
-												Util.warn(er.errorMessage);
+												p.sendMessage(RED + er.errorMessage);
+												plugin.getUtil().warn(er.errorMessage);
 											}
 											else
 											{
@@ -65,8 +67,8 @@ public class CmdAuction extends PlotCommand
 											    {
 											        if(player.getName().equalsIgnoreCase(plot.currentbidder))
 											        {
-											        	Util.Send(player, Util.C("MsgAuctionCancelledOnPlot") + 
-											            		" " + id + " " + Util.C("MsgOwnedBy") + " " + plot.owner + ". " + Util.moneyFormat(plot.currentbid));
+											        	player.sendMessage(C("MsgAuctionCancelledOnPlot") + 
+											            		" " + id + " " + C("MsgOwnedBy") + " " + plot.owner + ". " + plugin.getUtil().moneyFormat(plot.currentbid));
 											            break;
 											        }
 											    }
@@ -74,8 +76,8 @@ public class CmdAuction extends PlotCommand
 										}
 										
 										plot.auctionned = false;
-										PlotMeCoreManager.adjustWall(p.getLocation());
-										PlotMeCoreManager.setSellSign(w, plot);
+										plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
+										plugin.getPlotMeCoreManager().setSellSign(w, plot);
 										plot.currentbid = 0;
 										plot.currentbidder = "";
 										
@@ -83,10 +85,10 @@ public class CmdAuction extends PlotCommand
 										plot.updateField("currentbidder", "");
 										plot.updateField("auctionned", false);
 										
-										Util.Send(p, Util.C("MsgAuctionCancelled"));
+										p.sendMessage(C("MsgAuctionCancelled"));
 										
 										if(isAdv)
-											PlotMe_Core.self.getLogger().info(LOG + name + " " + Util.C("MsgStoppedTheAuctionOnPlot") + " " + id);
+											plugin.getLogger().info(LOG + name + " " + C("MsgStoppedTheAuctionOnPlot") + " " + id);
 									}
 								}
 								else
@@ -104,49 +106,49 @@ public class CmdAuction extends PlotCommand
 									
 									if(bid < 0)
 									{
-										Util.Send(p, RED + Util.C("MsgInvalidAmount"));
+										p.sendMessage(RED + C("MsgInvalidAmount"));
 									}
 									else
 									{
 										plot.currentbid = bid;
 										plot.auctionned = true;
-										PlotMeCoreManager.adjustWall(p.getLocation());
-										PlotMeCoreManager.setSellSign(w, plot);
+										plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
+										plugin.getPlotMeCoreManager().setSellSign(w, plot);
 										
 										plot.updateField("currentbid", bid);
 										plot.updateField("auctionned", true);
 										
-										Util.Send(p, Util.C("MsgAuctionStarted"));
+										p.sendMessage(C("MsgAuctionStarted"));
 										
 										if(isAdv)
-											PlotMe_Core.self.getLogger().info(LOG + name + " " + Util.C("MsgStartedAuctionOnPlot") + " " + id + " " + Util.C("WordAt") + " " + bid);
+											plugin.getLogger().info(LOG + name + " " + C("MsgStartedAuctionOnPlot") + " " + id + " " + C("WordAt") + " " + bid);
 									}
 								}
 							}
 							else
 							{
-								Util.Send(p, RED + Util.C("MsgDoNotOwnPlot"));
+								p.sendMessage(RED + C("MsgDoNotOwnPlot"));
 							}
 						}
 						else
 						{
-							Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgHasNoOwner"));
+							p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgHasNoOwner"));
 						}
 					}
 				}
 				else
 				{
-					Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+					p.sendMessage(RED + C("MsgPermissionDenied"));
 				}
 			}
 			else
 			{
-				Util.Send(p, RED + Util.C("MsgSellingPlotsIsDisabledWorld"));
+				p.sendMessage(RED + C("MsgSellingPlotsIsDisabledWorld"));
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgEconomyDisabledWorld"));
+			p.sendMessage(RED + C("MsgEconomyDisabledWorld"));
 		}
 		return true;
 	}

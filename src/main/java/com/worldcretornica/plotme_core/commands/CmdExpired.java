@@ -6,21 +6,22 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.SqlManager;
 import com.worldcretornica.plotme_core.utils.MinecraftFontWidthCalculator;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdExpired extends PlotCommand 
 {
+	public CmdExpired(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if(PlotMe_Core.cPerms(p, "PlotMe.admin.expired"))
+		if(plugin.cPerms(p, "PlotMe.admin.expired"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 				return true;
 			}
 			else
@@ -38,17 +39,17 @@ public class CmdExpired extends PlotCommand
 					}catch(NumberFormatException ex){}
 				}
 												
-				maxpage = (int) Math.ceil((double)SqlManager.getExpiredPlotCount(p.getWorld().getName()) / (double)pagesize);
+				maxpage = (int) Math.ceil((double)plugin.getSqlManager().getExpiredPlotCount(p.getWorld().getName()) / (double)pagesize);
 				
-				List<Plot> expiredplots = SqlManager.getExpiredPlots(w.getName(), page, pagesize);
+				List<Plot> expiredplots = plugin.getSqlManager().getExpiredPlots(w.getName(), page, pagesize);
 				
 				if(expiredplots.size() == 0)
 				{
-					Util.Send(p, Util.C("MsgNoPlotExpired"));
+					p.sendMessage(C("MsgNoPlotExpired"));
 				}
 				else
 				{
-					Util.Send(p, Util.C("MsgExpiredPlotsPage") + " " + page + "/" + maxpage);
+					p.sendMessage(C("MsgExpiredPlotsPage") + " " + page + "/" + maxpage);
 					
 					for(int i = (page-1) * pagesize; i < expiredplots.size() && i < (page * pagesize); i++)
 					{	
@@ -58,7 +59,7 @@ public class CmdExpired extends PlotCommand
 						
 						int textLength = MinecraftFontWidthCalculator.getStringWidth(starttext);						
 						
-						String line = starttext + Util.whitespace(550 - textLength) + "@" + plot.expireddate.toString();
+						String line = starttext + Util().whitespace(550 - textLength) + "@" + plot.expireddate.toString();
 
 						p.sendMessage(line);
 					}
@@ -67,7 +68,7 @@ public class CmdExpired extends PlotCommand
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

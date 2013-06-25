@@ -24,63 +24,66 @@ import org.bukkit.inventory.ItemStack;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
 import com.worldcretornica.plotme_core.PlotToClear;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class PlotListener implements Listener 
 {
+	private PlotMe_Core plugin = null;
 	
+	public PlotListener(PlotMe_Core instance)
+	{
+		plugin = instance;
+	}
 	
 	@EventHandler(priority = EventPriority.HIGH) //, ignoreCancelled = true
 	public void onBlockBreak(final BlockBreakEvent event) 
 	{	
 		Block b = event.getBlock();
 		
-		if(PlotMeCoreManager.isPlotWorld(b))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 		{
 			Player p = event.getPlayer();
-			boolean canbuild = PlotMe_Core.cPerms(event.getPlayer(), "plotme.admin.buildanywhere");
-			String id = PlotMeCoreManager.getPlotId(b.getLocation());
+			boolean canbuild = plugin.cPerms(event.getPlayer(), "plotme.admin.buildanywhere");
+			String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 			
 			if(id.equals(""))
 			{
 				if(!canbuild)
 				{
-					p.sendMessage(Util.C("ErrCannotBuild"));
+					p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 					event.setCancelled(true);
 				}
 			}
 			else
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(p.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(p.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
 					switch(ptc.reason)
 					{
 					case Clear:
-						Util.Send(p, Util.C("MsgPlotLockedClear"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
 						break;
 					case Reset:
-						Util.Send(p, Util.C("MsgPlotLockedReset"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedReset"));
 						break;
 					case Expired:
-						Util.Send(p, Util.C("MsgPlotLockedExpired"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedExpired"));
 						break;
 					}
 					event.setCancelled(true);
 				}
 				else
 				{
-					Plot plot = PlotMeCoreManager.getMap(p).getPlot(id);
+					Plot plot = plugin.getPlotMeCoreManager().getMap(p).getPlot(id);
 					
 					if (plot == null)
 					{
 						if(!canbuild)
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 					}
@@ -88,13 +91,13 @@ public class PlotListener implements Listener
 					{
 						if(!canbuild)
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 					}
 					else
 					{
-						plot.resetExpire(PlotMeCoreManager.getMap(b).DaysToExpiration);
+						plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).DaysToExpiration);
 					}
 				}
 			}
@@ -107,49 +110,49 @@ public class PlotListener implements Listener
 	{
 		Block b = event.getBlock();
 		
-		if(PlotMeCoreManager.isPlotWorld(b))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 		{
 			Player p = event.getPlayer();
-			boolean canbuild = PlotMe_Core.cPerms(p, "plotme.admin.buildanywhere");
-			String id = PlotMeCoreManager.getPlotId(b.getLocation());
+			boolean canbuild = plugin.cPerms(p, "plotme.admin.buildanywhere");
+			String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 			
 			if(id.equals(""))
 			{
 				if(!canbuild)
 				{
-					p.sendMessage(Util.C("ErrCannotBuild"));
+					p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 					event.setCancelled(true);
 				}
 			}
 			else
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(p.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(p.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
 					switch(ptc.reason)
 					{
 					case Clear:
-						Util.Send(p, Util.C("MsgPlotLockedClear"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
 						break;
 					case Reset:
-						Util.Send(p, Util.C("MsgPlotLockedReset"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedReset"));
 						break;
 					case Expired:
-						Util.Send(p, Util.C("MsgPlotLockedExpired"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedExpired"));
 						break;
 					}
 					event.setCancelled(true);
 				}
 				else
 				{
-					Plot plot = PlotMeCoreManager.getPlotById(p,id);
+					Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 					
 					if (plot == null)
 					{
 						if(!canbuild)
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 					}
@@ -157,13 +160,13 @@ public class PlotListener implements Listener
 					{
 						if(!canbuild)
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 					}
 					else
 					{
-						plot.resetExpire(PlotMeCoreManager.getMap(b).DaysToExpiration);
+						plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).DaysToExpiration);
 					}
 				}
 			}
@@ -175,52 +178,52 @@ public class PlotListener implements Listener
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onPlayerBucketEmpty(final PlayerBucketEmptyEvent event)
 	{
-		if(!PlotMe_Core.cPerms(event.getPlayer(), "plotme.admin.buildanywhere"))
+		if(!plugin.cPerms(event.getPlayer(), "plotme.admin.buildanywhere"))
 		{
 			BlockFace bf = event.getBlockFace();
 			Block b = event.getBlockClicked().getLocation().add(bf.getModX(), bf.getModY(), bf.getModZ()).getBlock();
-			if(PlotMeCoreManager.isPlotWorld(b))
+			if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 			{
-				String id = PlotMeCoreManager.getPlotId(b.getLocation());
+				String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 				Player p = event.getPlayer();
 				
 				if(id.equals(""))
 				{
-					p.sendMessage(Util.C("ErrCannotBuild"));
+					p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 					event.setCancelled(true);
 				}
 				else
 				{
-					PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(p.getWorld().getName(), id);
+					PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(p.getWorld().getName(), id);
 					
 					if(ptc != null)
 					{
 						switch(ptc.reason)
 						{
 						case Clear:
-							Util.Send(p, Util.C("MsgPlotLockedClear"));
+							p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
 							break;
 						case Reset:
-							Util.Send(p, Util.C("MsgPlotLockedReset"));
+							p.sendMessage(plugin.getUtil().C("MsgPlotLockedReset"));
 							break;
 						case Expired:
-							Util.Send(p, Util.C("MsgPlotLockedExpired"));
+							p.sendMessage(plugin.getUtil().C("MsgPlotLockedExpired"));
 							break;
 						}
 						event.setCancelled(true);
 					}
 					else
 					{
-						Plot plot = PlotMeCoreManager.getPlotById(p,id);
+						Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 						
 						if (plot == null)
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 						else if(!plot.isAllowed(p.getName()))
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 					}
@@ -232,51 +235,51 @@ public class PlotListener implements Listener
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onPlayerBucketFill(final PlayerBucketFillEvent event)
 	{
-		if(!PlotMe_Core.cPerms(event.getPlayer(), "plotme.admin.buildanywhere"))
+		if(!plugin.cPerms(event.getPlayer(), "plotme.admin.buildanywhere"))
 		{
 			Block b = event.getBlockClicked();
-			if(PlotMeCoreManager.isPlotWorld(b))
+			if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 			{
-				String id = PlotMeCoreManager.getPlotId(b.getLocation());
+				String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 				Player p = event.getPlayer();
 				
 				if(id.equals(""))
 				{
-					p.sendMessage(Util.C("ErrCannotBuild"));
+					p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 					event.setCancelled(true);
 				}
 				else
 				{
-					PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(p.getWorld().getName(), id);
+					PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(p.getWorld().getName(), id);
 					
 					if(ptc != null)
 					{
 						switch(ptc.reason)
 						{
 						case Clear:
-							Util.Send(p, Util.C("MsgPlotLockedClear"));
+							p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
 							break;
 						case Reset:
-							Util.Send(p, Util.C("MsgPlotLockedReset"));
+							p.sendMessage(plugin.getUtil().C("MsgPlotLockedReset"));
 							break;
 						case Expired:
-							Util.Send(p, Util.C("MsgPlotLockedExpired"));
+							p.sendMessage(plugin.getUtil().C("MsgPlotLockedExpired"));
 							break;
 						}
 						event.setCancelled(true);
 					}
 					else
 					{
-						Plot plot = PlotMeCoreManager.getPlotById(p,id);
+						Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 						
 						if (plot == null)
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 						else if(!plot.isAllowed(p.getName()))
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 					}
@@ -291,34 +294,34 @@ public class PlotListener implements Listener
 	{
 		Block b = event.getClickedBlock();
 		
-		if(PlotMeCoreManager.isPlotWorld(b))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 		{
-			Player player = event.getPlayer();
+			Player p = event.getPlayer();
 			
-			String id = PlotMeCoreManager.getPlotId(b.getLocation());
+			String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 			
-			PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(player.getWorld().getName(), id);
+			PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(p.getWorld().getName(), id);
 			
 			if(ptc != null)
 			{
 				switch(ptc.reason)
 				{
 				case Clear:
-					Util.Send(player, Util.C("MsgPlotLockedClear"));
+					p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
 					break;
 				case Reset:
-					Util.Send(player, Util.C("MsgPlotLockedReset"));
+					p.sendMessage(plugin.getUtil().C("MsgPlotLockedReset"));
 					break;
 				case Expired:
-					Util.Send(player, Util.C("MsgPlotLockedExpired"));
+					p.sendMessage(plugin.getUtil().C("MsgPlotLockedExpired"));
 					break;
 				}
 				event.setCancelled(true);
 			}
 			else
 			{
-				boolean canbuild = PlotMe_Core.cPerms(player, "plotme.admin.buildanywhere");
-				PlotMapInfo pmi = PlotMeCoreManager.getMap(b);
+				boolean canbuild = plugin.cPerms(p, "plotme.admin.buildanywhere");
+				PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(b);
 				boolean blocked = false;
 				
 				if(event.isBlockInHand() && event.getAction() == Action.RIGHT_CLICK_BLOCK)
@@ -326,27 +329,25 @@ public class PlotListener implements Listener
 					BlockFace face = event.getBlockFace();
 					Block builtblock = b.getWorld().getBlockAt(b.getX() + face.getModX(), b.getY() + face.getModY(), b.getZ() + face.getModZ());
 					
-					id = PlotMeCoreManager.getPlotId(builtblock.getLocation());
-					
-					Player p = event.getPlayer();
-					
+					id = plugin.getPlotMeCoreManager().getPlotId(builtblock.getLocation());
+										
 					if(id.equals(""))
 					{
 						if(!canbuild)
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 					}
 					else
 					{
-						Plot plot = PlotMeCoreManager.getPlotById(p,id);
+						Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 						
 						if (plot == null)
 						{
 							if(!canbuild)
 							{
-								p.sendMessage(Util.C("ErrCannotBuild"));
+								p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 								event.setCancelled(true);
 							}
 						}
@@ -356,13 +357,13 @@ public class PlotListener implements Listener
 							{
 								if(!canbuild)
 								{
-									p.sendMessage(Util.C("ErrCannotBuild"));
+									p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 									event.setCancelled(true);
 								}
 							}
 							else
 							{
-								plot.resetExpire(PlotMeCoreManager.getMap(b).DaysToExpiration);
+								plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).DaysToExpiration);
 							}
 						}
 					}
@@ -371,7 +372,7 @@ public class PlotListener implements Listener
 				{				
 					if(pmi.ProtectedBlocks.contains(b.getTypeId()))
 					{
-						if(!PlotMe_Core.cPerms(player, "plotme.unblock." + b.getTypeId()))
+						if(!plugin.cPerms(p, "plotme.unblock." + b.getTypeId()))
 							blocked = true;
 					}
 							
@@ -385,31 +386,29 @@ public class PlotListener implements Listener
 						if(pmi.PreventedItems.contains("" + itemid) 
 								|| pmi.PreventedItems.contains("" + itemid + ":" + itemdata))
 						{
-							if(!PlotMe_Core.cPerms(player, "plotme.unblock." + itemid))
+							if(!plugin.cPerms(p, "plotme.unblock." + itemid))
 								blocked = true;
 						}
 					}
 					
 					if(blocked)
 					{
-						id = PlotMeCoreManager.getPlotId(b.getLocation());
-						
-						Player p = event.getPlayer();
-						
+						id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
+											
 						if(id.equals(""))
 						{
 							if(!canbuild)
 							{
 								if(event.getAction() == Action.RIGHT_CLICK_BLOCK)
 								{
-									p.sendMessage(Util.C("ErrCannotUse"));
+									p.sendMessage(plugin.getUtil().C("ErrCannotUse"));
 								}
 								event.setCancelled(true);
 							}
 						}
 						else
 						{
-							Plot plot = PlotMeCoreManager.getPlotById(p,id);
+							Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 							
 							if (plot == null)
 							{
@@ -417,7 +416,7 @@ public class PlotListener implements Listener
 								{
 									if(event.getAction() == Action.RIGHT_CLICK_BLOCK)
 									{
-										p.sendMessage(Util.C("ErrCannotUse"));
+										p.sendMessage(plugin.getUtil().C("ErrCannotUse"));
 									}
 									event.setCancelled(true);
 								}
@@ -428,7 +427,7 @@ public class PlotListener implements Listener
 								{
 									if(event.getAction() == Action.RIGHT_CLICK_BLOCK)
 									{
-										p.sendMessage(Util.C("ErrCannotUse"));
+										p.sendMessage(plugin.getUtil().C("ErrCannotUse"));
 									}
 									event.setCancelled(true);
 								}
@@ -445,9 +444,9 @@ public class PlotListener implements Listener
 	{
 		Block b = event.getBlock();
 
-		if(PlotMeCoreManager.isPlotWorld(b))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 		{
-			String id = PlotMeCoreManager.getPlotId(b.getLocation());
+			String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 									
 			if(id.equals(""))
 			{
@@ -455,7 +454,7 @@ public class PlotListener implements Listener
 			}
 			else
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(b.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
@@ -470,9 +469,9 @@ public class PlotListener implements Listener
 	{
 		Block b = event.getBlock();
 		
-		if(PlotMeCoreManager.isPlotWorld(b))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 		{
-			String id = PlotMeCoreManager.getPlotId(b.getLocation());
+			String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 									
 			if(id.equals(""))
 			{
@@ -480,7 +479,7 @@ public class PlotListener implements Listener
 			}
 			else
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(b.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
@@ -496,9 +495,9 @@ public class PlotListener implements Listener
 	{
 		Block b = event.getBlock();
 		
-		if(PlotMeCoreManager.isPlotWorld(b))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 		{
-			String id = PlotMeCoreManager.getPlotId(b.getLocation());
+			String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 									
 			if(id.equals(""))
 			{
@@ -506,7 +505,7 @@ public class PlotListener implements Listener
 			}
 			else
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(b.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
@@ -521,9 +520,9 @@ public class PlotListener implements Listener
 	{
 		Block b = event.getBlock();
 		
-		if(PlotMeCoreManager.isPlotWorld(b))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 		{
-			String id = PlotMeCoreManager.getPlotId(b.getLocation());
+			String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 									
 			if(id.equals(""))
 			{
@@ -531,7 +530,7 @@ public class PlotListener implements Listener
 			}
 			else
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(b.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
@@ -546,9 +545,9 @@ public class PlotListener implements Listener
 	{
 		Block b = event.getToBlock();
 		
-		if(PlotMeCoreManager.isPlotWorld(b))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 		{
-			String id = PlotMeCoreManager.getPlotId(b.getLocation());
+			String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 									
 			if(id.equals(""))
 			{
@@ -556,7 +555,7 @@ public class PlotListener implements Listener
 			}
 			else
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(b.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
@@ -571,9 +570,9 @@ public class PlotListener implements Listener
 	{
 		Block b = event.getBlock();
 		
-		if(PlotMeCoreManager.isPlotWorld(b))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 		{
-			String id = PlotMeCoreManager.getPlotId(b.getLocation());
+			String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 									
 			if(id.equals(""))
 			{
@@ -581,7 +580,7 @@ public class PlotListener implements Listener
 			}
 			else
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(b.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
@@ -594,13 +593,13 @@ public class PlotListener implements Listener
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 	public void onBlockPistonExtend(final BlockPistonExtendEvent event)
 	{
-		if(PlotMeCoreManager.isPlotWorld(event.getBlock()))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(event.getBlock()))
 		{
 			BlockFace face = event.getDirection();
 			
 			for(Block b : event.getBlocks())
 			{
-				String id = PlotMeCoreManager.getPlotId(b.getLocation().add(face.getModX(), face.getModY(), face.getModZ()));
+				String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation().add(face.getModX(), face.getModY(), face.getModZ()));
 										
 				if(id.equals(""))
 				{
@@ -608,7 +607,7 @@ public class PlotListener implements Listener
 				}
 				else
 				{
-					PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(b.getWorld().getName(), id);
+					PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 					
 					if(ptc != null)
 					{
@@ -624,9 +623,9 @@ public class PlotListener implements Listener
 	{
 		Block b = event.getRetractLocation().getBlock();
 		
-		if(PlotMeCoreManager.isPlotWorld(b) && event.getBlock().getType() == Material.PISTON_STICKY_BASE)
+		if(plugin.getPlotMeCoreManager().isPlotWorld(b) && event.getBlock().getType() == Material.PISTON_STICKY_BASE)
 		{
-			String id = PlotMeCoreManager.getPlotId(b.getLocation());
+			String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 									
 			if(id.equals(""))
 			{
@@ -634,7 +633,7 @@ public class PlotListener implements Listener
 			}
 			else
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(b.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
@@ -652,10 +651,10 @@ public class PlotListener implements Listener
 
 		for(int i = 0 ; i < blocks.size(); i++)
 		{
-			if(found || PlotMeCoreManager.isPlotWorld(blocks.get(i)))
+			if(found || plugin.getPlotMeCoreManager().isPlotWorld(blocks.get(i)))
 			{
 				found = true;
-				String id = PlotMeCoreManager.getPlotId(blocks.get(i).getLocation());
+				String id = plugin.getPlotMeCoreManager().getPlotId(blocks.get(i).getLocation());
 										
 				if(id.equals(""))
 				{
@@ -664,7 +663,7 @@ public class PlotListener implements Listener
 				}
 				else
 				{
-					PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(blocks.get(i).getWorld().getName(), id);
+					PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(blocks.get(i).getWorld().getName(), id);
 					
 					if(ptc != null)
 					{
@@ -682,7 +681,7 @@ public class PlotListener implements Listener
 		
 		if(l != null)
 		{
-			PlotMapInfo pmi = PlotMeCoreManager.getMap(l);
+			PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(l);
 			
 			if(pmi != null && pmi.DisableExplosion)
 			{
@@ -690,8 +689,8 @@ public class PlotListener implements Listener
 			}
 			else
 			{
-				String id = PlotMeCoreManager.getPlotId(l);
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(l.getWorld().getName(), id);
+				String id = plugin.getPlotMeCoreManager().getPlotId(l);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(l.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
@@ -705,11 +704,11 @@ public class PlotListener implements Listener
 	public void onBlockIgnite(final BlockIgniteEvent event)
 	{
 		Block b = event.getBlock();
-		
+
 		if(b != null)
 		{
-			PlotMapInfo pmi = PlotMeCoreManager.getMap(b);
-			
+			PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(b);
+
 			if(pmi != null)
 			{
 				if(pmi.DisableIgnition)
@@ -718,7 +717,7 @@ public class PlotListener implements Listener
 				}
 				else
 				{
-					String id = PlotMeCoreManager.getPlotId(b.getLocation());
+					String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 					Player p = event.getPlayer();
 					
 					if(id.equals("") || p == null)
@@ -727,27 +726,27 @@ public class PlotListener implements Listener
 					}
 					else
 					{
-						PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(b.getWorld().getName(), id);
+						PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 						
 						if(ptc != null)
 						{
 							switch(ptc.reason)
 							{
 							case Clear:
-								Util.Send(p, Util.C("MsgPlotLockedClear"));
+								p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
 								break;
 							case Reset:
-								Util.Send(p, Util.C("MsgPlotLockedReset"));
+								p.sendMessage(plugin.getUtil().C("MsgPlotLockedReset"));
 								break;
 							case Expired:
-								Util.Send(p, Util.C("MsgPlotLockedExpired"));
+								p.sendMessage(plugin.getUtil().C("MsgPlotLockedExpired"));
 								break;
 							}
 							event.setCancelled(true);
 						}
 						else
 						{
-							Plot plot = PlotMeCoreManager.getPlotById(b,id);
+							Plot plot = plugin.getPlotMeCoreManager().getPlotById(b,id);
 							
 							if (plot == null)
 							{
@@ -769,49 +768,49 @@ public class PlotListener implements Listener
 	{
 		Block b = event.getBlock();
 		
-		if(PlotMeCoreManager.isPlotWorld(b))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(b))
 		{
-			String id = PlotMeCoreManager.getPlotId(b.getLocation());
+			String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
 			Player p = event.getPlayer();
-			boolean canbuild = PlotMe_Core.cPerms(event.getPlayer(), "plotme.admin.buildanywhere");
+			boolean canbuild = plugin.cPerms(event.getPlayer(), "plotme.admin.buildanywhere");
 			
 			if(id.equals(""))
 			{
 				if(!canbuild)
 				{
-					p.sendMessage(Util.C("ErrCannotBuild"));
+					p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 					event.setCancelled(true);
 				}
 			}
 			else
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(b.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
 					switch(ptc.reason)
 					{
 					case Clear:
-						Util.Send(p, Util.C("MsgPlotLockedClear"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
 						break;
 					case Reset:
-						Util.Send(p, Util.C("MsgPlotLockedReset"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedReset"));
 						break;
 					case Expired:
-						Util.Send(p, Util.C("MsgPlotLockedExpired"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedExpired"));
 						break;
 					}
 					event.setCancelled(true);
 				}
 				else
 				{
-					Plot plot = PlotMeCoreManager.getPlotById(p,id);
+					Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 					
 					if (plot == null)
 					{
 						if(!canbuild)
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 					}
@@ -819,13 +818,13 @@ public class PlotListener implements Listener
 					{
 						if(!canbuild)
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 					}
 					else
 					{
-						plot.resetExpire(PlotMeCoreManager.getMap(b).DaysToExpiration);
+						plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).DaysToExpiration);
 					}
 				}
 			}
@@ -841,51 +840,51 @@ public class PlotListener implements Listener
 		{
 			Player p = (Player)entity;
 			
-			boolean canbuild = PlotMe_Core.cPerms(p, "plotme.admin.buildanywhere");
+			boolean canbuild = plugin.cPerms(p, "plotme.admin.buildanywhere");
 	
 			Location l = event.getEntity().getLocation();
 			
-			if(PlotMeCoreManager.isPlotWorld(l))
+			if(plugin.getPlotMeCoreManager().isPlotWorld(l))
 			{
-				String id = PlotMeCoreManager.getPlotId(l);
+				String id = plugin.getPlotMeCoreManager().getPlotId(l);
 				
 				if(id.equals(""))
 				{
 					if(!canbuild)
 					{
-						p.sendMessage(Util.C("ErrCannotBuild"));
+						p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 						event.setCancelled(true);
 					}
 				}
 				else
 				{
-					PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(l.getWorld().getName(), id);
+					PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(l.getWorld().getName(), id);
 					
 					if(ptc != null)
 					{
 						switch(ptc.reason)
 						{
 						case Clear:
-							Util.Send(p, Util.C("MsgPlotLockedClear"));
+							p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
 							break;
 						case Reset:
-							Util.Send(p, Util.C("MsgPlotLockedReset"));
+							p.sendMessage(plugin.getUtil().C("MsgPlotLockedReset"));
 							break;
 						case Expired:
-							Util.Send(p, Util.C("MsgPlotLockedExpired"));
+							p.sendMessage(plugin.getUtil().C("MsgPlotLockedExpired"));
 							break;
 						}
 						event.setCancelled(true);
 					}
 					else
 					{
-						Plot plot = PlotMeCoreManager.getPlotById(p,id);
+						Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 						
 						if (plot == null)
 						{
 							if(!canbuild)
 							{
-								p.sendMessage(Util.C("ErrCannotBuild"));
+								p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 								event.setCancelled(true);
 							}
 						}
@@ -893,13 +892,13 @@ public class PlotListener implements Listener
 						{
 							if(!canbuild)
 							{
-								p.sendMessage(Util.C("ErrCannotBuild"));
+								p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 								event.setCancelled(true);
 							}
 						}
 						else
 						{
-							plot.resetExpire(PlotMeCoreManager.getMap(l).DaysToExpiration);
+							plot.resetExpire(plugin.getPlotMeCoreManager().getMap(l).DaysToExpiration);
 						}
 					}
 				}
@@ -912,49 +911,49 @@ public class PlotListener implements Listener
 	{
 		Location l = event.getRightClicked().getLocation();
 		
-		if(PlotMeCoreManager.isPlotWorld(l))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(l))
 		{
 			Player p = event.getPlayer();
-			boolean canbuild = PlotMe_Core.cPerms(p, "plotme.admin.buildanywhere");
-			String id = PlotMeCoreManager.getPlotId(l);
+			boolean canbuild = plugin.cPerms(p, "plotme.admin.buildanywhere");
+			String id = plugin.getPlotMeCoreManager().getPlotId(l);
 			
 			if(id.equals(""))
 			{
 				if(!canbuild)
 				{
-					p.sendMessage(Util.C("ErrCannotBuild"));
+					p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 					event.setCancelled(true);
 				}
 			}
 			else
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(l.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(l.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{
 					switch(ptc.reason)
 					{
 					case Clear:
-						Util.Send(p, Util.C("MsgPlotLockedClear"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
 						break;
 					case Reset:
-						Util.Send(p, Util.C("MsgPlotLockedReset"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedReset"));
 						break;
 					case Expired:
-						Util.Send(p, Util.C("MsgPlotLockedExpired"));
+						p.sendMessage(plugin.getUtil().C("MsgPlotLockedExpired"));
 						break;
 					}
 					event.setCancelled(true);
 				}
 				else
 				{
-					Plot plot = PlotMeCoreManager.getPlotById(p,id);
+					Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 					
 					if (plot == null)
 					{
 						if(!canbuild)
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 					}
@@ -962,13 +961,13 @@ public class PlotListener implements Listener
 					{
 						if(!canbuild)
 						{
-							p.sendMessage(Util.C("ErrCannotBuild"));
+							p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
 							event.setCancelled(true);
 						}
 					}
 					else
 					{
-						plot.resetExpire(PlotMeCoreManager.getMap(l).DaysToExpiration);
+						plot.resetExpire(plugin.getPlotMeCoreManager().getMap(l).DaysToExpiration);
 					}
 				}
 			}
@@ -980,29 +979,29 @@ public class PlotListener implements Listener
 	{
 		Location l = event.getEgg().getLocation();
 		
-		if(PlotMeCoreManager.isPlotWorld(l))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(l))
 		{
 			Player p = event.getPlayer();
-			boolean canbuild = PlotMe_Core.cPerms(p, "plotme.admin.buildanywhere");
-			String id = PlotMeCoreManager.getPlotId(l);
+			boolean canbuild = plugin.cPerms(p, "plotme.admin.buildanywhere");
+			String id = plugin.getPlotMeCoreManager().getPlotId(l);
 			
 			if(id.equals(""))
 			{
 				if(!canbuild)
 				{
-					p.sendMessage(Util.C("ErrCannotUseEggs"));
+					p.sendMessage(plugin.getUtil().C("ErrCannotUseEggs"));
 					event.setHatching(false);
 				}
 			}
 			else
 			{
-				Plot plot = PlotMeCoreManager.getPlotById(p,id);
+				Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 				
 				if (plot == null)
 				{
 					if(!canbuild)
 					{
-						p.sendMessage(Util.C("ErrCannotUseEggs"));
+						p.sendMessage(plugin.getUtil().C("ErrCannotUseEggs"));
 						event.setHatching(false);
 					}
 				}
@@ -1010,7 +1009,7 @@ public class PlotListener implements Listener
 				{
 					if(!canbuild)
 					{
-						p.sendMessage(Util.C("ErrCannotUseEggs"));
+						p.sendMessage(plugin.getUtil().C("ErrCannotUseEggs"));
 						event.setHatching(false);
 					}
 				}
@@ -1023,13 +1022,13 @@ public class PlotListener implements Listener
 	{
 		Location l = event.getLocation();
 		
-		if(PlotMeCoreManager.isPlotWorld(l))
+		if(plugin.getPlotMeCoreManager().isPlotWorld(l))
 		{
-			String id = PlotMeCoreManager.getPlotId(l);
+			String id = plugin.getPlotMeCoreManager().getPlotId(l);
 			
 			if(!id.equals(""))
 			{
-				PlotToClear ptc = PlotMeCoreManager.getPlotLockInfo(l.getWorld().getName(), id);
+				PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(l.getWorld().getName(), id);
 				
 				if(ptc != null)
 				{

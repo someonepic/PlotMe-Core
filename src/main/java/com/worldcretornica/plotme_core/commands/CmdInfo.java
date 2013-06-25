@@ -3,79 +3,81 @@ package com.worldcretornica.plotme_core.commands;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdInfo extends PlotCommand 
 {
+	public CmdInfo(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if (PlotMe_Core.cPerms(p, "PlotMe.use.info"))
+		if (plugin.cPerms(p, "PlotMe.use.info"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 			}
 			else
 			{
-				String id = PlotMeCoreManager.getPlotId(p.getLocation());
+				String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 				
 				if(id.equals(""))
 				{
-					Util.Send(p, RED + Util.C("MsgNoPlotFound"));
+					p.sendMessage(RED + C("MsgNoPlotFound"));
 				}
 				else
 				{
-					if(!PlotMeCoreManager.isPlotAvailable(id, p))
+					if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 					{
-						Plot plot = PlotMeCoreManager.getPlotById(p,id);
+						Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 						
-						p.sendMessage(GREEN + Util.C("InfoId") + ": " + AQUA + id + 
-								GREEN + " " + Util.C("InfoOwner") + ": " + AQUA + plot.owner + 
-								GREEN + " " + Util.C("InfoBiome") + ": " + AQUA + Util.FormatBiome(plot.biome.name()));
+						p.sendMessage(GREEN + C("InfoId") + ": " + AQUA + id + 
+								GREEN + " " + C("InfoOwner") + ": " + AQUA + plot.owner + 
+								GREEN + " " + C("InfoBiome") + ": " + AQUA + Util().FormatBiome(plot.biome.name()));
 						
-						p.sendMessage(GREEN + Util.C("InfoExpire") + ": " + AQUA + ((plot.expireddate == null) ? Util.C("WordNever") : plot.expireddate.toString()) +
-								GREEN + " " + Util.C("InfoFinished") + ": " + AQUA + ((plot.finished) ? Util.C("WordYes") : Util.C("WordNo")) +
-								GREEN + " " + Util.C("InfoProtected") + ": " + AQUA + ((plot.protect) ? Util.C("WordYes") : Util.C("WordNo")));
+						p.sendMessage(GREEN + C("InfoExpire") + ": " + AQUA + ((plot.expireddate == null) ? C("WordNever") : plot.expireddate.toString()) +
+								GREEN + " " + C("InfoFinished") + ": " + AQUA + ((plot.finished) ? C("WordYes") : C("WordNo")) +
+								GREEN + " " + C("InfoProtected") + ": " + AQUA + ((plot.protect) ? C("WordYes") : C("WordNo")));
 						
 						if(plot.allowedcount() > 0)
 						{
-							p.sendMessage(GREEN + Util.C("InfoHelpers") + ": " + AQUA + plot.getAllowed());
+							p.sendMessage(GREEN + C("InfoHelpers") + ": " + AQUA + plot.getAllowed());
 						}
 						
-						if(PlotMe_Core.allowToDeny && plot.deniedcount() > 0)
+						if(plugin.getAllowToDeny() && plot.deniedcount() > 0)
 						{
-							p.sendMessage(GREEN + Util.C("InfoDenied") + ": " + AQUA + plot.getDenied());
+							p.sendMessage(GREEN + C("InfoDenied") + ": " + AQUA + plot.getDenied());
 						}
 						
-						if(PlotMeCoreManager.isEconomyEnabled(p))
+						if(plugin.getPlotMeCoreManager().isEconomyEnabled(p))
 						{
 							if(plot.currentbidder.equals(""))
 							{
-								p.sendMessage(GREEN + Util.C("InfoAuctionned") + ": " + AQUA + ((plot.auctionned) ? Util.C("WordYes") + 
-										GREEN + " " + Util.C("InfoMinimumBid") + ": " + AQUA + Util.round(plot.currentbid) : Util.C("WordNo")) +
-										GREEN + " " + Util.C("InfoForSale") + ": " + AQUA + ((plot.forsale) ? AQUA + Util.round(plot.customprice) : Util.C("WordNo")));
+								p.sendMessage(GREEN + C("InfoAuctionned") + ": " + AQUA + ((plot.auctionned) ? C("WordYes") + 
+										GREEN + " " + C("InfoMinimumBid") + ": " + AQUA + Util().round(plot.currentbid) : C("WordNo")) +
+										GREEN + " " + C("InfoForSale") + ": " + AQUA + ((plot.forsale) ? AQUA + Util().round(plot.customprice) : C("WordNo")));
 							}
 							else
 							{
-								p.sendMessage(GREEN + Util.C("InfoAuctionned") + ": " + AQUA + ((plot.auctionned) ? Util.C("WordYes") + 
-										GREEN + " " + Util.C("InfoBidder") + ": " + AQUA + plot.currentbidder + 
-										GREEN + " " + Util.C("InfoBid") + ": " + AQUA + Util.round(plot.currentbid) : Util.C("WordNo")) +
-										GREEN + " " + Util.C("InfoForSale") + ": " + AQUA + ((plot.forsale) ? AQUA + Util.round(plot.customprice) : Util.C("WordNo")));
+								p.sendMessage(GREEN + C("InfoAuctionned") + ": " + AQUA + ((plot.auctionned) ? C("WordYes") + 
+										GREEN + " " + C("InfoBidder") + ": " + AQUA + plot.currentbidder + 
+										GREEN + " " + C("InfoBid") + ": " + AQUA + Util().round(plot.currentbid) : C("WordNo")) +
+										GREEN + " " + C("InfoForSale") + ": " + AQUA + ((plot.forsale) ? AQUA + Util().round(plot.customprice) : C("WordNo")));
 							}
 						}
 					}
 					else
 					{
-						Util.Send(p, RED + Util.C("MsgThisPlot") + " (" + id + ") " + Util.C("MsgHasNoOwner"));
+						p.sendMessage(RED + C("MsgThisPlot") + " (" + id + ") " + C("MsgHasNoOwner"));
 					}
 				}
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

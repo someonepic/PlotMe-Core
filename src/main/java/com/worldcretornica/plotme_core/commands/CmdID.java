@@ -4,43 +4,45 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdID extends PlotCommand 
 {
+	public CmdID(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if (PlotMe_Core.cPerms(p, "PlotMe.admin.id"))
+		if (plugin.cPerms(p, "PlotMe.admin.id"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 			}
 			else
 			{
-				String plotid = PlotMeCoreManager.getPlotId(p.getLocation());
+				String plotid = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 				
 				if(plotid.equals(""))
 				{
-					Util.Send(p, RED + Util.C("MsgNoPlotFound"));
+					p.sendMessage(RED + C("MsgNoPlotFound"));
 				}
 				else
 				{
-					p.sendMessage(AQUA + Util.C("WordPlot") + " " + Util.C("WordId") + ": " + RESET + plotid);
+					p.sendMessage(AQUA + C("WordPlot") + " " + C("WordId") + ": " + RESET + plotid);
 					
-					Location bottom = PlotMeCoreManager.getPlotBottomLoc(p.getWorld(), plotid);
-					Location top = PlotMeCoreManager.getPlotTopLoc(p.getWorld(), plotid);
+					Location bottom = plugin.getPlotMeCoreManager().getPlotBottomLoc(p.getWorld(), plotid);
+					Location top = plugin.getPlotMeCoreManager().getPlotTopLoc(p.getWorld(), plotid);
 					
-					p.sendMessage(AQUA + Util.C("WordBottom") + ": " + RESET + bottom.getBlockX() + ChatColor.BLUE + "," + RESET + bottom.getBlockZ());
-					p.sendMessage(AQUA + Util.C("WordTop") + ": " + RESET + top.getBlockX() + ChatColor.BLUE + "," + RESET + top.getBlockZ());
+					p.sendMessage(AQUA + C("WordBottom") + ": " + RESET + bottom.getBlockX() + ChatColor.BLUE + "," + RESET + bottom.getBlockZ());
+					p.sendMessage(AQUA + C("WordTop") + ": " + RESET + top.getBlockX() + ChatColor.BLUE + "," + RESET + top.getBlockZ());
 				}
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

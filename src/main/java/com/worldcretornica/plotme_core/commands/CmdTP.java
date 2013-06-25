@@ -4,23 +4,25 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdTP extends PlotCommand 
 {
+	public CmdTP(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if (PlotMe_Core.cPerms(p, "PlotMe.admin.tp"))
+		if (plugin.cPerms(p, "PlotMe.admin.tp"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p) && !PlotMe_Core.allowWorldTeleport)
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.getAllowWorldTeleport())
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 			}
 			else
 			{
-				if(args.length == 2 || (args.length == 3 && PlotMe_Core.allowWorldTeleport))
+				if(args.length == 2 || (args.length == 3 && plugin.getAllowWorldTeleport()))
 				{
 					String id = args[1];
 					
@@ -46,9 +48,9 @@ public class CmdTP extends PlotCommand
 					}
 					else
 					{
-						if(!PlotMeCoreManager.isPlotWorld(p))
+						if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 						{
-							w = PlotMeCoreManager.getFirstWorld();
+							w = plugin.getPlotMeCoreManager().getFirstWorld();
 						}
 						else
 						{
@@ -57,42 +59,38 @@ public class CmdTP extends PlotCommand
 					}
 					
 					
-					if(w == null || !PlotMeCoreManager.isPlotWorld(w))
+					if(w == null || !plugin.getPlotMeCoreManager().isPlotWorld(w))
 					{
-						Util.Send(p, RED + Util.C("MsgNoPlotworldFound"));
+						p.sendMessage(RED + C("MsgNoPlotworldFound"));
 					}
 					else
 					{
-						if(!PlotMeCoreManager.isValidId(w, id))
+						if(!plugin.getPlotMeCoreManager().isValidId(w, id))
 						{
-							if(PlotMe_Core.allowWorldTeleport)
-								Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandTp") + " <" + Util.C("WordId") + "> [" + Util.C("WordWorld") + "] " + RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandTp") + " 5;-1 ");
+							if(plugin.getAllowWorldTeleport())
+								p.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandTp") + " <" + C("WordId") + "> [" + C("WordWorld") + "] " + RESET + C("WordExample") + ": " + RED + "/plotme " + C("CommandTp") + " 5;-1 ");
 							else
-								Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandTp") + " <" + Util.C("WordId") + "> " + RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandTp") + " 5;-1 ");
+								p.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandTp") + " <" + C("WordId") + "> " + RESET + C("WordExample") + ": " + RED + "/plotme " + C("CommandTp") + " 5;-1 ");
 							return true;
 						}
 						else
 						{
-							//Location bottom = PlotMeCoreManager.getPlotBottomLoc(w, id);
-							//Location top = PlotMeCoreManager.getPlotTopLoc(w, id);
-							
-							//p.teleport(new Location(w, bottom.getX() + (top.getBlockX() - bottom.getBlockX())/2, PlotMeCoreManager.getMap(w).RoadHeight + 2, bottom.getZ() - 2));
-							p.teleport(PlotMeCoreManager.getPlotHome(w, id));
+							p.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, id));
 						}
 					}
 				}
 				else
 				{
-					if(PlotMe_Core.allowWorldTeleport)
-						Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandTp") + " <" + Util.C("WordId") + "> [" + Util.C("WordWorld") + "] " + RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandTp") + " 5;-1 ");
+					if(plugin.getAllowWorldTeleport())
+						p.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandTp") + " <" + C("WordId") + "> [" + C("WordWorld") + "] " + RESET + C("WordExample") + ": " + RED + "/plotme " + C("CommandTp") + " 5;-1 ");
 					else
-						Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandTp") + " <" + Util.C("WordId") + "> " + RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandTp") + " 5;-1 ");
+						p.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandTp") + " <" + C("WordId") + "> " + RESET + C("WordExample") + ": " + RED + "/plotme " + C("CommandTp") + " 5;-1 ");
 				}
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

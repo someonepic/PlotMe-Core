@@ -6,29 +6,31 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdBid extends PlotCommand 
 {
+	public CmdBid(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args) 
 	{	
-		if(PlotMeCoreManager.isEconomyEnabled(p))
+		if(plugin.getPlotMeCoreManager().isEconomyEnabled(p))
 		{
-			if(PlotMe_Core.cPerms(p, "PlotMe.use.bid"))
+			if(plugin.cPerms(p, "PlotMe.use.bid"))
 			{
-				String id = PlotMeCoreManager.getPlotId(p.getLocation());
+				String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 				
 				if(id.equals(""))
 				{
-					Util.Send(p, RED + Util.C("MsgNoPlotFound"));
+					p.sendMessage(RED + C("MsgNoPlotFound"));
 				}
 				else
 				{
-					if(!PlotMeCoreManager.isPlotAvailable(id, p))
+					if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 					{
-						Plot plot = PlotMeCoreManager.getPlotById(p,id);
+						Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 						
 						if(plot.auctionned)
 						{
@@ -36,7 +38,7 @@ public class CmdBid extends PlotCommand
 							
 							if(plot.owner.equalsIgnoreCase(bidder))
 							{
-								Util.Send(p, RED + Util.C("MsgCannotBidOwnPlot"));
+								p.sendMessage(RED + C("MsgCannotBidOwnPlot"));
 							}
 							else
 							{
@@ -54,31 +56,31 @@ public class CmdBid extends PlotCommand
 																		
 									if(bid < currentbid || (bid == currentbid && !currentbidder.equals("")))
 									{
-										Util.Send(p, RED + Util.C("MsgInvalidBidMustBeAbove") + " " + RESET + Util.moneyFormat(plot.currentbid, false));
+										p.sendMessage(RED + C("MsgInvalidBidMustBeAbove") + " " + RESET + Util().moneyFormat(plot.currentbid, false));
 									}
 									else
 									{
-										double balance = PlotMe_Core.economy.getBalance(bidder);
+										double balance = plugin.getEconomy().getBalance(bidder);
 										
 										if(bid >= balance && !currentbidder.equals(bidder) ||
 											currentbidder.equals(bidder) && bid > (balance + currentbid))
 										{
-											Util.Send(p, RED + Util.C("MsgNotEnoughBid"));
+											p.sendMessage(RED + C("MsgNotEnoughBid"));
 										}
 										else
 										{
-											EconomyResponse er = PlotMe_Core.economy.withdrawPlayer(bidder, bid);
+											EconomyResponse er = plugin.getEconomy().withdrawPlayer(bidder, bid);
 											
 											if(er.transactionSuccess())
 											{
 												if(!currentbidder.equals(""))
 												{
-													EconomyResponse er2 = PlotMe_Core.economy.depositPlayer(currentbidder, currentbid);
+													EconomyResponse er2 = plugin.getEconomy().depositPlayer(currentbidder, currentbid);
 													
 													if(!er2.transactionSuccess())
 													{
-														Util.Send(p, er2.errorMessage);
-														Util.warn(er2.errorMessage);
+														p.sendMessage(er2.errorMessage);
+														Util().warn(er2.errorMessage);
 													}
 													else
 													{
@@ -86,7 +88,7 @@ public class CmdBid extends PlotCommand
 														{
 															if(player.getName().equalsIgnoreCase(currentbidder))
 															{
-																Util.Send(player, Util.C("MsgOutbidOnPlot") + " " + id + " " + Util.C("MsgOwnedBy") + " " + plot.owner + ". " + Util.moneyFormat(bid));
+																player.sendMessage(C("MsgOutbidOnPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + ". " + Util().moneyFormat(bid));
 																break;
 															}
 														}
@@ -99,48 +101,48 @@ public class CmdBid extends PlotCommand
 												plot.updateField("currentbidder", bidder);
 												plot.updateField("currentbid", bid);
 												
-												PlotMeCoreManager.setSellSign(p.getWorld(), plot);
+												plugin.getPlotMeCoreManager().setSellSign(p.getWorld(), plot);
 												
-												Util.Send(p, Util.C("MsgBidAccepted") + " " + Util.moneyFormat(-bid));
+												p.sendMessage(C("MsgBidAccepted") + " " + Util().moneyFormat(-bid));
 												
 												if(isAdv)
-													PlotMe_Core.self.getLogger().info(LOG + bidder + " bid " + bid + " on plot " + id);
+													plugin.getLogger().info(LOG + bidder + " bid " + bid + " on plot " + id);
 											}
 											else
 											{
-												Util.Send(p, er.errorMessage);
-												Util.warn(er.errorMessage);
+												p.sendMessage(er.errorMessage);
+												Util().warn(er.errorMessage);
 											}
 										}
 									}
 								}
 								else
 								{
-									Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + 
-											Util.C("CommandBid") + " <" + Util.C("WordAmount") + "> " + 
-											RESET + Util.C("WordExample") + ": " + RED + "/plotme " + Util.C("CommandBid") + " 100");
+									p.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + 
+											C("CommandBid") + " <" + C("WordAmount") + "> " + 
+											RESET + C("WordExample") + ": " + RED + "/plotme " + C("CommandBid") + " 100");
 								}
 							}
 						}
 						else
 						{
-							Util.Send(p, RED + Util.C("MsgPlotNotAuctionned"));
+							p.sendMessage(RED + C("MsgPlotNotAuctionned"));
 						}
 					}
 					else
 					{
-						Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgHasNoOwner"));
+						p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgHasNoOwner"));
 					}
 				}
 			}
 			else
 			{
-				Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+				p.sendMessage(RED + C("MsgPermissionDenied"));
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgEconomyDisabledWorld"));
+			p.sendMessage(RED + C("MsgEconomyDisabledWorld"));
 		}
 		return true;
 	}

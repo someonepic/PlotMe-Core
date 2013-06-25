@@ -7,25 +7,27 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.PlotMapInfo;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdAuto extends PlotCommand 
 {
+	public CmdAuto(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if (PlotMe_Core.cPerms(p, "PlotMe.use.auto"))
+		if (plugin.cPerms(p, "PlotMe.use.auto"))
 		{			
-			if(!PlotMeCoreManager.isPlotWorld(p) && !PlotMe_Core.allowWorldTeleport)
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.getAllowWorldTeleport())
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 			}
 			else
 			{
 				World w;
 				
-				if(!PlotMeCoreManager.isPlotWorld(p) && PlotMe_Core.allowWorldTeleport)
+				if(!plugin.getPlotMeCoreManager().isPlotWorld(p) && plugin.getAllowWorldTeleport())
 				{
 					if(args.length == 2)
 					{
@@ -33,12 +35,12 @@ public class CmdAuto extends PlotCommand
 					}
 					else
 					{
-						w = PlotMeCoreManager.getFirstWorld();
+						w = plugin.getPlotMeCoreManager().getFirstWorld();
 					}
 					
-					if(w == null || !PlotMeCoreManager.isPlotWorld(w))
+					if(w == null || !plugin.getPlotMeCoreManager().isPlotWorld(w))
 					{
-						Util.Send(p, RED + args[1] + " " + Util.C("MsgWorldNotPlot"));
+						p.sendMessage(RED + args[1] + " " + C("MsgWorldNotPlot"));
 						return true;
 					}
 				}
@@ -49,16 +51,16 @@ public class CmdAuto extends PlotCommand
 				
 				if(w == null)
 				{
-					Util.Send(p, RED + Util.C("MsgNoPlotworldFound"));
+					p.sendMessage(RED + C("MsgNoPlotworldFound"));
 				}
 				else
 				{
-					if(PlotMeCoreManager.getNbOwnedPlot(p, w) >= PlotMe_Core.getPlotLimit(p) && !PlotMe_Core.cPerms(p, "PlotMe.admin"))
-						Util.Send(p, RED + Util.C("MsgAlreadyReachedMaxPlots") + " (" + 
-								PlotMeCoreManager.getNbOwnedPlot(p, w) + "/" + PlotMe_Core.getPlotLimit(p) + "). " + Util.C("WordUse") + " " + RED + "/plotme " + Util.C("CommandHome") + RESET + " " + Util.C("MsgToGetToIt"));
+					if(plugin.getPlotMeCoreManager().getNbOwnedPlot(p, w) >= plugin.getPlotLimit(p) && !plugin.cPerms(p, "PlotMe.admin"))
+						p.sendMessage(RED + C("MsgAlreadyReachedMaxPlots") + " (" + 
+								plugin.getPlotMeCoreManager().getNbOwnedPlot(p, w) + "/" + plugin.getPlotLimit(p) + "). " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt"));
 					else
 					{
-						PlotMapInfo pmi = PlotMeCoreManager.getMap(w);
+						PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
 						int limit = pmi.PlotAutoLimit;
 						
 						for(int i = 0; i < limit; i++)
@@ -69,48 +71,45 @@ public class CmdAuto extends PlotCommand
 								{
 									String id = "" + x + ";" + z;
 									
-									if(PlotMeCoreManager.isPlotAvailable(id, w))
+									if(plugin.getPlotMeCoreManager().isPlotAvailable(id, w))
 									{									
 										String name = p.getName();
 										
 										double price = 0;
 										
-										if(PlotMeCoreManager.isEconomyEnabled(w))
+										if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 										{
 											price = pmi.ClaimPrice;
-											double balance = PlotMe_Core.economy.getBalance(name);
+											double balance = plugin.getEconomy().getBalance(name);
 											
 											if(balance >= price)
 											{
-												EconomyResponse er = PlotMe_Core.economy.withdrawPlayer(name, price);
+												EconomyResponse er = plugin.getEconomy().withdrawPlayer(name, price);
 												
 												if(!er.transactionSuccess())
 												{
-													Util.Send(p, RED + er.errorMessage);
-													Util.warn(er.errorMessage);
+													p.sendMessage(RED + er.errorMessage);
+													Util().warn(er.errorMessage);
 													return true;
 												}
 											}
 											else
 											{
-												Util.Send(p, RED + Util.C("MsgNotEnoughAuto") + " " + Util.C("WordMissing") + " " + RESET + Util.moneyFormat(price - balance, false));
+												p.sendMessage(RED + C("MsgNotEnoughAuto") + " " + C("WordMissing") + " " + RESET + Util().moneyFormat(price - balance, false));
 												return true;
 											}
 										}
 										
-										PlotMeCoreManager.createPlot(w, id, name);
+										plugin.getPlotMeCoreManager().createPlot(w, id, name);
 										
-										//PlotMeCoreManager.adjustLinkedPlots(id, w);
+										//plugin.getPlotMeCoreManager().adjustLinkedPlots(id, w);
 										
-										p.teleport(PlotMeCoreManager.getPlotHome(w, id));
-										
-										//p.teleport(new Location(w, PlotMeCoreManager.bottomX(plot.id, w) + (PlotMeCoreManager.topX(plot.id, w) - 
-												//PlotMeCoreManager.bottomX(plot.id, w))/2, pmi.RoadHeight + 2, PlotMeCoreManager.bottomZ(plot.id, w) - 2));
+										p.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, id));
 			
-										Util.Send(p, Util.C("MsgThisPlotYours") + " " + Util.C("WordUse") + " " + RED + "/plotme " + Util.C("CommandHome") + RESET + " " + Util.C("MsgToGetToIt") + " " + Util.moneyFormat(-price));
+										p.sendMessage(C("MsgThisPlotYours") + " " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt") + " " + Util().moneyFormat(-price));
 										
 										if(isAdv)
-											PlotMe_Core.self.getLogger().info(LOG + name + " " + Util.C("MsgClaimedPlot") + " " + id + ((price != 0) ? " " + Util.C("WordFor") + " " + price : ""));
+											plugin.getLogger().info(LOG + name + " " + C("MsgClaimedPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
 										
 										return true;
 									}
@@ -118,14 +117,14 @@ public class CmdAuto extends PlotCommand
 							}
 						}
 					
-						Util.Send(p, RED + Util.C("MsgNoPlotFound1") + " " + (limit^2) + " " + Util.C("MsgNoPlotFound2"));
+						p.sendMessage(RED + C("MsgNoPlotFound1") + " " + (limit^2) + " " + C("MsgNoPlotFound2"));
 					}
 				}
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

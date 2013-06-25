@@ -6,10 +6,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.commands.*;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class PMCommand implements CommandExecutor
 {
+	private PlotMe_Core plugin = null;
 	private CmdAdd add;
 	private CmdAddTime addtime;
 	private CmdAuction auction;
@@ -45,47 +45,48 @@ public class PMCommand implements CommandExecutor
 	private CmdWEAnywhere weanywhere;
 	private CmdCreateWorld createworld;
 	
-	public PMCommand()
+	public PMCommand(PlotMe_Core instance)
 	{
-		add = new CmdAdd();
-		addtime = new CmdAddTime();
-		auction = new CmdAuction();
-		auto = new CmdAuto();
-		bid = new CmdBid();
-		biome = new CmdBiome();
-		biomelist = new CmdBiomeList();
-		buy = new CmdBuy();
-		claim = new CmdClaim();
-		clear = new CmdClear();
-		comment = new CmdComment();
-		comments = new CmdComments();
-		deny = new CmdDeny();
-		dispose = new CmdDispose();
-		done = new CmdDone();
-		donelist = new CmdDoneList();
-		expired = new CmdExpired();
-		home = new CmdHome();
-		id = new CmdID();
-		info = new CmdInfo();
-		move = new CmdMove();
-		plotlist = new CmdPlotList();
-		protect = new CmdProtect();
-		reload = new CmdReload();
-		remove = new CmdRemove();
-		reset = new CmdReset();
-		resetexpired = new CmdResetExpired();
-		sell = new CmdSell();
-		setowner = new CmdSetOwner();
-		showhelp = new CmdShowHelp();
-		tp = new CmdTP();
-		undeny = new CmdUndeny();
-		weanywhere = new CmdWEAnywhere();
-		createworld = new CmdCreateWorld();
+		plugin = instance;
+		add = new CmdAdd(plugin);
+		addtime = new CmdAddTime(plugin);
+		auction = new CmdAuction(plugin);
+		auto = new CmdAuto(plugin);
+		bid = new CmdBid(plugin);
+		biome = new CmdBiome(plugin);
+		biomelist = new CmdBiomeList(plugin);
+		buy = new CmdBuy(plugin);
+		claim = new CmdClaim(plugin);
+		clear = new CmdClear(plugin);
+		comment = new CmdComment(plugin);
+		comments = new CmdComments(plugin);
+		deny = new CmdDeny(plugin);
+		dispose = new CmdDispose(plugin);
+		done = new CmdDone(plugin);
+		donelist = new CmdDoneList(plugin);
+		expired = new CmdExpired(plugin);
+		home = new CmdHome(plugin);
+		id = new CmdID(plugin);
+		info = new CmdInfo(plugin);
+		move = new CmdMove(plugin);
+		plotlist = new CmdPlotList(plugin);
+		protect = new CmdProtect(plugin);
+		reload = new CmdReload(plugin);
+		remove = new CmdRemove(plugin);
+		reset = new CmdReset(plugin);
+		resetexpired = new CmdResetExpired(plugin);
+		sell = new CmdSell(plugin);
+		setowner = new CmdSetOwner(plugin);
+		showhelp = new CmdShowHelp(plugin);
+		tp = new CmdTP(plugin);
+		undeny = new CmdUndeny(plugin);
+		weanywhere = new CmdWEAnywhere(plugin);
+		createworld = new CmdCreateWorld(plugin);
 	}
 	
 	private String C(String caption)
 	{
-		return Util.C(caption);
+		return plugin.getUtil().C(caption);
 	}
 	
 	public boolean onCommand(CommandSender s, Command c, String l, String[] args)
@@ -174,7 +175,7 @@ public class PMCommand implements CommandExecutor
 						if (a0.equalsIgnoreCase(C("CommandClear"))) { return clear.exec(p, args);}
 						if (a0.equalsIgnoreCase(C("CommandReset"))) { return reset.exec(p, args);}
 						if (a0.equalsIgnoreCase(C("CommandAdd")) || a0.equalsIgnoreCase("+")) { return add.exec(p, args);}
-						if(PlotMe_Core.allowToDeny)
+						if(plugin.getAllowToDeny())
 						{
 							if (a0.equalsIgnoreCase(C("CommandDeny"))) { return deny.exec(p, args);}
 							if (a0.equalsIgnoreCase(C("CommandUndeny"))) { return undeny.exec(p, args);}

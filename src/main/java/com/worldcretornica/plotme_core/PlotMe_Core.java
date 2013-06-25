@@ -20,7 +20,6 @@ import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import multiworld.MultiWorldPlugin;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
@@ -42,7 +41,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.yaml.snakeyaml.Yaml;
 
 import com.griefcraft.model.Protection;
-import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.worldcretornica.plotme_core.Metrics.Graph;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
@@ -54,51 +52,38 @@ import com.worldcretornica.plotme_core.utils.Util;
 
 public class PlotMe_Core extends JavaPlugin
 {
-	public static String NAME;
-	//public static String PREFIX;
-	public static String VERSION;
-	public static String WEBSITE;
-	
-	//public static Logger logger = Logger.getLogger("Minecraft");
-		
-	public static Boolean usemySQL;
-    public static String mySQLuname;
-    public static String mySQLpass;
-    public static String mySQLconn;
-    public static String configpath;
-    public static Boolean globalUseEconomy;
-    public static Boolean advancedlogging;
-    public static String language;
-    public static Boolean allowWorldTeleport;
-    public static Boolean autoUpdate;
-    public static Boolean allowToDeny;
-    
-    public static Map<String, PlotMapInfo> plotmaps = null;
-    
-    public static WorldEditPlugin we = null;
-    public static Economy economy = null;
-    public static Boolean usinglwc = false;
-    
-    private static HashSet<String> playersignoringwelimit = null;
-    
-    
-    public static World worldcurrentlyprocessingexpired;
-    public static CommandSender cscurrentlyprocessingexpired;
-    public static Integer counterexpired;
-    public static Integer nbperdeletionprocessingexpired;
-    public static Boolean defaultWEAnywhere;
-    
-    public static MultiWorldPlugin multiworld;
-    public static MultiverseCore multiverse;
+	private String VERSION;
+			
+	private String configpath;
+    private Boolean globalUseEconomy;
+    private Boolean advancedlogging;
+    private String language;
+    private Boolean allowWorldTeleport;
+    private Boolean autoUpdate;
+    private Boolean allowToDeny;
+    private Boolean defaultWEAnywhere;
         
-    public static PlotMe_Core self = null;
+    private Economy economy = null;
+    private Boolean usinglwc = false;
     
-    public static Map<String, Map<String, String>> creationbuffer = null;
+
+    private World worldcurrentlyprocessingexpired;
+    private CommandSender cscurrentlyprocessingexpired;
+    private Integer counterexpired;
+    private Integer nbperdeletionprocessingexpired;
+        
+    public Map<String, Map<String, String>> creationbuffer = null;
     
     //Spool stuff
-    public static ConcurrentLinkedQueue<PlotToClear> plotsToClear = null;
-    public static Set<PlotMeSpool> spools = null;
-	public static Set<BukkitTask> spoolTasks = null;
+    private ConcurrentLinkedQueue<PlotToClear> plotsToClear = null;
+    public Set<PlotMeSpool> spools = null;
+	public Set<BukkitTask> spoolTasks = null;
+	
+	//Global variables
+	private PlotMeCoreManager plotmecoremanager = null;
+	private SqlManager sqlmanager = null;
+	private PlotWorldEdit plotworldedit = null;
+	private Util util = null;
     
     public void onDisable()
 	{	
@@ -114,33 +99,15 @@ public class PlotMe_Core extends JavaPlugin
 	    	bt = null;
     	}
     	spoolTasks = null;
-		SqlManager.closeConnection();
-		Util.Dispose();
-		NAME = null;
-		VERSION = null;
-		WEBSITE = null;
-		usemySQL = null;
-		mySQLuname = null;
-		mySQLpass = null;
-		mySQLconn = null;
-		globalUseEconomy = null;
-		advancedlogging = null;
-		language = null;
-		allowWorldTeleport = null;
-		autoUpdate = null;
-		plotmaps = null;
-		configpath = null;
-		we = null;
-		economy = null;
-		usinglwc = null;
-		playersignoringwelimit = null;
-		worldcurrentlyprocessingexpired = null;
-		cscurrentlyprocessingexpired = null;
-		counterexpired = null;
-		nbperdeletionprocessingexpired = null;
-		defaultWEAnywhere = null;
-		self = null;
-		allowToDeny = null;
+		getSqlManager().closeConnection();
+		getUtil().Dispose();
+		setEconomy(null);
+		setUsinglwc(null);
+		getPlotMeCoreManager().setPlayersIgnoringWELimit(null);
+		setWorldCurrentlyProcessingExpired(null);
+		setCommandSenderCurrentlyProcessingExpired(null);
+		setDefaultWEAnywhere(null);
+		setAllowToDeny(null);
 		creationbuffer = null;
 		plotsToClear.clear();
 		plotsToClear = null;
@@ -150,19 +117,17 @@ public class PlotMe_Core extends JavaPlugin
 			creationbuffer.clear();
 			creationbuffer = null;
 		}
-		multiverse = null;
-		multiworld = null;
+		//multiverse = null;
+		//multiworld = null;
 	}
     
 	public void onEnable()
-	{
-		self = this;
-		
+	{		
 		initialize();
 		
 		PluginManager pm = getServer().getPluginManager();
 				
-		pm.registerEvents(new PlotListener(), this);
+		pm.registerEvents(new PlotListener(this), this);
 		
 		if(pm.getPlugin("Vault") != null)
 		{
@@ -171,24 +136,24 @@ public class PlotMe_Core extends JavaPlugin
 		
 		if(pm.getPlugin("WorldEdit") != null)
 		{
-			we = (WorldEditPlugin) pm.getPlugin("WorldEdit");
-			pm.registerEvents(new PlotWorldEditListener(), this);			
+			setPlotWorldEdit(new PlotWorldEdit(this, (WorldEditPlugin) pm.getPlugin("WorldEdit")));
+			pm.registerEvents(new PlotWorldEditListener(this), this);			
 		}
 		
 		if(pm.getPlugin("LWC") != null)
 		{
-			usinglwc = true;
+			setUsinglwc(true);
 		}
 		
-		if(allowToDeny)
+		if(getAllowToDeny())
 		{
-			pm.registerEvents(new PlotDenyListener(), this);
+			pm.registerEvents(new PlotDenyListener(this), this);
 		}
 		
 		creationbuffer = new HashMap<String, Map<String,String>>();
 		plotsToClear = new ConcurrentLinkedQueue<PlotToClear>();
 		
-		getCommand("plotme").setExecutor(new PMCommand());
+		getCommand("plotme").setExecutor(new PMCommand(this));
 		
 	
 		//Start the spools
@@ -196,7 +161,7 @@ public class PlotMe_Core extends JavaPlugin
 		spools = new HashSet<PlotMeSpool>();
 		for(int i = 1 ; i <= 3; i++)
 		{
-			PlotMeSpool pms = new PlotMeSpool();
+			PlotMeSpool pms = new PlotMeSpool(this);
 			spools.add(pms);
 			spoolTasks.add(Bukkit.getServer().getScheduler().runTaskAsynchronously(this, pms));
 		}
@@ -217,7 +182,7 @@ public class PlotMe_Core extends JavaPlugin
 				@Override
 				public int getValue() 
 				{
-					return plotmaps.size();
+					return getPlotMeCoreManager().getPlotMaps().size();
 				}
 			});
 		    	    
@@ -227,20 +192,20 @@ public class PlotMe_Core extends JavaPlugin
 				public int getValue() 
 				{
 					
-					if(plotmaps.size() > 0)
+					if(getPlotMeCoreManager().getPlotMaps().size() > 0)
 					{
 						int totalplotsize = 0;
 						
-						for(String s : plotmaps.keySet())
+						for(String s : getPlotMeCoreManager().getPlotMaps().keySet())
 						{
-							if(PlotMeCoreManager.getGenMan(s) != null)
+							if(getPlotMeCoreManager().getGenMan(s) != null)
 							{
-								if(PlotMeCoreManager.getGenMan(s).getPlotSize(s) != 0)
-									totalplotsize += PlotMeCoreManager.getGenMan(s).getPlotSize(s);
+								if(getPlotMeCoreManager().getGenMan(s).getPlotSize(s) != 0)
+									totalplotsize += getPlotMeCoreManager().getGenMan(s).getPlotSize(s);
 							}
 						}
 						
-						return totalplotsize / plotmaps.size();
+						return totalplotsize / getPlotMeCoreManager().getPlotMaps().size();
 					}
 					else
 					{
@@ -256,9 +221,9 @@ public class PlotMe_Core extends JavaPlugin
 				{
 					int nbplot = 0;
 					
-					for(String map : plotmaps.keySet())
+					for(String map : getPlotMeCoreManager().getPlotMaps().keySet())
 					{
-						nbplot += SqlManager.getPlotCount(map);
+						nbplot += getSqlManager().getPlotCount(map);
 					}
 
 					return nbplot;
@@ -273,12 +238,12 @@ public class PlotMe_Core extends JavaPlugin
 		}
 	}
 	
-	public static boolean cPerms(CommandSender sender, String node)
+	public boolean cPerms(CommandSender sender, String node)
 	{
 		return sender.hasPermission(node);
 	}
 	
-	public static IPlotMe_GeneratorManager getGenManager(World w)
+	public IPlotMe_GeneratorManager getGenManager(World w)
 	{
 		if (w.getGenerator() instanceof IPlotMe_ChunkGenerator)
 		{
@@ -291,13 +256,13 @@ public class PlotMe_Core extends JavaPlugin
 		}
 	}
 	
-	public static IPlotMe_GeneratorManager getGenManager(String name)
+	public IPlotMe_GeneratorManager getGenManager(String name)
 	{
-		World w = self.getServer().getWorld(name);
+		World w = getServer().getWorld(name);
 		if(w == null)
 			return null;
 		else
-			return getGenManager(self.getServer().getWorld(name));
+			return getGenManager(getServer().getWorld(name));
 	}
 	
 	private void importOldConfigs(File newfile)
@@ -449,22 +414,22 @@ public class PlotMe_Core extends JavaPlugin
 	
 	public void initialize()
 	{
+		setPlotMeCoreManager(new PlotMeCoreManager(this));
+		setUtil(new Util(this));
+		
 		PluginDescriptionFile pdfFile = this.getDescription();
-		NAME = pdfFile.getName();
 		//PREFIX = ChatColor.BLUE + "[" + NAME + "] " + ChatColor.RESET;
 		VERSION = pdfFile.getVersion();
-		WEBSITE = pdfFile.getWebsite();
 		configpath = getDataFolder().getParentFile().getAbsolutePath() + "\\PlotMe";
-		playersignoringwelimit = new HashSet<String>();
-		
-		File configfolder = new File(configpath);
+				
+		File configfolder = new File(getConfigPath());
 		
 		if(!configfolder.exists()) 
 		{
 			configfolder.mkdirs();
         }
 		
-		File configfile = new File(configpath, "core-config.yml");
+		File configfile = new File(getConfigPath(), "core-config.yml");
 		
 		if(!configfile.exists())
 		{
@@ -489,17 +454,20 @@ public class PlotMe_Core extends JavaPlugin
 			e.printStackTrace();
 		}
         
-        usemySQL = config.getBoolean("usemySQL", false);
-		mySQLconn = config.getString("mySQLconn", "jdbc:mysql://localhost:3306/minecraft");
-		mySQLuname = config.getString("mySQLuname", "root");
-		mySQLpass = config.getString("mySQLpass", "password");
-		globalUseEconomy = config.getBoolean("globalUseEconomy", false);
-		advancedlogging = config.getBoolean("AdvancedLogging", false);
+        boolean usemySQL = config.getBoolean("usemySQL", false);
+		String mySQLconn = config.getString("mySQLconn", "jdbc:mysql://localhost:3306/minecraft");
+		String mySQLuname = config.getString("mySQLuname", "root");
+		String mySQLpass = config.getString("mySQLpass", "password");
+		
+		setSqlManager(new SqlManager(this, usemySQL, mySQLuname, mySQLpass, mySQLconn));
+		
+		setGlobalUseEconomy(config.getBoolean("globalUseEconomy", false));
+		setAdvancedLogging(config.getBoolean("AdvancedLogging", false));
 		language = config.getString("Language", "english");
-		allowWorldTeleport = config.getBoolean("allowWorldTeleport", true);
-		defaultWEAnywhere = config.getBoolean("defaultWEAnywhere", false);
+		setAllowWorldTeleport(config.getBoolean("allowWorldTeleport", true));
+		setDefaultWEAnywhere(config.getBoolean("defaultWEAnywhere", false));
 		autoUpdate = config.getBoolean("auto-update", false);
-		allowToDeny = config.getBoolean("allowToDeny", true);
+		setAllowToDeny(config.getBoolean("allowToDeny", true));
 
 		ConfigurationSection worlds;
 		
@@ -554,12 +522,10 @@ public class PlotMe_Core extends JavaPlugin
 		{
 			worlds = config.getConfigurationSection("worlds");
 		}
-		
-		plotmaps = new HashMap<String, PlotMapInfo>();
-		
+				
 		for(String worldname : worlds.getKeys(false))
 		{
-			PlotMapInfo tempPlotInfo = new PlotMapInfo(worldname);
+			PlotMapInfo tempPlotInfo = new PlotMapInfo(this, worldname);
 			ConfigurationSection currworld = worlds.getConfigurationSection(worldname);
 			
 			tempPlotInfo.PlotAutoLimit = currworld.getInt("PlotAutoLimit", 100);
@@ -658,20 +624,20 @@ public class PlotMe_Core extends JavaPlugin
 			
 			//SqlManager.getPlots(worldname.toLowerCase());
 			
-			plotmaps.put(worldname.toLowerCase(), tempPlotInfo);
+			getPlotMeCoreManager().addPlotMap(worldname.toLowerCase(), tempPlotInfo);
 		}
 		
 		config.set("usemySQL", usemySQL);
 		config.set("mySQLconn", mySQLconn);
 		config.set("mySQLuname", mySQLuname);
 		config.set("mySQLpass", mySQLpass);
-		config.set("globalUseEconomy", globalUseEconomy);
-		config.set("AdvancedLogging", advancedlogging);
+		config.set("globalUseEconomy", getGlobalUseEconomy());
+		config.set("AdvancedLogging", getAdvancedLogging());
 		config.set("Language", language);
-		config.set("allowWorldTeleport", allowWorldTeleport);
-		config.set("defaultWEAnywhere", defaultWEAnywhere);
+		config.set("allowWorldTeleport", getAllowWorldTeleport());
+		config.set("defaultWEAnywhere", getDefaultWEAnywhere());
 		config.set("auto-update", autoUpdate);
-		config.set("allowToDeny", allowToDeny);
+		config.set("allowToDeny", getAllowToDeny());
 		
 		try 
 		{
@@ -691,39 +657,11 @@ public class PlotMe_Core extends JavaPlugin
         RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
         if (economyProvider != null) 
         {
-            economy = economyProvider.getProvider();
+            setEconomy(economyProvider.getProvider());
         }
     }
-	
-	public static void addIgnoreWELimit(Player p)
-	{
-		if(!playersignoringwelimit.contains(p.getName()))
-		{
-			playersignoringwelimit.add(p.getName());
-			if(we != null)
-				PlotWorldEdit.removeMask(p);
-		}
-	}
-	
-	public static void removeIgnoreWELimit(Player p)
-	{
-		if(playersignoringwelimit.contains(p.getName()))
-		{
-			playersignoringwelimit.remove(p.getName());
-			if(we != null)
-				PlotWorldEdit.setMask(p);
-		}
-	}
-	
-	public static boolean isIgnoringWELimit(Player p)
-	{
-		if(defaultWEAnywhere && cPerms(p, "PlotMe.admin.weanywhere"))
-			return !playersignoringwelimit.contains(p.getName());
-		else
-			return playersignoringwelimit.contains(p.getName());
-	}
-		
-	public static int getPlotLimit(Player p)
+			
+	public int getPlotLimit(Player p)
 	{
 		int max = -2;
 		
@@ -758,12 +696,12 @@ public class PlotMe_Core extends JavaPlugin
 		return max;
 	}
 	
-	public static String getDate()
+	public String getDate()
 	{
 		return getDate(Calendar.getInstance());
 	}
 	
-	private static String getDate(Calendar cal)
+	private String getDate(Calendar cal)
 	{
 		int imonth = cal.get(Calendar.MONTH) + 1;
         int iday = cal.get(Calendar.DAY_OF_MONTH) + 1;
@@ -783,12 +721,12 @@ public class PlotMe_Core extends JavaPlugin
 		return "" + cal.get(Calendar.YEAR) + "-" + month + "-" + day;
 	}
 
-	public static String getDate(java.sql.Date expireddate)
+	public String getDate(java.sql.Date expireddate)
 	{		
 		return expireddate.toString();
 	}
 	
-	public static List<Integer> getDefaultProtectedBlocks()
+	public List<Integer> getDefaultProtectedBlocks()
 	{
 		List<Integer> protections = new ArrayList<Integer>();
 		
@@ -810,7 +748,7 @@ public class PlotMe_Core extends JavaPlugin
 		return protections;
 	}
 	
-	public static List<String> getDefaultPreventedItems()
+	public List<String> getDefaultPreventedItems()
 	{
 		List<String> preventeditems = new ArrayList<String>();
 
@@ -826,9 +764,9 @@ public class PlotMe_Core extends JavaPlugin
 	
 	public void scheduleTask(Runnable task, int eachseconds, int howmanytimes)
 	{		 		 
-		cscurrentlyprocessingexpired.sendMessage(Util.C("MsgStartDeleteSession"));
+		getCommandSenderCurrentlyProcessingExpired().sendMessage(getUtil().C("MsgStartDeleteSession"));
 		
-		for(int ctr = 0; ctr < (howmanytimes / nbperdeletionprocessingexpired); ctr++)
+		for(int ctr = 0; ctr < (howmanytimes / getNbPerDeletionProcessingExpired()); ctr++)
 		{
 			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, task, ctr * eachseconds * 20);
 		}
@@ -836,7 +774,7 @@ public class PlotMe_Core extends JavaPlugin
 	
 	private void loadCaptions()
 	{
-		File filelang = new File(configpath, "caption-english.yml");
+		File filelang = new File(getConfigPath(), "caption-english.yml");
 
 		TreeMap<String, String> properties = new TreeMap<String, String>();
 		properties.put("MsgStartDeleteSession","Starting delete session");
@@ -1160,7 +1098,7 @@ public class PlotMe_Core extends JavaPlugin
 		
 		if (!language.equalsIgnoreCase("english"))
 		{
-			filelang = new File(configpath, "caption-" + language + ".yml");
+			filelang = new File(getConfigPath(), "caption-" + language + ".yml");
 			CreateConfig(filelang, properties, "PlotMe Caption configuration");
 		}
 		
@@ -1182,7 +1120,7 @@ public class PlotMe_Core extends JavaPlugin
 				{
 					captions.put(key, data.get(key));
 				}
-				Util.setCaptions(captions);
+				getUtil().setCaptions(captions);
 		    }
 		} catch (FileNotFoundException e) {
 			getLogger().severe("File not found: " + e.getMessage());
@@ -1204,7 +1142,7 @@ public class PlotMe_Core extends JavaPlugin
 			BufferedWriter writer = null;
 			
 			try{
-				File dir = new File(configpath, "");
+				File dir = new File(getConfigPath(), "");
 				dir.mkdirs();			
 				
 				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8"));
@@ -1304,4 +1242,172 @@ public class PlotMe_Core extends JavaPlugin
 	    	}
 	    }
 	}
+
+	public String getVersion() {
+		return VERSION;
+	}
+
+	public World getWorldCurrentlyProcessingExpired() {
+		return worldcurrentlyprocessingexpired;
+	}
+
+	public void setWorldCurrentlyProcessingExpired(
+			World worldcurrentlyprocessingexpired) {
+		this.worldcurrentlyprocessingexpired = worldcurrentlyprocessingexpired;
+	}
+
+	public Integer getCounterExpired() {
+		return counterexpired;
+	}
+
+	public void setCounterExpired(Integer counterexpired) {
+		this.counterexpired = counterexpired;
+	}
+
+	public String getConfigPath() {
+		return configpath;
+	}
+
+	public Boolean getGlobalUseEconomy() {
+		return globalUseEconomy;
+	}
+
+	private void setGlobalUseEconomy(Boolean globalUseEconomy) {
+		this.globalUseEconomy = globalUseEconomy;
+	}
+
+	public Economy getEconomy() {
+		return economy;
+	}
+
+	private void setEconomy(Economy economy) {
+		this.economy = economy;
+	}
+
+	public Boolean getUsinglwc() {
+		return usinglwc;
+	}
+
+	public void setUsinglwc(Boolean usinglwc) {
+		this.usinglwc = usinglwc;
+	}
+
+	public void addPlotToClear(PlotToClear plotToClear)
+	{
+		this.plotsToClear.offer(plotToClear);
+	}
+	
+	public PlotToClear pollPlotsToClear()
+	{
+		return plotsToClear.poll();
+	}
+	
+	public boolean isPlotLocked(String world, String id)
+	{
+		for(PlotToClear ptc : plotsToClear.toArray(new PlotToClear[0]))
+		{
+			if(ptc.world.equalsIgnoreCase(world) && ptc.plotid.equalsIgnoreCase(id))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public PlotToClear getPlotLocked(String world, String id)
+	{
+		for(PlotToClear ptc : plotsToClear.toArray(new PlotToClear[0]))
+		{
+			if(ptc.world.equalsIgnoreCase(world) && ptc.plotid.equalsIgnoreCase(id))
+			{
+				return ptc;
+			}
+		}
+		
+		return null;
+	}
+
+	public Integer getNbPerDeletionProcessingExpired() {
+		return nbperdeletionprocessingexpired;
+	}
+
+	public void setNbPerDeletionProcessingExpired(
+			Integer nbperdeletionprocessingexpired) {
+		this.nbperdeletionprocessingexpired = nbperdeletionprocessingexpired;
+	}
+
+	public CommandSender getCommandSenderCurrentlyProcessingExpired() {
+		return cscurrentlyprocessingexpired;
+	}
+
+	public void setCommandSenderCurrentlyProcessingExpired(
+			CommandSender cscurrentlyprocessingexpired) {
+		this.cscurrentlyprocessingexpired = cscurrentlyprocessingexpired;
+	}
+
+	public PlotMeCoreManager getPlotMeCoreManager() {
+		return plotmecoremanager;
+	}
+
+	private void setPlotMeCoreManager(PlotMeCoreManager plotmecoremanager) {
+		this.plotmecoremanager = plotmecoremanager;
+	}
+
+	public SqlManager getSqlManager() {
+		return sqlmanager;
+	}
+
+	private void setSqlManager(SqlManager sqlmanager) {
+		this.sqlmanager = sqlmanager;
+	}
+
+	public PlotWorldEdit getPlotWorldEdit() {
+		return plotworldedit;
+	}
+
+	private void setPlotWorldEdit(PlotWorldEdit plotworldedit) {
+		this.plotworldedit = plotworldedit;
+	}
+
+	public Util getUtil() {
+		return util;
+	}
+
+	private void setUtil(Util util) {
+		this.util = util;
+	}
+
+	public Boolean getAllowToDeny() {
+		return allowToDeny;
+	}
+
+	private void setAllowToDeny(Boolean allowToDeny) {
+		this.allowToDeny = allowToDeny;
+	}
+
+	public Boolean getAdvancedLogging() {
+		return advancedlogging;
+	}
+
+	public void setAdvancedLogging(Boolean advancedlogging) {
+		this.advancedlogging = advancedlogging;
+	}
+
+	public Boolean getDefaultWEAnywhere() {
+		return defaultWEAnywhere;
+	}
+
+	private void setDefaultWEAnywhere(Boolean defaultWEAnywhere) {
+		this.defaultWEAnywhere = defaultWEAnywhere;
+	}
+
+	public Boolean getAllowWorldTeleport() {
+		return allowWorldTeleport;
+	}
+
+	private void setAllowWorldTeleport(Boolean allowWorldTeleport) {
+		this.allowWorldTeleport = allowWorldTeleport;
+	}
+
 }

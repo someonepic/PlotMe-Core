@@ -3,56 +3,59 @@ package com.worldcretornica.plotme_core.commands;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdAddTime extends PlotCommand 
 {
+	public CmdAddTime(PlotMe_Core instance) 
+	{
+		super(instance);
+	}
+	
 	public boolean exec(Player p, String[] args)
 	{
-		if(PlotMe_Core.cPerms(p, "PlotMe.admin.addtime"))
+		if(plugin.cPerms(p, "PlotMe.admin.addtime"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 				return true;
 			}
 			else
 			{
-				String id = PlotMeCoreManager.getPlotId(p.getLocation());
+				String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 				
 				if(id.equals(""))
 				{
-					Util.Send(p, RED + Util.C("MsgNoPlotFound"));
+					p.sendMessage(RED + C("MsgNoPlotFound"));
 				}
 				else
 				{
-					if(!PlotMeCoreManager.isPlotAvailable(id, p))
+					if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 					{
-						Plot plot = PlotMeCoreManager.getPlotById(p,id);
+						Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 						
 						if(plot != null)
 						{
 							String name = p.getName();
 							
-							plot.resetExpire(PlotMeCoreManager.getMap(p).DaysToExpiration);
-							Util.Send(p, Util.C("MsgPlotExpirationReset"));
+							plot.resetExpire(plugin.getPlotMeCoreManager().getMap(p).DaysToExpiration);
+							p.sendMessage(C("MsgPlotExpirationReset"));
 							
 							if(isAdv)
-								PlotMe_Core.self.getLogger().info(LOG + name + " reset expiration on plot " + id);
+								plugin.getLogger().info(LOG + name + " reset expiration on plot " + id);
 						}
 					}
 					else
 					{
-						Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgHasNoOwner"));
+						p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgHasNoOwner"));
 					}
 				}
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

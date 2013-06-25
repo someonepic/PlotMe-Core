@@ -7,56 +7,58 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdSetOwner extends PlotCommand 
 {
+	public CmdSetOwner(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if (PlotMe_Core.cPerms(p, "PlotMe.admin.setowner"))
+		if (plugin.cPerms(p, "PlotMe.admin.setowner"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 			}
 			else
 			{
-				String id = PlotMeCoreManager.getPlotId(p.getLocation());
+				String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 				if(id.equals(""))
 				{
-					Util.Send(p, RED + Util.C("MsgNoPlotFound"));
+					p.sendMessage(RED + C("MsgNoPlotFound"));
 				}
 				else
 				{
 					if(args.length < 2 || args[1].equals(""))
 					{
-						Util.Send(p, Util.C("WordUsage") + ": " + RED + "/plotme " + Util.C("CommandSetowner") + " <" + Util.C("WordPlayer") + ">");
+						p.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandSetowner") + " <" + C("WordPlayer") + ">");
 					}
 					else
 					{
 						String newowner = args[1];
-						String oldowner = "<" + Util.C("WordNotApplicable") + ">";
+						String oldowner = "<" + C("WordNotApplicable") + ">";
 						String playername = p.getName();
 						
-						if(!PlotMeCoreManager.isPlotAvailable(id, p))
+						if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 						{								
-							Plot plot = PlotMeCoreManager.getPlotById(p,id);
+							Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 							
-							PlotMapInfo pmi = PlotMeCoreManager.getMap(p);
+							PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
 							oldowner = plot.owner;
 							
-							if(PlotMeCoreManager.isEconomyEnabled(p))
+							if(plugin.getPlotMeCoreManager().isEconomyEnabled(p))
 							{
 								if(pmi.RefundClaimPriceOnSetOwner && newowner != oldowner)
 								{
-									EconomyResponse er = PlotMe_Core.economy.depositPlayer(oldowner, pmi.ClaimPrice);
+									EconomyResponse er = plugin.getEconomy().depositPlayer(oldowner, pmi.ClaimPrice);
 									
 									if(!er.transactionSuccess())
 									{
-										Util.Send(p, RED + er.errorMessage);
-										Util.warn(er.errorMessage);
+										p.sendMessage(RED + er.errorMessage);
+										Util().warn(er.errorMessage);
 										return true;
 									}
 									else
@@ -65,7 +67,7 @@ public class CmdSetOwner extends PlotCommand
 									    {
 									        if(player.getName().equalsIgnoreCase(oldowner))
 									        {
-									            Util.Send(player, Util.C("MsgYourPlot") + " " + id + " " + Util.C("MsgNowOwnedBy") + " " + newowner + ". " + Util.moneyFormat(pmi.ClaimPrice));
+									            player.sendMessage(C("MsgYourPlot") + " " + id + " " + C("MsgNowOwnedBy") + " " + newowner + ". " + Util().moneyFormat(pmi.ClaimPrice));
 									            break;
 									        }
 									    }
@@ -74,12 +76,12 @@ public class CmdSetOwner extends PlotCommand
 								
 								if(!plot.currentbidder.equals(""))
 								{
-									EconomyResponse er = PlotMe_Core.economy.depositPlayer(plot.currentbidder, plot.currentbid);
+									EconomyResponse er = plugin.getEconomy().depositPlayer(plot.currentbidder, plot.currentbid);
 									
 									if(!er.transactionSuccess())
 									{
-										Util.Send(p, er.errorMessage);
-										Util.warn(er.errorMessage);
+										p.sendMessage(er.errorMessage);
+										Util().warn(er.errorMessage);
 									}
 									else
 									{
@@ -87,7 +89,7 @@ public class CmdSetOwner extends PlotCommand
 									    {
 									        if(player.getName().equalsIgnoreCase(plot.currentbidder))
 									        {
-									            Util.Send(player, Util.C("WordPlot") + " " + id + " " + Util.C("MsgChangedOwnerFrom") + " " + oldowner + " " + Util.C("WordTo") + " " + newowner + ". " + Util.moneyFormat(plot.currentbid));
+									            player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgChangedOwnerFrom") + " " + oldowner + " " + C("WordTo") + " " + newowner + ". " + Util().moneyFormat(plot.currentbid));
 									            break;
 									        }
 									    }
@@ -100,7 +102,7 @@ public class CmdSetOwner extends PlotCommand
 							plot.auctionned = false;
 							plot.forsale = false;
 							
-							PlotMeCoreManager.setSellSign(p.getWorld(), plot);
+							plugin.getPlotMeCoreManager().setSellSign(p.getWorld(), plot);
 							
 							plot.updateField("currentbidder", "");
 							plot.updateField("currentbid", 0);
@@ -109,26 +111,26 @@ public class CmdSetOwner extends PlotCommand
 					
 							plot.owner = newowner;
 							
-							PlotMeCoreManager.setOwnerSign(p.getWorld(), plot);
+							plugin.getPlotMeCoreManager().setOwnerSign(p.getWorld(), plot);
 							
 							plot.updateField("owner", newowner);
 						}
 						else
 						{
-							PlotMeCoreManager.createPlot(p.getWorld(), id,newowner);
+							plugin.getPlotMeCoreManager().createPlot(p.getWorld(), id,newowner);
 						}
 						
-						Util.Send(p, Util.C("MsgOwnerChangedTo") + " " + RED + newowner);
+						p.sendMessage(C("MsgOwnerChangedTo") + " " + RED + newowner);
 						
 						if(isAdv)
-							PlotMe_Core.self.getLogger().info(LOG + playername + " " + Util.C("MsgChangedOwnerOf") + " " + id + " " + Util.C("WordFrom") + " " + oldowner + " " + Util.C("WordTo") + " " + newowner);
+							plugin.getLogger().info(LOG + playername + " " + C("MsgChangedOwnerOf") + " " + id + " " + C("WordFrom") + " " + oldowner + " " + C("WordTo") + " " + newowner);
 					}
 				}
 			}
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

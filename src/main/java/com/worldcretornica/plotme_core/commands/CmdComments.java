@@ -3,63 +3,65 @@ package com.worldcretornica.plotme_core.commands;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdComments extends PlotCommand 
 {
+	public CmdComments(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if (PlotMe_Core.cPerms(p, "PlotMe.use.comments"))
+		if (plugin.cPerms(p, "PlotMe.use.comments"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 			}
 			else
 			{
 				if(args.length < 2)
 				{
-					String id = PlotMeCoreManager.getPlotId(p.getLocation());
+					String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 					
 					if(id.equals(""))
 					{
-						Util.Send(p, RED + Util.C("MsgNoPlotFound"));
+						p.sendMessage(RED + C("MsgNoPlotFound"));
 					}
 					else
 					{
-						if(!PlotMeCoreManager.isPlotAvailable(id, p))
+						if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 						{
-							Plot plot = PlotMeCoreManager.getPlotById(p,id);
+							Plot plot = plugin.getPlotMeCoreManager().getPlotById(p,id);
 							
-							if(plot.owner.equalsIgnoreCase(p.getName()) || plot.isAllowed(p.getName()) || PlotMe_Core.cPerms(p, "PlotMe.admin"))
+							if(plot.owner.equalsIgnoreCase(p.getName()) || plot.isAllowed(p.getName()) || plugin.cPerms(p, "PlotMe.admin"))
 							{
 								if(plot.comments.size() == 0)
 								{
-									Util.Send(p, Util.C("MsgNoComments"));
+									p.sendMessage(C("MsgNoComments"));
 								}
 								else
 								{
-									Util.Send(p, Util.C("MsgYouHave") + " " + 
-											AQUA + plot.comments.size() + RESET + " " + Util.C("MsgComments"));
+									p.sendMessage(C("MsgYouHave") + " " + 
+											AQUA + plot.comments.size() + RESET + " " + C("MsgComments"));
 									
 									for(String[] comment : plot.comments)
 									{
-										Util.Send(p, AQUA + Util.C("WordFrom") + " : " + RED + comment[0]);
-										Util.Send(p, ITALIC + comment[1]);
+										p.sendMessage(AQUA + C("WordFrom") + " : " + RED + comment[0]);
+										p.sendMessage(ITALIC + comment[1]);
 									}
 									
 								}
 							}
 							else
 							{
-								Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgNotYoursNotAllowedViewComments"));
+								p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgNotYoursNotAllowedViewComments"));
 							}
 						}
 						else
 						{
-							Util.Send(p, RED + Util.C("MsgThisPlot") + "(" + id + ") " + Util.C("MsgHasNoOwner"));
+							p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgHasNoOwner"));
 						}
 					}
 				}
@@ -67,7 +69,7 @@ public class CmdComments extends PlotCommand
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}

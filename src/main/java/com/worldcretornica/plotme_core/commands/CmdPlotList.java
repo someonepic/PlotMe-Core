@@ -7,47 +7,48 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.PlotMeCoreManager;
 import com.worldcretornica.plotme_core.PlotMe_Core;
-import com.worldcretornica.plotme_core.SqlManager;
-import com.worldcretornica.plotme_core.utils.Util;
 
 public class CmdPlotList extends PlotCommand 
 {
+	public CmdPlotList(PlotMe_Core instance) {
+		super(instance);
+	}
+
 	public boolean exec(Player p, String[] args)
 	{
-		if(PlotMe_Core.cPerms(p, "PlotMe.use.list"))
+		if(plugin.cPerms(p, "PlotMe.use.list"))
 		{
-			if(!PlotMeCoreManager.isPlotWorld(p))
+			if(!plugin.getPlotMeCoreManager().isPlotWorld(p))
 			{
-				Util.Send(p, RED + Util.C("MsgNotPlotWorld"));
+				p.sendMessage(RED + C("MsgNotPlotWorld"));
 				return true;
 			}
 			else
 			{
 				String name;
 				
-				if(PlotMe_Core.cPerms(p, "PlotMe.admin.list") && args.length == 2)
+				if(plugin.cPerms(p, "PlotMe.admin.list") && args.length == 2)
 				{
 					name = args[1];
-					Util.Send(p, Util.C("MsgListOfPlotsWhere") + " " + AQUA + name + RESET + " " + Util.C("MsgCanBuild"));
+					p.sendMessage(C("MsgListOfPlotsWhere") + " " + AQUA + name + RESET + " " + C("MsgCanBuild"));
 				}
 				else
 				{
 					name = p.getName();
-					Util.Send(p, Util.C("MsgListOfPlotsWhereYou"));
+					p.sendMessage(C("MsgListOfPlotsWhereYou"));
 				}
 				
 				String oldworld = "";
 								
-				for(Plot plot : SqlManager.getPlayerPlots(name))
+				for(Plot plot : plugin.getSqlManager().getPlayerPlots(name))
 				{
 					if(!plot.world.equals(""))
 					{
 						World world = Bukkit.getWorld(plot.world);
 						if(world != null)
 						{
-							PlotMeCoreManager.getMap(world).addPlot(plot.id, plot);
+							plugin.getPlotMeCoreManager().getMap(world).addPlot(plot.id, plot);
 						}
 					}
 					
@@ -75,12 +76,12 @@ public class CmdPlotList extends PlotCommand
 					
 					if(plot.auctionned)
 					{
-						addition.append(" " + Util.C("WordAuction") + ": " + GREEN + Util.round(plot.currentbid) + RESET + ((!plot.currentbidder.equals("")) ? " " + plot.currentbidder : "") );
+						addition.append(" " + C("WordAuction") + ": " + GREEN + Util().round(plot.currentbid) + RESET + ((!plot.currentbidder.equals("")) ? " " + plot.currentbidder : "") );
 					}
 					
 					if(plot.forsale)
 					{
-						addition.append(" " + Util.C("WordSell") + ": " + GREEN + Util.round(plot.customprice) + RESET);
+						addition.append(" " + C("WordSell") + ": " + GREEN + Util().round(plot.customprice) + RESET);
 					}
 						
 					if(plot.owner.equalsIgnoreCase(name))
@@ -88,7 +89,7 @@ public class CmdPlotList extends PlotCommand
 						if(plot.allowedcount() == 0)
 						{
 							if(name.equalsIgnoreCase(p.getName()))
-								p.sendMessage("  " + plot.id + " -> " + AQUA + ITALIC + Util.C("WordYours") + RESET + addition);
+								p.sendMessage("  " + plot.id + " -> " + AQUA + ITALIC + C("WordYours") + RESET + addition);
 							else
 								p.sendMessage("  " + plot.id + " -> " + AQUA + ITALIC + plot.owner + RESET + addition);
 						}
@@ -106,11 +107,11 @@ public class CmdPlotList extends PlotCommand
 							
 							if(name.equalsIgnoreCase(p.getName()))
 							{
-								p.sendMessage("  " + plot.id + " -> " + AQUA + ITALIC + Util.C("WordYours") + RESET + addition + ", " + Util.C("WordHelpers") + ": " + helpers);
+								p.sendMessage("  " + plot.id + " -> " + AQUA + ITALIC + C("WordYours") + RESET + addition + ", " + C("WordHelpers") + ": " + helpers);
 							}
 							else
 							{
-								p.sendMessage("  " + plot.id + " -> " + AQUA + ITALIC + plot.owner + RESET + addition + ", " + Util.C("WordHelpers") + ": " + helpers);
+								p.sendMessage("  " + plot.id + " -> " + AQUA + ITALIC + plot.owner + RESET + addition + ", " + C("WordHelpers") + ": " + helpers);
 							}
 						}
 					}
@@ -142,11 +143,11 @@ public class CmdPlotList extends PlotCommand
 						
 						if(plot.owner.equalsIgnoreCase(p.getName()))
 						{
-							p.sendMessage("  " + plot.id + " -> " + AQUA + Util.C("WordYours") + RESET + addition + ", " + Util.C("WordHelpers") + ": " + helpers);
+							p.sendMessage("  " + plot.id + " -> " + AQUA + C("WordYours") + RESET + addition + ", " + C("WordHelpers") + ": " + helpers);
 						}
 						else
 						{
-							p.sendMessage("  " + plot.id + " -> " + AQUA + plot.owner + Util.C("WordPossessive") + RESET + addition + ", " + Util.C("WordHelpers") + ": " + helpers);
+							p.sendMessage("  " + plot.id + " -> " + AQUA + plot.owner + C("WordPossessive") + RESET + addition + ", " + C("WordHelpers") + ": " + helpers);
 						}
 					}
 					
@@ -155,7 +156,7 @@ public class CmdPlotList extends PlotCommand
 		}
 		else
 		{
-			Util.Send(p, RED + Util.C("MsgPermissionDenied"));
+			p.sendMessage(RED + C("MsgPermissionDenied"));
 		}
 		return true;
 	}
