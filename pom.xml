@@ -61,6 +61,16 @@
         </configuration>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <targetPath>.</targetPath>
+        <filtering>true</filtering>
+        <directory>${project.basedir}</directory>
+        <includes>
+          <include>plugin.yml</include>
+        </includes>
+      </resource>
+    </resources>
   </build>
   <scm>
   	<url>https://github.com/ZachBora/PlotMe-Core/tree/master/</url>
