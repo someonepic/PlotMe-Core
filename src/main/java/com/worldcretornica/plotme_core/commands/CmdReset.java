@@ -11,6 +11,8 @@ import com.worldcretornica.plotme_core.ClearReason;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
+import com.worldcretornica.plotme_core.event.PlotResetEvent;
 
 public class CmdReset extends PlotCommand 
 {
@@ -49,32 +51,61 @@ public class CmdReset extends PlotCommand
 						{						
 							World w = p.getWorld();
 							
-							plugin.getPlotMeCoreManager().setBiome(w, id, Biome.PLAINS);
-							plugin.getPlotMeCoreManager().clear(w, plot, p, ClearReason.Reset);
-							//RemoveLWC(w, plot);
+							PlotResetEvent event = PlotMeEventFactory.callPlotResetEvent(plugin, w, plot, p);
 							
-							if(plugin.getPlotMeCoreManager().isEconomyEnabled(p))
+							if(!event.isCancelled())
 							{
-								if(plot.auctionned)
+								plugin.getPlotMeCoreManager().setBiome(w, id, Biome.PLAINS);
+								plugin.getPlotMeCoreManager().clear(w, plot, p, ClearReason.Reset);
+								//RemoveLWC(w, plot);
+								PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
+								
+								if(plugin.getPlotMeCoreManager().isEconomyEnabled(p))
 								{
-									String currentbidder = plot.currentbidder;
-									
-									if(!currentbidder.equals(""))
+									if(plot.auctionned)
 									{
-										EconomyResponse er = plugin.getEconomy().depositPlayer(currentbidder, plot.currentbid);
+										String currentbidder = plot.currentbidder;
+										
+										if(!currentbidder.equals(""))
+										{
+											EconomyResponse er = plugin.getEconomy().depositPlayer(currentbidder, plot.currentbid);
+											
+											if(!er.transactionSuccess())
+											{
+												p.sendMessage(er.errorMessage);
+												Util().warn(er.errorMessage);
+											}
+											else
+											{
+											    for(Player player : Bukkit.getServer().getOnlinePlayers())
+											    {
+											        if(player.getName().equalsIgnoreCase(currentbidder))
+											        {
+											            player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + " " + C("MsgWasReset") + " " + Util().moneyFormat(plot.currentbid));
+											            break;
+											        }
+											    }
+											}
+										}
+									}
+									
+									if(pmi.RefundClaimPriceOnReset)
+									{
+										EconomyResponse er = plugin.getEconomy().depositPlayer(plot.owner, pmi.ClaimPrice);
 										
 										if(!er.transactionSuccess())
 										{
-											p.sendMessage(er.errorMessage);
+											p.sendMessage(RED + er.errorMessage);
 											Util().warn(er.errorMessage);
+											return true;
 										}
 										else
 										{
 										    for(Player player : Bukkit.getServer().getOnlinePlayers())
 										    {
-										        if(player.getName().equalsIgnoreCase(currentbidder))
+										        if(player.getName().equalsIgnoreCase(plot.owner))
 										        {
-										            player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + " " + C("MsgWasReset") + " " + Util().moneyFormat(plot.currentbid));
+										            player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + " " + C("MsgWasReset") + " " + Util().moneyFormat(pmi.ClaimPrice));
 										            break;
 										        }
 										    }
@@ -82,48 +113,25 @@ public class CmdReset extends PlotCommand
 									}
 								}
 								
-								PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
-								
-								if(pmi.RefundClaimPriceOnReset)
+								if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
 								{
-									EconomyResponse er = plugin.getEconomy().depositPlayer(plot.owner, pmi.ClaimPrice);
-									
-									if(!er.transactionSuccess())
-									{
-										p.sendMessage(RED + er.errorMessage);
-										Util().warn(er.errorMessage);
-										return true;
-									}
-									else
-									{
-									    for(Player player : Bukkit.getServer().getOnlinePlayers())
-									    {
-									        if(player.getName().equalsIgnoreCase(plot.owner))
-									        {
-									            player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + " " + C("MsgWasReset") + " " + Util().moneyFormat(pmi.ClaimPrice));
-									            break;
-									        }
-									    }
-									}
+									plugin.getPlotMeCoreManager().removePlot(w, id);
 								}
+								
+								String name = p.getName();
+								
+								plugin.getPlotMeCoreManager().removeOwnerSign(w, id);
+								plugin.getPlotMeCoreManager().removeSellSign(w, id);
+								
+								plugin.getSqlManager().deletePlot(plugin.getPlotMeCoreManager().getIdX(id), plugin.getPlotMeCoreManager().getIdZ(id), w.getName().toLowerCase());
+								
+								pmi.addFreed(id);
+								
+								//p.sendMessage(C("MsgPlotReset"));
+								
+								if(isAdv)
+									plugin.getLogger().info(LOG + name + " " + C("MsgResetPlot") + " " + id);
 							}
-							
-							if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
-							{
-								plugin.getPlotMeCoreManager().removePlot(w, id);
-							}
-							
-							String name = p.getName();
-							
-							plugin.getPlotMeCoreManager().removeOwnerSign(w, id);
-							plugin.getPlotMeCoreManager().removeSellSign(w, id);
-							
-							plugin.getSqlManager().deletePlot(plugin.getPlotMeCoreManager().getIdX(id), plugin.getPlotMeCoreManager().getIdZ(id), w.getName().toLowerCase());
-							
-							//p.sendMessage(C("MsgPlotReset"));
-							
-							if(isAdv)
-								plugin.getLogger().info(LOG + name + " " + C("MsgResetPlot") + " " + id);
 						}
 						else
 						{

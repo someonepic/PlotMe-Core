@@ -54,7 +54,7 @@ public class CmdUndeny extends PlotCommand
 									PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
 									
 									double price = 0;
-									
+									//TODO event
 									if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 									{
 										price = pmi.UndenyPlayerPrice;
@@ -92,13 +92,13 @@ public class CmdUndeny extends PlotCommand
 							}
 							else
 							{
-								p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgNotYoursNotAllowedUndeny"));
+								p.sendMessage(RED + C("MsgThisPlot") + " (" + id + ") " + C("MsgNotYoursNotAllowedUndeny"));
 							}
 						}
 					}
 					else
 					{
-						p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgHasNoOwner"));
+						p.sendMessage(RED + C("MsgThisPlot") + " (" + id + ") " + C("MsgHasNoOwner"));
 					}
 				}
 			}

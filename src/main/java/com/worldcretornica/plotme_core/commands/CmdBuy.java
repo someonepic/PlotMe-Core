@@ -9,6 +9,8 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotBuyEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdBuy extends PlotCommand 
 {
@@ -69,56 +71,62 @@ public class CmdBuy extends PlotCommand
 									}
 									else
 									{
-										EconomyResponse er = plugin.getEconomy().withdrawPlayer(buyer, cost);
 										
-										if(er.transactionSuccess())
+										PlotBuyEvent event = PlotMeEventFactory.callPlotBuyEvent(plugin, w, plot, p, cost);
+										
+										if(!event.isCancelled())
 										{
-											String oldowner = plot.owner;
+											EconomyResponse er = plugin.getEconomy().withdrawPlayer(buyer, cost);
 											
-											if(!oldowner.equalsIgnoreCase("$Bank$"))
+											if(er.transactionSuccess())
 											{
-												EconomyResponse er2 = plugin.getEconomy().depositPlayer(oldowner, cost);
+												String oldowner = plot.owner;
 												
-												if(!er2.transactionSuccess())
+												if(!oldowner.equalsIgnoreCase("$Bank$"))
 												{
-													p.sendMessage(RED + er2.errorMessage);
-													Util().warn(er2.errorMessage);
-												}
-												else
-												{
-													for(Player player : Bukkit.getServer().getOnlinePlayers())
+													EconomyResponse er2 = plugin.getEconomy().depositPlayer(oldowner, cost);
+													
+													if(!er2.transactionSuccess())
 													{
-														if(player.getName().equalsIgnoreCase(oldowner))
+														p.sendMessage(RED + er2.errorMessage);
+														Util().warn(er2.errorMessage);
+													}
+													else
+													{
+														for(Player player : Bukkit.getServer().getOnlinePlayers())
 														{
-															player.sendMessage(C("WordPlot") + " " + id + " " + 
-																	C("MsgSoldTo") + " " + buyer + ". " + Util().moneyFormat(cost));
-															break;
+															if(player.getName().equalsIgnoreCase(oldowner))
+															{
+																player.sendMessage(C("WordPlot") + " " + id + " " + 
+																		C("MsgSoldTo") + " " + buyer + ". " + Util().moneyFormat(cost));
+																break;
+															}
 														}
 													}
 												}
+												
+												plot.owner = buyer;
+												plot.customprice = 0;
+												plot.forsale = false;
+												
+												plot.updateField("owner", buyer);
+												plot.updateField("customprice", 0);
+												plot.updateField("forsale", false);
+												
+												plugin.getPlotMeCoreManager().adjustWall(l);
+												plugin.getPlotMeCoreManager().setSellSign(w, plot);
+												plugin.getPlotMeCoreManager().setOwnerSign(w, plot);
+												
+												p.sendMessage(C("MsgPlotBought") + " " + Util().moneyFormat(-cost));
+												
+												if(isAdv)
+													plugin.getLogger().info(LOG + buyer + " " + C("MsgBoughtPlot") + " " + id + " " + C("WordFor") + " " + cost);
 											}
-											
-											plot.owner = buyer;
-											plot.customprice = 0;
-											plot.forsale = false;
-											
-											plot.updateField("owner", buyer);
-											plot.updateField("customprice", 0);
-											plot.updateField("forsale", false);
-											
-											plugin.getPlotMeCoreManager().adjustWall(l);
-											plugin.getPlotMeCoreManager().setSellSign(w, plot);
-											plugin.getPlotMeCoreManager().setOwnerSign(w, plot);
-											
-											p.sendMessage(C("MsgPlotBought") + " " + Util().moneyFormat(-cost));
-											
-											if(isAdv)
-												plugin.getLogger().info(LOG + buyer + " " + C("MsgBoughtPlot") + " " + id + " " + C("WordFor") + " " + cost);
-										}
-										else
-										{
-											p.sendMessage(RED + er.errorMessage);
-											Util().warn(er.errorMessage);
+											else
+											{
+												p.sendMessage(RED + er.errorMessage);
+												Util().warn(er.errorMessage);
+											}
 										}
 									}
 								}

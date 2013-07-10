@@ -14,6 +14,8 @@ import org.bukkit.plugin.Plugin;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.worldcretornica.plotme_core.PlotMe_Core;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
+import com.worldcretornica.plotme_core.event.PlotWorldCreateEvent;
 import com.worldcretornica.plotme_core.utils.MinecraftFontWidthCalculator;
 
 public class CmdCreateWorld extends PlotCommand 
@@ -33,9 +35,15 @@ public class CmdCreateWorld extends PlotCommand
 				{
 					//try to create world
 					Map<String, String> parameters = plugin.creationbuffer.get(cs.getName());
-					if(plugin.getPlotMeCoreManager().CreatePlotWorld(cs, parameters.get("worldname"), parameters.get("generator"), parameters))
+					
+					PlotWorldCreateEvent event = PlotMeEventFactory.callPlotWorldCreateEvent(plugin, parameters.get("worldname"), cs, parameters);
+					
+					if(!event.isCancelled())
 					{
-						cs.sendMessage(C("MsgWorldCreationSuccess"));
+						if(plugin.getPlotMeCoreManager().CreatePlotWorld(cs, parameters.get("worldname"), parameters.get("generator"), parameters))
+						{
+							cs.sendMessage(C("MsgWorldCreationSuccess"));
+						}
 					}
 				}
 				else
@@ -219,6 +227,7 @@ public class CmdCreateWorld extends PlotCommand
 					parameters.put("BiomeChangePrice", "0");
 					parameters.put("ProtectPrice", "0");
 					parameters.put("DisposePrice", "0");
+					parameters.put("UseProgressiveClear", "false");
 					
 					
 					cs.sendMessage(C("MsgCreateWorldParameters1"));

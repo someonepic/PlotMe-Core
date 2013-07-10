@@ -1,10 +1,13 @@
 package com.worldcretornica.plotme_core.commands;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
+import com.worldcretornica.plotme_core.event.PlotTeleportEvent;
 
 public class CmdTP extends PlotCommand 
 {
@@ -75,7 +78,14 @@ public class CmdTP extends PlotCommand
 						}
 						else
 						{
-							p.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, id));
+							Location loc = plugin.getPlotMeCoreManager().getPlotHome(w, id);
+							
+							PlotTeleportEvent event = PlotMeEventFactory.callPlotTeleportEvent(plugin, w, p, loc, id);
+							
+							if(!event.isCancelled())
+							{
+								p.teleport(loc);
+							}
 						}
 					}
 				}

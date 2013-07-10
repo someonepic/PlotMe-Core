@@ -59,10 +59,12 @@ public class PlotMe_Core extends JavaPlugin
     private Boolean advancedlogging;
     private String language;
     private Boolean allowWorldTeleport;
-    private Boolean autoUpdate;
+    //private Boolean autoUpdate;
     private Boolean allowToDeny;
     private Boolean defaultWEAnywhere;
-        
+    private int nbClearSpools;
+    private int nbBlocksPerClearStep;
+    
     private Economy economy = null;
     private Boolean usinglwc = false;
     
@@ -159,7 +161,7 @@ public class PlotMe_Core extends JavaPlugin
 		//Start the spools
 		spoolTasks = new HashSet<BukkitTask>();
 		spools = new HashSet<PlotMeSpool>();
-		for(int i = 1 ; i <= 3; i++)
+		for(int i = 1 ; i <= getNbClearSpools(); i++)
 		{
 			PlotMeSpool pms = new PlotMeSpool(this);
 			spools.add(pms);
@@ -356,7 +358,6 @@ public class PlotMe_Core extends JavaPlugin
 				newcurrworld.set("DisableExplosion", oldcurrworld.getBoolean("DisableExplosion", true));
 				newcurrworld.set("DisableIgnition", oldcurrworld.getBoolean("DisableIgnition", true));
 				
-				
 				ConfigurationSection oldeconomysection;
 				ConfigurationSection neweconomysection;
 				
@@ -466,8 +467,15 @@ public class PlotMe_Core extends JavaPlugin
 		language = config.getString("Language", "english");
 		setAllowWorldTeleport(config.getBoolean("allowWorldTeleport", true));
 		setDefaultWEAnywhere(config.getBoolean("defaultWEAnywhere", false));
-		autoUpdate = config.getBoolean("auto-update", false);
+		//autoUpdate = config.getBoolean("auto-update", false);
 		setAllowToDeny(config.getBoolean("allowToDeny", true));
+		nbClearSpools = config.getInt("NbClearSpools", 3);
+		if(nbClearSpools > 100)
+		{
+			getLogger().warning("Having more than 100 clear spools seems drastic, changing to 100");
+			nbClearSpools = 100;
+		}
+		nbBlocksPerClearStep = config.getInt("NbBlocksPerClearStep", 50000);
 
 		ConfigurationSection worlds;
 		
@@ -478,8 +486,6 @@ public class PlotMe_Core extends JavaPlugin
 			ConfigurationSection plotworld = worlds.createSection("plotworld");
 			
 			plotworld.set("PlotAutoLimit", 1000);
-			
-			
 			plotworld.set("DaysToExpiration", 7);
 			plotworld.set("ProtectedBlocks", getDefaultProtectedBlocks());
 			plotworld.set("PreventedItems", getDefaultPreventedItems());
@@ -489,6 +495,8 @@ public class PlotMe_Core extends JavaPlugin
 			plotworld.set("AutoLinkPlots", true);
 			plotworld.set("DisableExplosion", true);
 			plotworld.set("DisableIgnition", true);
+			plotworld.set("UseProgressiveClear", false);
+			plotworld.set("NextFreed", "0;0");
 			
 			ConfigurationSection economysection = plotworld.createSection("economy");
 			
@@ -553,6 +561,8 @@ public class PlotMe_Core extends JavaPlugin
 			tempPlotInfo.AutoLinkPlots = currworld.getBoolean("AutoLinkPlots", true);
 			tempPlotInfo.DisableExplosion = currworld.getBoolean("DisableExplosion", true);
 			tempPlotInfo.DisableIgnition = currworld.getBoolean("DisableIgnition", true);
+			tempPlotInfo.UseProgressiveClear = currworld.getBoolean("UseProgressiveClear", false);
+			tempPlotInfo.NextFreed = currworld.getString("NextFreed", "0;0");
 			
 			ConfigurationSection economysection;
 			
@@ -583,7 +593,6 @@ public class PlotMe_Core extends JavaPlugin
 			tempPlotInfo.DisposePrice = economysection.getDouble("DisposePrice", 0);
 			
 			
-			
 			currworld.set("PlotAutoLimit", tempPlotInfo.PlotAutoLimit);
 			
 
@@ -594,6 +603,8 @@ public class PlotMe_Core extends JavaPlugin
 			currworld.set("AutoLinkPlots", tempPlotInfo.AutoLinkPlots);
 			currworld.set("DisableExplosion", tempPlotInfo.DisableExplosion);
 			currworld.set("DisableIgnition", tempPlotInfo.DisableIgnition);
+			currworld.set("UseProgressiveClear", tempPlotInfo.UseProgressiveClear);
+			currworld.set("NextFreed", tempPlotInfo.NextFreed);
 			
 			economysection = currworld.createSection("economy");
 			
@@ -636,8 +647,10 @@ public class PlotMe_Core extends JavaPlugin
 		config.set("Language", language);
 		config.set("allowWorldTeleport", getAllowWorldTeleport());
 		config.set("defaultWEAnywhere", getDefaultWEAnywhere());
-		config.set("auto-update", autoUpdate);
+		//config.set("auto-update", autoUpdate);
 		config.set("allowToDeny", getAllowToDeny());
+		config.set("NbClearSpools", getNbClearSpools());
+		config.set("NbBlocksPerClearStep", getNbBlocksPerClearStep());
 		
 		try 
 		{
@@ -1015,6 +1028,11 @@ public class PlotMe_Core extends JavaPlugin
 		properties.put("WordBlocks", "blocks");
 		properties.put("WordIn", "in");
 		
+		properties.put("Unit_1000", "k");
+		properties.put("Unit_1000000", "M");
+		properties.put("Unit_1000000000", "G");
+		properties.put("Unit_1000000000000", "T");
+		
 		properties.put("SignOwner", "Owner:");
 		properties.put("SignId", "ID:");
 		properties.put("SignForSale", "&9&lFOR SALE");
@@ -1327,6 +1345,96 @@ public class PlotMe_Core extends JavaPlugin
 		
 		return null;
 	}
+	
+	public void saveWorldConfig(String world)
+	{
+		File configfile = new File(getConfigPath(), "core-config.yml");
+		
+		if(!configfile.exists())
+		{
+			importOldConfigs(configfile);
+		}
+		
+		FileConfiguration config = new YamlConfiguration();
+		
+		try 
+		{
+			config.load(configfile);
+		} 
+		catch (FileNotFoundException e) {} 
+		catch (IOException e) 
+		{
+			getLogger().severe("can't read configuration file");
+			e.printStackTrace();
+		} 
+		catch (InvalidConfigurationException e) 
+		{
+			getLogger().severe("invalid configuration format");
+			e.printStackTrace();
+		}
+        
+		PlotMapInfo pmi = getPlotMeCoreManager().getMap(world);
+		
+        ConfigurationSection worlds = config.getConfigurationSection("worlds");
+		ConfigurationSection currworld = worlds.getConfigurationSection(world);
+		
+		ConfigurationSection economysection;
+		
+		if(currworld.getConfigurationSection("economy") == null)
+			economysection = currworld.createSection("economy");
+		else
+			economysection = currworld.getConfigurationSection("economy");
+            
+            currworld.set("PlotAutoLimit", pmi.PlotAutoLimit);
+		
+		currworld.set("DaysToExpiration", pmi.DaysToExpiration);
+		currworld.set("ProtectedBlocks", pmi.ProtectedBlocks);
+		currworld.set("PreventedItems", pmi.PreventedItems);
+
+		currworld.set("AutoLinkPlots", pmi.AutoLinkPlots);
+		currworld.set("DisableExplosion", pmi.DisableExplosion);
+		currworld.set("DisableIgnition", pmi.DisableIgnition);
+		currworld.set("UseProgressiveClear", pmi.UseProgressiveClear);
+		currworld.set("NextFreed", pmi.NextFreed);
+		
+		economysection = currworld.createSection("economy");
+		
+		economysection.set("UseEconomy", pmi.UseEconomy);
+		economysection.set("CanPutOnSale", pmi.CanPutOnSale);
+		economysection.set("CanSellToBank", pmi.CanSellToBank);
+		economysection.set("RefundClaimPriceOnReset", pmi.RefundClaimPriceOnReset);
+		economysection.set("RefundClaimPriceOnSetOwner", pmi.RefundClaimPriceOnSetOwner);
+		economysection.set("ClaimPrice", pmi.ClaimPrice);
+		economysection.set("ClearPrice", pmi.ClearPrice);
+		economysection.set("AddPlayerPrice", pmi.AddPlayerPrice);
+		economysection.set("DenyPlayerPrice", pmi.DenyPlayerPrice);
+		economysection.set("RemovePlayerPrice", pmi.RemovePlayerPrice);
+		economysection.set("UndenyPlayerPrice", pmi.UndenyPlayerPrice);
+		economysection.set("PlotHomePrice", pmi.PlotHomePrice);
+		economysection.set("CanCustomizeSellPrice", pmi.CanCustomizeSellPrice);
+		economysection.set("SellToPlayerPrice", pmi.SellToPlayerPrice);
+		economysection.set("SellToBankPrice", pmi.SellToBankPrice);
+		economysection.set("BuyFromBankPrice", pmi.BuyFromBankPrice);
+		economysection.set("AddCommentPrice", pmi.AddCommentPrice);
+		economysection.set("BiomeChangePrice", pmi.BiomeChangePrice);
+		economysection.set("ProtectPrice", pmi.ProtectPrice);
+		economysection.set("DisposePrice", pmi.DisposePrice);
+		
+		currworld.set("economy", economysection);
+            
+        worlds.set(world, currworld);
+        config.set("worlds", worlds);
+        
+        try 
+		{
+			config.save(configfile);
+		} 
+		catch (IOException e) 
+		{
+			getLogger().severe("error writting configurations");
+			e.printStackTrace();
+		}
+	}
 
 	public Integer getNbPerDeletionProcessingExpired() {
 		return nbperdeletionprocessingexpired;
@@ -1410,4 +1518,11 @@ public class PlotMe_Core extends JavaPlugin
 		this.allowWorldTeleport = allowWorldTeleport;
 	}
 
+	public int getNbClearSpools() {
+		return nbClearSpools;
+	}
+
+	public int getNbBlocksPerClearStep() {
+		return nbBlocksPerClearStep;
+	}
 }

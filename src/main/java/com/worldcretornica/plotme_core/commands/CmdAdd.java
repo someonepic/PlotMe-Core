@@ -8,6 +8,8 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotAddAllowedEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdAdd extends PlotCommand
 {
@@ -60,37 +62,42 @@ public class CmdAdd extends PlotCommand
 									
 									double price = 0;
 									
-									if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
+									PlotAddAllowedEvent event = PlotMeEventFactory.callPlotAddAllowedEvent(plugin, w, plot, p, allowed);
+									
+									if(!event.isCancelled())
 									{
-										price = pmi.AddPlayerPrice;
-										double balance = plugin.getEconomy().getBalance(playername);
-										
-										if(balance >= price)
+										if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 										{
-											EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+											price = pmi.AddPlayerPrice;
+											double balance = plugin.getEconomy().getBalance(playername);
 											
-											if(!er.transactionSuccess())
+											if(balance >= price)
 											{
-												p.sendMessage(RED + er.errorMessage);
-												plugin.getUtil().warn(er.errorMessage);
+												EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+												
+												if(!er.transactionSuccess())
+												{
+													p.sendMessage(RED + er.errorMessage);
+													plugin.getUtil().warn(er.errorMessage);
+													return true;
+												}
+											}
+											else
+											{
+												p.sendMessage(RED + C("MsgNotEnoughAdd") + " " + C("WordMissing") + " " + RESET + Util().moneyFormat(price - balance, false));
 												return true;
 											}
 										}
-										else
+										
+										plot.addAllowed(args[1]);
+										
+										p.sendMessage(C("WordPlayer") + " " + RED + allowed + RESET + " " + C("MsgNowAllowed") + " " + Util().moneyFormat(-price));
+										
+										if(isAdv)
 										{
-											p.sendMessage(RED + C("MsgNotEnoughAdd") + " " + C("WordMissing") + " " + RESET + Util().moneyFormat(price - balance, false));
-											return true;
+											plugin.getLogger().info(LOG + playername + " " + C("MsgAddedPlayer") + " " + allowed + " " + C("MsgToPlot") + " " + 
+													id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
 										}
-									}
-									
-									plot.addAllowed(args[1]);
-									
-									p.sendMessage(C("WordPlayer") + " " + RED + allowed + RESET + " " + C("MsgNowAllowed") + " " + Util().moneyFormat(-price));
-									
-									if(isAdv)
-									{
-										plugin.getLogger().info(LOG + playername + " " + C("MsgAddedPlayer") + " " + allowed + " " + C("MsgToPlot") + " " + 
-												id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
 									}
 								}
 							}

@@ -10,6 +10,8 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
+import com.worldcretornica.plotme_core.event.PlotSellChangeEvent;
 
 public class CmdSell extends PlotCommand 
 {
@@ -45,21 +47,28 @@ public class CmdSell extends PlotCommand
 								World w = p.getWorld();
 								String name = p.getName();
 								
+								PlotSellChangeEvent event;
+								
 								if(plot.forsale)
 								{
-									plot.customprice = 0;
-									plot.forsale = false;
+									event = PlotMeEventFactory.callPlotSellChangeEvent(plugin, w, plot, p, plot.customprice, false, false);
 									
-									plot.updateField("customprice", 0);
-									plot.updateField("forsale", false);
-									
-									plugin.getPlotMeCoreManager().adjustWall(l);
-									plugin.getPlotMeCoreManager().setSellSign(w, plot);
-									
-									p.sendMessage(C("MsgPlotNoLongerSale"));
-									
-									if(isAdv)
-										plugin.getLogger().info(LOG + name + " " + C("MsgRemovedPlot") + " " + id + " " + C("MsgFromBeingSold"));
+									if(!event.isCancelled())
+									{
+										plot.customprice = 0;
+										plot.forsale = false;
+										
+										plot.updateField("customprice", 0);
+										plot.updateField("forsale", false);
+										
+										plugin.getPlotMeCoreManager().adjustWall(l);
+										plugin.getPlotMeCoreManager().setSellSign(w, plot);
+										
+										p.sendMessage(C("MsgPlotNoLongerSale"));
+										
+										if(isAdv)
+											plugin.getLogger().info(LOG + name + " " + C("MsgRemovedPlot") + " " + id + " " + C("MsgFromBeingSold"));
+									}
 								}
 								else
 								{
@@ -111,13 +120,12 @@ public class CmdSell extends PlotCommand
 										}
 										else
 										{
-											
 											String currentbidder = plot.currentbidder;
 											
 											if(!currentbidder.equals(""))
 											{
 												double bid = plot.currentbid;
-												
+																								
 												EconomyResponse er = plugin.getEconomy().depositPlayer(currentbidder, bid);
 												
 												if(!er.transactionSuccess())
@@ -140,38 +148,43 @@ public class CmdSell extends PlotCommand
 											
 											double sellprice = pmi.SellToBankPrice;
 											
-											EconomyResponse er = plugin.getEconomy().depositPlayer(name, sellprice);
+											event = PlotMeEventFactory.callPlotSellChangeEvent(plugin, w, plot, p, pmi.BuyFromBankPrice, true, true);
 											
-											if(er.transactionSuccess())
+											if(!event.isCancelled())
 											{
-												plot.owner = "$Bank$";
-												plot.forsale = true;
-												plot.customprice = pmi.BuyFromBankPrice;
-												plot.auctionned = false;
-												plot.currentbidder = "";
-												plot.currentbid = 0;
-																								
-												plot.removeAllAllowed();
+												EconomyResponse er = plugin.getEconomy().depositPlayer(name, sellprice);
 												
-												plugin.getPlotMeCoreManager().setOwnerSign(w, plot);
-												plugin.getPlotMeCoreManager().setSellSign(w, plot);
-												
-												plot.updateField("owner", plot.owner);
-												plot.updateField("forsale", true);
-												plot.updateField("auctionned", true);
-												plot.updateField("customprice", plot.customprice);
-												plot.updateField("currentbidder", "");
-												plot.updateField("currentbid", 0);
-												
-												p.sendMessage(C("MsgPlotSold") + " " + Util().moneyFormat(sellprice));
-												
-												if(isAdv)
-													plugin.getLogger().info(LOG + name + " " + C("MsgSoldToBankPlot") + " " + id + " " + C("WordFor") + " " + sellprice);
-											}
-											else
-											{
-												p.sendMessage(" " + er.errorMessage);
-												Util().warn(er.errorMessage);
+												if(er.transactionSuccess())
+												{
+													plot.owner = "$Bank$";
+													plot.forsale = true;
+													plot.customprice = pmi.BuyFromBankPrice;
+													plot.auctionned = false;
+													plot.currentbidder = "";
+													plot.currentbid = 0;
+																									
+													plot.removeAllAllowed();
+													
+													plugin.getPlotMeCoreManager().setOwnerSign(w, plot);
+													plugin.getPlotMeCoreManager().setSellSign(w, plot);
+													
+													plot.updateField("owner", plot.owner);
+													plot.updateField("forsale", true);
+													plot.updateField("auctionned", true);
+													plot.updateField("customprice", plot.customprice);
+													plot.updateField("currentbidder", "");
+													plot.updateField("currentbid", 0);
+													
+													p.sendMessage(C("MsgPlotSold") + " " + Util().moneyFormat(sellprice));
+													
+													if(isAdv)
+														plugin.getLogger().info(LOG + name + " " + C("MsgSoldToBankPlot") + " " + id + " " + C("WordFor") + " " + sellprice);
+												}
+												else
+												{
+													p.sendMessage(" " + er.errorMessage);
+													Util().warn(er.errorMessage);
+												}
 											}
 										}
 									}
@@ -183,19 +196,24 @@ public class CmdSell extends PlotCommand
 										}
 										else
 										{
-											plot.customprice = price;
-											plot.forsale = true;
+											event = PlotMeEventFactory.callPlotSellChangeEvent(plugin, w, plot, p, price, false, true);
 											
-											plot.updateField("customprice", price);
-											plot.updateField("forsale", true);
-											
-											plugin.getPlotMeCoreManager().adjustWall(l);
-											plugin.getPlotMeCoreManager().setSellSign(w, plot);
-											
-											p.sendMessage(C("MsgPlotForSale"));
-											
-											if(isAdv)
-												plugin.getLogger().info(LOG + name + " " + C("MsgPutOnSalePlot") + " " + id + " " + C("WordFor") + " " + price);
+											if(!event.isCancelled())
+											{
+												plot.customprice = price;
+												plot.forsale = true;
+												
+												plot.updateField("customprice", price);
+												plot.updateField("forsale", true);
+												
+												plugin.getPlotMeCoreManager().adjustWall(l);
+												plugin.getPlotMeCoreManager().setSellSign(w, plot);
+												
+												p.sendMessage(C("MsgPlotForSale"));
+												
+												if(isAdv)
+													plugin.getLogger().info(LOG + name + " " + C("MsgPutOnSalePlot") + " " + id + " " + C("WordFor") + " " + price);
+											}
 										}
 									}
 								}

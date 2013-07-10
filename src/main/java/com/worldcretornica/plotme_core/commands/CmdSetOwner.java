@@ -8,6 +8,8 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
+import com.worldcretornica.plotme_core.event.PlotOwnerChangeEvent;
 
 public class CmdSetOwner extends PlotCommand 
 {
@@ -49,29 +51,41 @@ public class CmdSetOwner extends PlotCommand
 							PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
 							oldowner = plot.owner;
 							
+							PlotOwnerChangeEvent event;
+							
 							if(plugin.getPlotMeCoreManager().isEconomyEnabled(p))
 							{
 								if(pmi.RefundClaimPriceOnSetOwner && newowner != oldowner)
 								{
-									EconomyResponse er = plugin.getEconomy().depositPlayer(oldowner, pmi.ClaimPrice);
+									event = PlotMeEventFactory.callPlotOwnerChangeEvent(plugin, p.getWorld(), plot, p, newowner);
 									
-									if(!er.transactionSuccess())
+									if(event.isCancelled())
 									{
-										p.sendMessage(RED + er.errorMessage);
-										Util().warn(er.errorMessage);
 										return true;
 									}
 									else
 									{
-									    for(Player player : Bukkit.getServer().getOnlinePlayers())
-									    {
-									        if(player.getName().equalsIgnoreCase(oldowner))
+										EconomyResponse er = plugin.getEconomy().depositPlayer(oldowner, pmi.ClaimPrice);
+										
+										if(!er.transactionSuccess())
+										{
+											p.sendMessage(RED + er.errorMessage);
+											Util().warn(er.errorMessage);
+											return true;
+										}
+										else
+										{
+										    Player player = Bukkit.getServer().getPlayerExact(oldowner);
+										    if(player != null)
 									        {
 									            player.sendMessage(C("MsgYourPlot") + " " + id + " " + C("MsgNowOwnedBy") + " " + newowner + ". " + Util().moneyFormat(pmi.ClaimPrice));
-									            break;
 									        }
-									    }
+										}
 									}
+								}
+								else
+								{
+									event = PlotMeEventFactory.callPlotOwnerChangeEvent(plugin, p.getWorld(), plot, p, newowner);
 								}
 								
 								if(!plot.currentbidder.equals(""))
@@ -85,35 +99,39 @@ public class CmdSetOwner extends PlotCommand
 									}
 									else
 									{
-									    for(Player player : Bukkit.getServer().getOnlinePlayers())
-									    {
-									        if(player.getName().equalsIgnoreCase(plot.currentbidder))
-									        {
-									            player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgChangedOwnerFrom") + " " + oldowner + " " + C("WordTo") + " " + newowner + ". " + Util().moneyFormat(plot.currentbid));
-									            break;
-									        }
-									    }
+										Player player = Bukkit.getServer().getPlayerExact(plot.currentbidder);
+										if(player != null)
+								        {
+								            player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgChangedOwnerFrom") + " " + oldowner + " " + C("WordTo") + " " + newowner + ". " + Util().moneyFormat(plot.currentbid));
+								        }
 									}
 								}
 							}
+							else
+							{
+								event = PlotMeEventFactory.callPlotOwnerChangeEvent(plugin, p.getWorld(), plot, p, newowner);
+							}
 							
-							plot.currentbidder = "";
-							plot.currentbid = 0;
-							plot.auctionned = false;
-							plot.forsale = false;
-							
-							plugin.getPlotMeCoreManager().setSellSign(p.getWorld(), plot);
-							
-							plot.updateField("currentbidder", "");
-							plot.updateField("currentbid", 0);
-							plot.updateField("auctionned", false);
-							plot.updateField("forsale", false);
-					
-							plot.owner = newowner;
-							
-							plugin.getPlotMeCoreManager().setOwnerSign(p.getWorld(), plot);
-							
-							plot.updateField("owner", newowner);
+							if(!event.isCancelled())
+							{
+								plot.currentbidder = "";
+								plot.currentbid = 0;
+								plot.auctionned = false;
+								plot.forsale = false;
+								
+								plugin.getPlotMeCoreManager().setSellSign(p.getWorld(), plot);
+								
+								plot.updateField("currentbidder", "");
+								plot.updateField("currentbid", 0);
+								plot.updateField("auctionned", false);
+								plot.updateField("forsale", false);
+						
+								plot.owner = newowner;
+								
+								plugin.getPlotMeCoreManager().setOwnerSign(p.getWorld(), plot);
+								
+								plot.updateField("owner", newowner);
+							}
 						}
 						else
 						{

@@ -153,6 +153,7 @@ public class PlotMeCoreManager
 		tempPlotInfo.AutoLinkPlots = Boolean.parseBoolean(args.get("AutoLinkPlots"));
 		tempPlotInfo.DisableExplosion = Boolean.parseBoolean(args.get("DisableExplosion"));
 		tempPlotInfo.DisableIgnition = Boolean.parseBoolean(args.get("DisableIgnition"));
+		tempPlotInfo.UseProgressiveClear = Boolean.parseBoolean(args.get("UseProgressiveClear"));
 		tempPlotInfo.UseEconomy = Boolean.parseBoolean(args.get("UseEconomy"));
 		tempPlotInfo.CanPutOnSale = Boolean.parseBoolean(args.get("CanPutOnSale"));
 		tempPlotInfo.CanSellToBank = Boolean.parseBoolean(args.get("CanSellToBank"));
@@ -181,6 +182,7 @@ public class PlotMeCoreManager
 		currworld.set("AutoLinkPlots", tempPlotInfo.AutoLinkPlots);
 		currworld.set("DisableExplosion", tempPlotInfo.DisableExplosion);
 		currworld.set("DisableIgnition", tempPlotInfo.DisableIgnition);
+		currworld.set("UseProgressiveClear", tempPlotInfo.UseProgressiveClear);
 		
 		ConfigurationSection economysection = currworld.createSection("economy");
 		
@@ -1039,8 +1041,16 @@ public class PlotMeCoreManager
 		sm.updatePlot(idX, idZ, world, "auctionneddate", "");
 		sm.updatePlot(idX, idZ, world, "currentbid", 0);
 		sm.updatePlot(idX, idZ, world, "currentbidder", "");
-				
-		plugin.addPlotToClear(new PlotToClear(world, id, cs, reason));
+		
+		if(getMap(w).UseProgressiveClear)
+		{
+			plugin.addPlotToClear(new PlotToClear(world, id, cs, reason));
+		}
+		else
+		{
+			plugin.getGenManager(w).clear(w, id);
+			cs.sendMessage(plugin.getUtil().C("MsgPlotCleared"));
+		}
 	}
 	
 	public boolean isPlotAvailable(String id, World world)

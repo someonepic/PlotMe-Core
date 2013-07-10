@@ -6,6 +6,8 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import  com.worldcretornica.plotme_core.commands.PlotCommand;
+import com.worldcretornica.plotme_core.event.PlotCreateEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
@@ -62,6 +64,8 @@ public class CmdClaim extends PlotCommand
 						
 						double price = 0;
 						
+						PlotCreateEvent event;
+						
 						if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 						{
 							price = pmi.ClaimPrice;
@@ -69,13 +73,22 @@ public class CmdClaim extends PlotCommand
 							
 							if(balance >= price)
 							{
-								EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+								event = PlotMeEventFactory.callPlotCreatedEvent(plugin, w, id, p);
 								
-								if(!er.transactionSuccess())
+								if(event.isCancelled())
 								{
-									p.sendMessage(RED + er.errorMessage);
-									Util().warn(er.errorMessage);
 									return true;
+								}
+								else
+								{
+									EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+									
+									if(!er.transactionSuccess())
+									{
+										p.sendMessage(RED + er.errorMessage);
+										Util().warn(er.errorMessage);
+										return true;
+									}
 								}
 							}
 							else
@@ -84,24 +97,31 @@ public class CmdClaim extends PlotCommand
 								return true;
 							}
 						}
-						
-						Plot plot = plugin.getPlotMeCoreManager().createPlot(w, id, playername);
-						
-						//plugin.getPlotMeCoreManager().adjustLinkedPlots(id, w);
-		
-						if(plot == null)
-							p.sendMessage(RED + C("ErrCreatingPlotAt") + " " + id);
 						else
 						{
-							if(playername.equalsIgnoreCase(p.getName()))
-							{
-								p.sendMessage(C("MsgThisPlotYours") + " " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt") + " " + Util().moneyFormat(-price));
-							}else{
-								p.sendMessage(C("MsgThisPlotIsNow") + " " + playername + C("WordPossessive") + ". " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt") + " " + Util().moneyFormat(-price));
-							}
+							event = PlotMeEventFactory.callPlotCreatedEvent(plugin, w, id, p);
+						}
+						
+						if(!event.isCancelled())
+						{
+							Plot plot = plugin.getPlotMeCoreManager().createPlot(w, id, playername);
 							
-							if(isAdv)
-								plugin.getLogger().info(LOG + playername + " " + C("MsgClaimedPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
+							//plugin.getPlotMeCoreManager().adjustLinkedPlots(id, w);
+			
+							if(plot == null)
+								p.sendMessage(RED + C("ErrCreatingPlotAt") + " " + id);
+							else
+							{
+								if(playername.equalsIgnoreCase(p.getName()))
+								{
+									p.sendMessage(C("MsgThisPlotYours") + " " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt") + " " + Util().moneyFormat(-price));
+								}else{
+									p.sendMessage(C("MsgThisPlotIsNow") + " " + playername + C("WordPossessive") + ". " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt") + " " + Util().moneyFormat(-price));
+								}
+								
+								if(isAdv)
+									plugin.getLogger().info(LOG + playername + " " + C("MsgClaimedPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
+							}
 						}
 					}
 				}

@@ -9,6 +9,8 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotBiomeChangeEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdBiome extends PlotCommand 
 {
@@ -64,6 +66,8 @@ public class CmdBiome extends PlotCommand
 									
 									double price = 0;
 									
+									PlotBiomeChangeEvent event;
+									
 									if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 									{
 										price = pmi.BiomeChangePrice;
@@ -71,13 +75,21 @@ public class CmdBiome extends PlotCommand
 										
 										if(balance >= price)
 										{
-											EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
-											
-											if(!er.transactionSuccess())
+											event = PlotMeEventFactory.callPlotBiomeChangeEvent(plugin, w, plot, p, biome);
+											if(event.isCancelled())
 											{
-												p.sendMessage(RED + er.errorMessage);
-												Util().warn(er.errorMessage);
 												return true;
+											}
+											else
+											{											
+												EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+												
+												if(!er.transactionSuccess())
+												{
+													p.sendMessage(RED + er.errorMessage);
+													Util().warn(er.errorMessage);
+													return true;
+												}
 											}
 										}
 										else
@@ -86,18 +98,23 @@ public class CmdBiome extends PlotCommand
 											return true;
 										}
 									}
-									
-									plugin.getPlotMeCoreManager().setBiome(w, id, biome);
-									plot.biome = biome;
-									
-									
-								
-									p.sendMessage(C("MsgBiomeSet") + " " + ChatColor.BLUE + Util().FormatBiome(biome.name()) + " " + Util().moneyFormat(-price));
-									
-									if(isAdv)
+									else
 									{
-										plugin.getLogger().info(LOG + playername + " " + C("MsgChangedBiome") + " " + id + " " + C("WordTo") + " " + 
-												Util().FormatBiome(biome.name()) + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
+										event = PlotMeEventFactory.callPlotBiomeChangeEvent(plugin, w, plot, p, biome);
+									}
+									
+									if(!event.isCancelled())
+									{
+										plugin.getPlotMeCoreManager().setBiome(w, id, biome);
+										plot.biome = biome;
+									
+										p.sendMessage(C("MsgBiomeSet") + " " + ChatColor.BLUE + Util().FormatBiome(biome.name()) + " " + Util().moneyFormat(-price));
+										
+										if(isAdv)
+										{
+											plugin.getLogger().info(LOG + playername + " " + C("MsgChangedBiome") + " " + id + " " + C("WordTo") + " " + 
+													Util().FormatBiome(biome.name()) + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
+										}
 									}
 								}
 								else

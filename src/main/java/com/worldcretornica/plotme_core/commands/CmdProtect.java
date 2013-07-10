@@ -7,6 +7,8 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
+import com.worldcretornica.plotme_core.event.PlotProtectChangeEvent;
 
 public class CmdProtect extends PlotCommand
 {
@@ -41,17 +43,24 @@ public class CmdProtect extends PlotCommand
 						
 						if(plot.owner.equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.protect"))
 						{
+							PlotProtectChangeEvent event;
+							
 							if(plot.protect)
 							{
-								plot.protect = false;
-								plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
+								event = PlotMeEventFactory.callPlotProtectChangeEvent(plugin, p.getWorld(), plot, p, false);
 								
-								plot.updateField("protected", false);
-								
-								p.sendMessage(C("MsgPlotNoLongerProtected"));
-								
-								if(isAdv)
-									plugin.getLogger().info(LOG + name + " " + C("MsgUnprotectedPlot") + " " + id);
+								if(!event.isCancelled())
+								{
+									plot.protect = false;
+									plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
+									
+									plot.updateField("protected", false);
+									
+									p.sendMessage(C("MsgPlotNoLongerProtected"));
+									
+									if(isAdv)
+										plugin.getLogger().info(LOG + name + " " + C("MsgUnprotectedPlot") + " " + id);
+								}
 							}
 							else
 							{
@@ -70,28 +79,43 @@ public class CmdProtect extends PlotCommand
 									}
 									else
 									{
-										EconomyResponse er = plugin.getEconomy().withdrawPlayer(name, cost);
+										event = PlotMeEventFactory.callPlotProtectChangeEvent(plugin, p.getWorld(), plot, p, true);
 										
-										if(!er.transactionSuccess())
+										if(event.isCancelled())
 										{
-											p.sendMessage(RED + er.errorMessage);
-											Util().warn(er.errorMessage);
 											return true;
+										}
+										else
+										{
+											EconomyResponse er = plugin.getEconomy().withdrawPlayer(name, cost);
+											
+											if(!er.transactionSuccess())
+											{
+												p.sendMessage(RED + er.errorMessage);
+												Util().warn(er.errorMessage);
+												return true;
+											}
 										}
 									}
 								
 								}
+								else
+								{
+									event = PlotMeEventFactory.callPlotProtectChangeEvent(plugin, p.getWorld(), plot, p, true);
+								}
 								
-								plot.protect = true;
-								plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
-								
-								plot.updateField("protected", true);
-								
-								p.sendMessage(C("MsgPlotNowProtected") + " " + Util().moneyFormat(-cost));
-								
-								if(isAdv)
-									plugin.getLogger().info(LOG + name + " " + C("MsgProtectedPlot") + " " + id);
-								
+								if(!event.isCancelled())
+								{
+									plot.protect = true;
+									plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
+									
+									plot.updateField("protected", true);
+									
+									p.sendMessage(C("MsgPlotNowProtected") + " " + Util().moneyFormat(-cost));
+									
+									if(isAdv)
+										plugin.getLogger().info(LOG + name + " " + C("MsgProtectedPlot") + " " + id);
+								}
 							}
 						}
 						else

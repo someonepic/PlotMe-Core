@@ -1,13 +1,15 @@
 package com.worldcretornica.plotme_core;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class PlotMapInfo 
 {
-	private PlotMe_Core plotmecore = null;
+	private PlotMe_Core plugin = null;
 	
 	private HashMap<String, Plot> _plots;
+	private List<String> _freedplots;
 	private String _world;
 	
 	public int PlotAutoLimit;
@@ -39,24 +41,28 @@ public class PlotMapInfo
 	public boolean DisableExplosion;
 	public boolean DisableIgnition;
 	
+	public boolean UseProgressiveClear;
+	public String NextFreed;
+	
 	public PlotMapInfo(PlotMe_Core instance)
 	{
-		plotmecore = instance;
+		plugin = instance;
 		_plots = new HashMap<String, Plot>();
+		_freedplots = new ArrayList<String>();
 	}
 	
 	public PlotMapInfo(PlotMe_Core instance, String world)
 	{
-		plotmecore = instance;
+		this(instance);
 		_world = world;
-		_plots = new HashMap<String, Plot>();
+		_freedplots = plugin.getSqlManager().getFreed(world);
 	}
 	
 	public Plot getPlot(String id)
 	{
 		if(!_plots.containsKey(id))
 		{
-			Plot plot = plotmecore.getSqlManager().getPlot(_world, id);
+			Plot plot = plugin.getSqlManager().getPlot(_world, id);
 			if (plot == null)
 				return null;
 			
@@ -64,6 +70,11 @@ public class PlotMapInfo
 		}
 		
 		return _plots.get(id);
+	}
+	
+	public HashMap<String, Plot> getLoadedPlots()
+	{
+		return _plots;
 	}
 	
 	public void addPlot(String id, Plot plot)
@@ -80,5 +91,41 @@ public class PlotMapInfo
 		{
 			_plots.remove(id);
 		}
+	}
+	
+	public void addFreed(String id)
+	{
+		if(!_freedplots.contains(id))
+		{
+			_freedplots.add(id);
+			int x = plugin.getPlotMeCoreManager().getIdX(id);
+			int z = plugin.getPlotMeCoreManager().getIdZ(id);
+			plugin.getSqlManager().addFreed(x, z, _world);
+		}
+	}
+	
+	public void removeFreed(String id)
+	{
+		if(_freedplots.contains(id))
+		{
+			_freedplots.remove(id);
+			int x = plugin.getPlotMeCoreManager().getIdX(id);
+			int z = plugin.getPlotMeCoreManager().getIdZ(id);
+			plugin.getSqlManager().deleteFreed(x, z, _world);
+		}
+	}
+	
+	public String getNextFreed()
+	{
+		if(!_freedplots.isEmpty())
+			return _freedplots.get(0);
+		else
+			return NextFreed;
+	}
+	
+	public void setNextFreed(String id)
+	{
+		NextFreed = id;
+		plugin.saveWorldConfig(_world);
 	}
 }

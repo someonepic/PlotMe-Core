@@ -14,9 +14,19 @@ public class PlotMeSpool implements Runnable
 	private long timer = 0;
 	private boolean mustStop = false;
 	
+	private static String T;
+	private static String G;
+	private static String M;
+	private static String k;
+	
 	public PlotMeSpool(PlotMe_Core instance)
 	{
 		plugin = instance;
+
+		T = plugin.getUtil().C("Unit_1000000000000");
+		G = plugin.getUtil().C("Unit_1000000000");
+		M = plugin.getUtil().C("Unit_1000000");
+		k = plugin.getUtil().C("Unit_1000");
 	}
 	
 	@Override
@@ -33,7 +43,7 @@ public class PlotMeSpool implements Runnable
 				{
 					World w = Bukkit.getWorld(plottoclear.world);
 					
-					currentClear = plugin.getGenManager(w).clear(w, plottoclear.plotid, 50000, true, null);
+					currentClear = plugin.getGenManager(w).clear(w, plottoclear.plotid, plugin.getNbBlocksPerClearStep(), true, null);
 					timer = System.currentTimeMillis();
 					ShowProgress();
 				}
@@ -41,7 +51,7 @@ public class PlotMeSpool implements Runnable
 			else
 			{
 				World w = Bukkit.getWorld(plottoclear.world);
-				currentClear = plugin.getGenManager(w).clear(w, plottoclear.plotid, 50000, false, currentClear);
+				currentClear = plugin.getGenManager(w).clear(w, plottoclear.plotid, plugin.getNbBlocksPerClearStep(), false, currentClear);
 			}
 			
 			if(plottoclear != null)
@@ -66,7 +76,7 @@ public class PlotMeSpool implements Runnable
 						plugin.getGenManager(plottoclear.world).refreshPlotChunks(w, plottoclear.plotid);
 					}
 					
-					Msg("Plot " + plottoclear.plotid + " cleared");
+					Msg(plugin.getUtil().C("WordPlot") + " " + plottoclear.plotid + " " + plugin.getUtil().C("WordCleared"));
 					plottoclear = null;
 				}
 			}
@@ -121,8 +131,7 @@ public class PlotMeSpool implements Runnable
 		World w = Bukkit.getWorld(plottoclear.world);
 		Location bottom = plugin.getGenManager(w).getPlotBottomLoc(w, plottoclear.plotid);
 		Location top = plugin.getGenManager(w).getPlotTopLoc(w, plottoclear.plotid);
-		//PlotMe_Core.self.getLogger().info("(" + top.getBlockX() + "-" + bottom.getBlockX() + ")*(" + top.getBlockY() + "-" + bottom.getBlockY() + ")*(" + top.getBlockZ() + "-" + bottom.getBlockZ() + ")");
-		
+
 		return (top.getBlockX() - bottom.getBlockX() + 1) * (top.getBlockY() - bottom.getBlockY() + 1) * (top.getBlockZ() - bottom.getBlockZ() + 1);
 	}
 	
@@ -139,25 +148,25 @@ public class PlotMeSpool implements Runnable
 		{
 			buffer = ((double)count / 1000000000000L);
 			buffer = ((double)Math.round(buffer*10)/10);
-			return buffer + "T";
+			return buffer + T;
 		}
 		if(count > 1000000000)
 		{
 			buffer = ((double)count / 1000000000);
 			buffer = ((double)Math.round(buffer*10)/10);
-			return buffer + "G";
+			return buffer + G;
 		}
 		else if(count > 1000000)
 		{
 			buffer = ((double)count / 1000000);
 			buffer = ((double)Math.round(buffer*10)/10);
-			return buffer + "M";
+			return buffer + M;
 		}
 		else if(count > 1000)
 		{
 			buffer = ((double)count / 1000);
 			buffer = ((double)Math.round(buffer*10)/10);
-			return buffer + "k";
+			return buffer + k;
 		}
 		else
 		{

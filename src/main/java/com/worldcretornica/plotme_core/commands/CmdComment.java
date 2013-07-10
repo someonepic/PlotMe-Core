@@ -9,6 +9,8 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotCommentEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdComment extends PlotCommand 
 {
@@ -46,7 +48,14 @@ public class CmdComment extends PlotCommand
 							PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
 							String playername = p.getName();
 							
+							String text = StringUtils.join(args," ");
+							text = text.substring(text.indexOf(" "));
+							
 							double price = 0;
+							
+							Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
+							
+							PlotCommentEvent event;
 							
 							if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 							{
@@ -55,13 +64,22 @@ public class CmdComment extends PlotCommand
 								
 								if(balance >= price)
 								{
-									EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+									event = PlotMeEventFactory.callPlotCommentEvent(plugin, p.getWorld(), plot, p, text);
 									
-									if(!er.transactionSuccess())
+									if(event.isCancelled())
 									{
-										p.sendMessage(RED + er.errorMessage);
-										Util().warn(er.errorMessage);
 										return true;
+									}
+									else
+									{
+										EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+										
+										if(!er.transactionSuccess())
+										{
+											p.sendMessage(RED + er.errorMessage);
+											Util().warn(er.errorMessage);
+											return true;
+										}
 									}
 								}
 								else
@@ -70,23 +88,25 @@ public class CmdComment extends PlotCommand
 									return true;
 								}
 							}
+							else
+							{
+								event = PlotMeEventFactory.callPlotCommentEvent(plugin, p.getWorld(), plot, p, text);
+							}
 							
-							Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
-							
-							String text = StringUtils.join(args," ");
-							text = text.substring(text.indexOf(" "));
-							
-							String[] comment = new String[2];
-							comment[0] = playername;
-							comment[1] = text;
-							
-							plot.comments.add(comment);
-							plugin.getSqlManager().addPlotComment(comment, plot.comments.size(), plugin.getPlotMeCoreManager().getIdX(id), plugin.getPlotMeCoreManager().getIdZ(id), plot.world);
-							
-							p.sendMessage(C("MsgCommentAdded") + " " + Util().moneyFormat(-price));
-							
-							if(isAdv)
-								plugin.getLogger().info(LOG + playername + " " + C("MsgCommentedPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
+							if(!event.isCancelled())
+							{
+								String[] comment = new String[2];
+								comment[0] = playername;
+								comment[1] = text;
+								
+								plot.comments.add(comment);
+								plugin.getSqlManager().addPlotComment(comment, plot.comments.size(), plugin.getPlotMeCoreManager().getIdX(id), plugin.getPlotMeCoreManager().getIdZ(id), plot.world);
+								
+								p.sendMessage(C("MsgCommentAdded") + " " + Util().moneyFormat(-price));
+								
+								if(isAdv)
+									plugin.getLogger().info(LOG + playername + " " + C("MsgCommentedPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
+							}
 						}
 						else
 						{

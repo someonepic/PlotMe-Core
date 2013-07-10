@@ -9,6 +9,8 @@ import com.worldcretornica.plotme_core.ClearReason;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotClearEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdClear extends PlotCommand 
 {
@@ -53,6 +55,8 @@ public class CmdClear extends PlotCommand
 								
 								double price = 0;
 								
+								PlotClearEvent event;
+								
 								if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 								{
 									price = pmi.ClearPrice;
@@ -60,13 +64,22 @@ public class CmdClear extends PlotCommand
 									
 									if(balance >= price)
 									{
-										EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+										event = PlotMeEventFactory.callPlotClearEvent(plugin, w, plot, p);
 										
-										if(!er.transactionSuccess())
+										if(event.isCancelled())
 										{
-											p.sendMessage(RED + er.errorMessage);
-											Util().warn(er.errorMessage);
 											return true;
+										}
+										else
+										{
+											EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+											
+											if(!er.transactionSuccess())
+											{
+												p.sendMessage(RED + er.errorMessage);
+												Util().warn(er.errorMessage);
+												return true;
+											}
 										}
 									}
 									else
@@ -74,16 +87,23 @@ public class CmdClear extends PlotCommand
 										p.sendMessage(RED + C("MsgNotEnoughClear") + " " + C("WordMissing") + " " + RESET + (price - balance) + RED + " " + plugin.getEconomy().currencyNamePlural());
 										return true;
 									}
-								}						
+								}
+								else
+								{
+									event = PlotMeEventFactory.callPlotClearEvent(plugin, w, plot, p);
+								}
 								
-								plugin.getPlotMeCoreManager().clear(w, plot, p, ClearReason.Clear);
-								//RemoveLWC(w, plot, p);
-								//plugin.getPlotMeCoreManager().regen(w, plot);
-								
-								//p.sendMessage(C("MsgPlotCleared") + " " + Util.moneyFormat(-price));
-								
-								if(isAdv)
-									plugin.getLogger().info(LOG + playername + " " + C("MsgClearedPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
+								if(!event.isCancelled())
+								{
+									plugin.getPlotMeCoreManager().clear(w, plot, p, ClearReason.Clear);
+									//RemoveLWC(w, plot, p);
+									//plugin.getPlotMeCoreManager().regen(w, plot);
+									
+									//p.sendMessage(C("MsgPlotCleared") + " " + Util.moneyFormat(-price));
+									
+									if(isAdv)
+										plugin.getLogger().info(LOG + playername + " " + C("MsgClearedPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
+								}
 							}
 							else
 							{

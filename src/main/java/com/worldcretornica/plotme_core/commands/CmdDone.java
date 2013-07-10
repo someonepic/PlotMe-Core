@@ -4,6 +4,8 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotDoneChangeEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdDone extends PlotCommand 
 {
@@ -36,22 +38,27 @@ public class CmdDone extends PlotCommand
 						String name = p.getName();
 						
 						if(plot.owner.equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.done"))
-						{							
-							if(plot.finished)
+						{
+							PlotDoneChangeEvent event = PlotMeEventFactory.callPlotDoneEvent(plugin, p.getWorld(), plot, p, plot.finished); 
+							
+							if(!event.isCancelled())
 							{
-								plot.setUnfinished();
-								p.sendMessage(C("MsgUnmarkFinished"));
-								
-								if(isAdv)
-									plugin.getLogger().info(LOG + name + " " + C("WordMarked") + " " + id + " " + C("WordFinished"));
-							}
-							else
-							{
-								plot.setFinished();
-								p.sendMessage(C("MsgMarkFinished"));
-								
-								if(isAdv)
-									plugin.getLogger().info(LOG + name + " " + C("WordMarked") + " " + id + " " + C("WordUnfinished"));
+								if(plot.finished)
+								{
+									plot.setUnfinished();
+									p.sendMessage(C("MsgUnmarkFinished"));
+									
+									if(isAdv)
+										plugin.getLogger().info(LOG + name + " " + C("WordMarked") + " " + id + " " + C("WordFinished"));
+								}
+								else
+								{
+									plot.setFinished();
+									p.sendMessage(C("MsgMarkFinished"));
+									
+									if(isAdv)
+										plugin.getLogger().info(LOG + name + " " + C("WordMarked") + " " + id + " " + C("WordUnfinished"));
+								}
 							}
 						}
 					}

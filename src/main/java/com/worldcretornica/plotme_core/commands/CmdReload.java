@@ -4,6 +4,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdReload extends PlotCommand 
 {
@@ -15,6 +16,8 @@ public class CmdReload extends PlotCommand
 	{
 		if (!(s instanceof Player) || plugin.cPerms((Player) s, "PlotMe.admin.reload"))
 		{
+			PlotMeEventFactory.callPlotReloadEvent();
+			
 			plugin.initialize();
 			s.sendMessage(C("MsgReloadedSuccess"));
 			

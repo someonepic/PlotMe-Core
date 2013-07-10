@@ -7,6 +7,8 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotBidEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdBid extends PlotCommand 
 {
@@ -69,49 +71,54 @@ public class CmdBid extends PlotCommand
 										}
 										else
 										{
-											EconomyResponse er = plugin.getEconomy().withdrawPlayer(bidder, bid);
+											PlotBidEvent event = PlotMeEventFactory.callPlotBidEvent(plugin, p.getWorld(), plot, p, bid);
 											
-											if(er.transactionSuccess())
+											if(!event.isCancelled())
 											{
-												if(!currentbidder.equals(""))
+												EconomyResponse er = plugin.getEconomy().withdrawPlayer(bidder, bid);
+												
+												if(er.transactionSuccess())
 												{
-													EconomyResponse er2 = plugin.getEconomy().depositPlayer(currentbidder, currentbid);
-													
-													if(!er2.transactionSuccess())
+													if(!currentbidder.equals(""))
 													{
-														p.sendMessage(er2.errorMessage);
-														Util().warn(er2.errorMessage);
-													}
-													else
-													{
-														for(Player player : Bukkit.getServer().getOnlinePlayers())
+														EconomyResponse er2 = plugin.getEconomy().depositPlayer(currentbidder, currentbid);
+														
+														if(!er2.transactionSuccess())
 														{
-															if(player.getName().equalsIgnoreCase(currentbidder))
+															p.sendMessage(er2.errorMessage);
+															Util().warn(er2.errorMessage);
+														}
+														else
+														{
+															for(Player player : Bukkit.getServer().getOnlinePlayers())
 															{
-																player.sendMessage(C("MsgOutbidOnPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + ". " + Util().moneyFormat(bid));
-																break;
+																if(player.getName().equalsIgnoreCase(currentbidder))
+																{
+																	player.sendMessage(C("MsgOutbidOnPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + ". " + Util().moneyFormat(bid));
+																	break;
+																}
 															}
 														}
 													}
+													
+													plot.currentbidder = bidder;
+													plot.currentbid = bid;
+													
+													plot.updateField("currentbidder", bidder);
+													plot.updateField("currentbid", bid);
+													
+													plugin.getPlotMeCoreManager().setSellSign(p.getWorld(), plot);
+													
+													p.sendMessage(C("MsgBidAccepted") + " " + Util().moneyFormat(-bid));
+													
+													if(isAdv)
+														plugin.getLogger().info(LOG + bidder + " bid " + bid + " on plot " + id);
 												}
-												
-												plot.currentbidder = bidder;
-												plot.currentbid = bid;
-												
-												plot.updateField("currentbidder", bidder);
-												plot.updateField("currentbid", bid);
-												
-												plugin.getPlotMeCoreManager().setSellSign(p.getWorld(), plot);
-												
-												p.sendMessage(C("MsgBidAccepted") + " " + Util().moneyFormat(-bid));
-												
-												if(isAdv)
-													plugin.getLogger().info(LOG + bidder + " bid " + bid + " on plot " + id);
-											}
-											else
-											{
-												p.sendMessage(er.errorMessage);
-												Util().warn(er.errorMessage);
+												else
+												{
+													p.sendMessage(er.errorMessage);
+													Util().warn(er.errorMessage);
+												}
 											}
 										}
 									}

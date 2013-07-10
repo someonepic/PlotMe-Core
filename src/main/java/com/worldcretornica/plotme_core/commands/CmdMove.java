@@ -4,6 +4,8 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
+import com.worldcretornica.plotme_core.event.PlotMoveEvent;
 
 public class CmdMove extends PlotCommand 
 {
@@ -40,15 +42,20 @@ public class CmdMove extends PlotCommand
 					}
 					else
 					{
-						if(plugin.getPlotMeCoreManager().movePlot(p.getWorld(), plot1, plot2))
+						PlotMoveEvent event = PlotMeEventFactory.callPlotMoveEvent(plugin, w, w, plot1, plot2, p);
+						
+						if(!event.isCancelled())
 						{
-							p.sendMessage(C("MsgPlotMovedSuccess"));
-							
-							if(isAdv)
-								plugin.getLogger().info(LOG + p.getName() + " " + C("MsgExchangedPlot") + " " + plot1 + " " + C("MsgAndPlot") + " " + plot2);
+							if(plugin.getPlotMeCoreManager().movePlot(p.getWorld(), plot1, plot2))
+							{
+								p.sendMessage(C("MsgPlotMovedSuccess"));
+								
+								if(isAdv)
+									plugin.getLogger().info(LOG + p.getName() + " " + C("MsgExchangedPlot") + " " + plot1 + " " + C("MsgAndPlot") + " " + plot2);
+							}
+							else
+								p.sendMessage(RED + C("ErrMovingPlot"));
 						}
-						else
-							p.sendMessage(RED + C("ErrMovingPlot"));
 					}
 				}
 			}

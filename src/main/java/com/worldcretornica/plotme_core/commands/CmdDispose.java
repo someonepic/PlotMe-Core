@@ -9,6 +9,8 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotDisposeEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdDispose extends PlotCommand 
 {
@@ -51,6 +53,10 @@ public class CmdDispose extends PlotCommand
 								
 								double cost = pmi.DisposePrice;
 								
+								World w = p.getWorld();
+								
+								PlotDisposeEvent event;
+								
 								if(plugin.getPlotMeCoreManager().isEconomyEnabled(p))
 								{
 									if(cost != 0 && plugin.getEconomy().getBalance(name) < cost)
@@ -59,61 +65,75 @@ public class CmdDispose extends PlotCommand
 										return true;
 									}
 									
-									EconomyResponse er = plugin.getEconomy().withdrawPlayer(name, cost);
+									event = PlotMeEventFactory.callPlotDisposeEvent(plugin, w, plot, p);
 									
-									if(!er.transactionSuccess())
-									{	
-										p.sendMessage(RED + er.errorMessage);
-										Util().warn(er.errorMessage);
+									if(event.isCancelled())
+									{
 										return true;
 									}
-								
-									if(plot.auctionned)
+									else
 									{
-										String currentbidder = plot.currentbidder;
+										EconomyResponse er = plugin.getEconomy().withdrawPlayer(name, cost);
 										
-										if(!currentbidder.equals(""))
+										if(!er.transactionSuccess())
+										{	
+											p.sendMessage(RED + er.errorMessage);
+											Util().warn(er.errorMessage);
+											return true;
+										}
+									
+										if(plot.auctionned)
 										{
-											EconomyResponse er2 = plugin.getEconomy().depositPlayer(currentbidder, plot.currentbid);
+											String currentbidder = plot.currentbidder;
 											
-											if(!er2.transactionSuccess())
+											if(!currentbidder.equals(""))
 											{
-												p.sendMessage(RED + er2.errorMessage);
-												Util().warn(er2.errorMessage);
-											}
-											else
-											{
-											    for(Player player : Bukkit.getServer().getOnlinePlayers())
-											    {
-											        if(player.getName().equalsIgnoreCase(currentbidder))
-											        {
-											            player.sendMessage(C("WordPlot") + 
-											            		" " + id + " " + C("MsgOwnedBy") + " " + plot.owner + " " + C("MsgWasDisposed") + " " + Util().moneyFormat(cost));
-											            break;
-											        }
-											    }
+												EconomyResponse er2 = plugin.getEconomy().depositPlayer(currentbidder, plot.currentbid);
+												
+												if(!er2.transactionSuccess())
+												{
+													p.sendMessage(RED + er2.errorMessage);
+													Util().warn(er2.errorMessage);
+												}
+												else
+												{
+												    for(Player player : Bukkit.getServer().getOnlinePlayers())
+												    {
+												        if(player.getName().equalsIgnoreCase(currentbidder))
+												        {
+												            player.sendMessage(C("WordPlot") + 
+												            		" " + id + " " + C("MsgOwnedBy") + " " + plot.owner + " " + C("MsgWasDisposed") + " " + Util().moneyFormat(cost));
+												            break;
+												        }
+												    }
+												}
 											}
 										}
 									}
 								}
-									
-								World w = p.getWorld();
-								
-								if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
+								else
 								{
-									plugin.getPlotMeCoreManager().removePlot(w, id);
+									event = PlotMeEventFactory.callPlotDisposeEvent(plugin, w, plot, p);
 								}
 								
-								plugin.getPlotMeCoreManager().removeOwnerSign(w, id);
-								plugin.getPlotMeCoreManager().removeSellSign(w, id);
-								plugin.getPlotMeCoreManager().removeAuctionSign(w, id);
-								
-								plugin.getSqlManager().deletePlot(plugin.getPlotMeCoreManager().getIdX(id), plugin.getPlotMeCoreManager().getIdZ(id), w.getName().toLowerCase());
-								
-								p.sendMessage(C("MsgPlotDisposedAnyoneClaim"));
-								
-								if(isAdv)
-									plugin.getLogger().info(LOG + name + " " + C("MsgDisposedPlot") + " " + id);
+								if(!event.isCancelled())
+								{
+									if(!plugin.getPlotMeCoreManager().isPlotAvailable(id, p))
+									{
+										plugin.getPlotMeCoreManager().removePlot(w, id);
+									}
+									
+									plugin.getPlotMeCoreManager().removeOwnerSign(w, id);
+									plugin.getPlotMeCoreManager().removeSellSign(w, id);
+									plugin.getPlotMeCoreManager().removeAuctionSign(w, id);
+									
+									plugin.getSqlManager().deletePlot(plugin.getPlotMeCoreManager().getIdX(id), plugin.getPlotMeCoreManager().getIdZ(id), w.getName().toLowerCase());
+									
+									p.sendMessage(C("MsgPlotDisposedAnyoneClaim"));
+									
+									if(isAdv)
+										plugin.getLogger().info(LOG + name + " " + C("MsgDisposedPlot") + " " + id);
+								}
 							}
 							else
 							{

@@ -15,7 +15,8 @@ public class CmdResetWorld extends PlotCommand
 	{
 		if (!(s instanceof Player) || plugin.cPerms((Player) s, "PlotMe.admin.resetworld"))
 		{
-			//TODO
+			//TODO resetworld code
+			//TODO resetworld event
 			
 			if(isAdv)
 				plugin.getLogger().info(LOG + s.getName() + " " + C("MsgReloadedConfigurations"));

@@ -9,6 +9,8 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
+import com.worldcretornica.plotme_core.event.PlotTeleportHomeEvent;
 
 public class CmdHome extends PlotCommand 
 {
@@ -106,6 +108,8 @@ public class CmdHome extends PlotCommand
 								PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
 								
 								double price = 0;
+								
+								PlotTeleportHomeEvent event;
 														
 								if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 								{
@@ -114,12 +118,21 @@ public class CmdHome extends PlotCommand
 									
 									if(balance >= price)
 									{
-										EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+										event = PlotMeEventFactory.callPlotTeleportHomeEvent(plugin, w, plot, p);
 										
-										if(!er.transactionSuccess())
+										if(event.isCancelled())
 										{
-											p.sendMessage(RED + er.errorMessage);
 											return true;
+										}
+										else
+										{
+											EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+											
+											if(!er.transactionSuccess())
+											{
+												p.sendMessage(RED + er.errorMessage);
+												return true;
+											}
 										}
 									}
 									else
@@ -128,12 +141,18 @@ public class CmdHome extends PlotCommand
 										return true;
 									}
 								}
+								else
+								{
+									event = PlotMeEventFactory.callPlotTeleportHomeEvent(plugin, w, plot, p);
+								}
 								
-								p.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, plot.id));
-								
-								if(price != 0)
-									p.sendMessage(Util().moneyFormat(-price));
-								
+								if(!event.isCancelled())
+								{
+									p.teleport(event.getLocation());
+									
+									if(price != 0)
+										p.sendMessage(Util().moneyFormat(-price));
+								}
 								return true;
 							}else{
 								i--;

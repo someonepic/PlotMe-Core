@@ -9,6 +9,8 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotAuctionEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdAuction extends PlotCommand
 {
@@ -110,18 +112,24 @@ public class CmdAuction extends PlotCommand
 									}
 									else
 									{
-										plot.currentbid = bid;
-										plot.auctionned = true;
-										plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
-										plugin.getPlotMeCoreManager().setSellSign(w, plot);
 										
-										plot.updateField("currentbid", bid);
-										plot.updateField("auctionned", true);
+										PlotAuctionEvent event = PlotMeEventFactory.callPlotAuctionEvent(plugin, w, plot, p, bid);
 										
-										p.sendMessage(C("MsgAuctionStarted"));
-										
-										if(isAdv)
-											plugin.getLogger().info(LOG + name + " " + C("MsgStartedAuctionOnPlot") + " " + id + " " + C("WordAt") + " " + bid);
+										if(!event.isCancelled())
+										{
+											plot.currentbid = bid;
+											plot.auctionned = true;
+											plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
+											plugin.getPlotMeCoreManager().setSellSign(w, plot);
+											
+											plot.updateField("currentbid", bid);
+											plot.updateField("auctionned", true);
+											
+											p.sendMessage(C("MsgAuctionStarted"));
+											
+											if(isAdv)
+												plugin.getLogger().info(LOG + name + " " + C("MsgStartedAuctionOnPlot") + " " + id + " " + C("WordAt") + " " + bid);
+										}
 									}
 								}
 							}

@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotDenyPlayerEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdDeny extends PlotCommand 
 {
@@ -62,6 +64,8 @@ public class CmdDeny extends PlotCommand
 									
 									double price = 0;
 									
+									PlotDenyPlayerEvent event;
+																		
 									if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
 									{
 										price = pmi.DenyPlayerPrice;
@@ -69,13 +73,22 @@ public class CmdDeny extends PlotCommand
 										
 										if(balance >= price)
 										{
-											EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+											event = PlotMeEventFactory.callPlotDenyPlayerEvent(plugin, w, plot, p, denied);
 											
-											if(!er.transactionSuccess())
+											if(event.isCancelled())
 											{
-												p.sendMessage(RED + er.errorMessage);
-												Util().warn(er.errorMessage);
 												return true;
+											}
+											else
+											{
+												EconomyResponse er = plugin.getEconomy().withdrawPlayer(playername, price);
+												
+												if(!er.transactionSuccess())
+												{
+													p.sendMessage(RED + er.errorMessage);
+													Util().warn(er.errorMessage);
+													return true;
+												}
 											}
 										}
 										else
@@ -84,41 +97,48 @@ public class CmdDeny extends PlotCommand
 											return true;
 										}
 									}
-									
-									plot.addDenied(args[1]);
-									
-									if(denied.equals("*"))
-									{
-										List<Player> deniedplayers = plugin.getPlotMeCoreManager().getPlayersInPlot(w, id);
-										
-										for(Player deniedplayer : deniedplayers)
-										{
-											if(!plot.isAllowed(deniedplayer.getName()))
-												deniedplayer.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, plot.id));
-										}
-									}
 									else
 									{
-										Player deniedplayer = Bukkit.getServer().getPlayer(denied);
+										event = PlotMeEventFactory.callPlotDenyPlayerEvent(plugin, w, plot, p, denied);
+									}
+									
+									if(!event.isCancelled())
+									{
+										plot.addDenied(denied);
 										
-										if(deniedplayer != null)
+										if(denied.equals("*"))
 										{
-											if(deniedplayer.getWorld().equals(w))
+											List<Player> deniedplayers = plugin.getPlotMeCoreManager().getPlayersInPlot(w, id);
+											
+											for(Player deniedplayer : deniedplayers)
 											{
-												String deniedid = plugin.getPlotMeCoreManager().getPlotId(deniedplayer.getLocation());
-												
-												if(deniedid.equalsIgnoreCase(id))
-												{
+												if(!plot.isAllowed(deniedplayer.getName()))
 													deniedplayer.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, plot.id));
+											}
+										}
+										else
+										{
+											Player deniedplayer = Bukkit.getServer().getPlayer(denied);
+											
+											if(deniedplayer != null)
+											{
+												if(deniedplayer.getWorld().equals(w))
+												{
+													String deniedid = plugin.getPlotMeCoreManager().getPlotId(deniedplayer.getLocation());
+													
+													if(deniedid.equalsIgnoreCase(id))
+													{
+														deniedplayer.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, plot.id));
+													}
 												}
 											}
 										}
+										
+										p.sendMessage(C("WordPlayer") + " " + RED + denied + RESET + " " + C("MsgNowDenied") + " " + Util().moneyFormat(-price));
+										
+										if(isAdv)
+											plugin.getLogger().info(LOG + playername + " " + C("MsgDeniedPlayer") + " " + denied + " " + C("MsgToPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
 									}
-									
-									p.sendMessage(C("WordPlayer") + " " + RED + denied + RESET + " " + C("MsgNowDenied") + " " + Util().moneyFormat(-price));
-									
-									if(isAdv)
-										plugin.getLogger().info(LOG + playername + " " + C("MsgDeniedPlayer") + " " + denied + " " + C("MsgToPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
 								}
 							}
 							else

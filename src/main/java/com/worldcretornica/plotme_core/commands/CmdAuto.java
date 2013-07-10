@@ -8,6 +8,8 @@ import org.bukkit.entity.Player;
 
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
+import com.worldcretornica.plotme_core.event.PlotCreateEvent;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 
 public class CmdAuto extends PlotCommand 
 {
@@ -63,61 +65,109 @@ public class CmdAuto extends PlotCommand
 						PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
 						int limit = pmi.PlotAutoLimit;
 						
-						for(int i = 0; i < limit; i++)
+						String next = pmi.getNextFreed();
+						String id = "";
+						
+						plugin.getLogger().info("starting search " + next);
+						
+						if(plugin.getPlotMeCoreManager().isPlotAvailable(next, w))
 						{
-							for(int x = -i; x <= i; x++)
+							id = next;
+						}
+						else
+						{
+							int x = plugin.getPlotMeCoreManager().getIdX(next);
+							int z = plugin.getPlotMeCoreManager().getIdZ(next);
+														
+							toploop:
+							for(int i = Math.max(Math.abs(x), Math.abs(z)); i < limit;)
 							{
-								for(int z = -i; z <= i; z++)
+								for(; x <= i; x++)
 								{
-									String id = "" + x + ";" + z;
-									
-									if(plugin.getPlotMeCoreManager().isPlotAvailable(id, w))
-									{									
-										String name = p.getName();
+									for(; z <= i; z++)
+									{
+										id = "" + x + ";" + z;
+										plugin.getLogger().info("id tried = " + id);
 										
-										double price = 0;
-										
-										if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
+										if(plugin.getPlotMeCoreManager().isPlotAvailable(id, w))
 										{
-											price = pmi.ClaimPrice;
-											double balance = plugin.getEconomy().getBalance(name);
-											
-											if(balance >= price)
-											{
-												EconomyResponse er = plugin.getEconomy().withdrawPlayer(name, price);
-												
-												if(!er.transactionSuccess())
-												{
-													p.sendMessage(RED + er.errorMessage);
-													Util().warn(er.errorMessage);
-													return true;
-												}
-											}
-											else
-											{
-												p.sendMessage(RED + C("MsgNotEnoughAuto") + " " + C("WordMissing") + " " + RESET + Util().moneyFormat(price - balance, false));
-												return true;
-											}
+											plugin.getLogger().info("id found = " + id);
+											pmi.setNextFreed(id);
+											break toploop;
 										}
-										
-										plugin.getPlotMeCoreManager().createPlot(w, id, name);
-										
-										//plugin.getPlotMeCoreManager().adjustLinkedPlots(id, w);
-										
-										p.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, id));
-			
-										p.sendMessage(C("MsgThisPlotYours") + " " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt") + " " + Util().moneyFormat(-price));
-										
-										if(isAdv)
-											plugin.getLogger().info(LOG + name + " " + C("MsgClaimedPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
-										
+									}
+								}
+								
+								i++;
+								x = -i;
+								z = -i;
+								
+								if(i >= limit)
+								{
+									p.sendMessage(RED + C("MsgNoPlotFound1") + " " + (limit^2) + " " + C("MsgNoPlotFound2"));
+									return false;
+								}
+							}
+						}
+						
+						String name = p.getName();
+						
+						double price = 0;
+						
+						PlotCreateEvent event;
+						
+						if(plugin.getPlotMeCoreManager().isEconomyEnabled(w))
+						{
+							price = pmi.ClaimPrice;
+							double balance = plugin.getEconomy().getBalance(name);
+							
+							if(balance >= price)
+							{
+								event = PlotMeEventFactory.callPlotCreatedEvent(plugin, w, id, p);
+								
+								if(event.isCancelled())
+								{
+									return true;
+								}
+								else
+								{
+									EconomyResponse er = plugin.getEconomy().withdrawPlayer(name, price);
+									
+									if(!er.transactionSuccess())
+									{
+										p.sendMessage(RED + er.errorMessage);
+										Util().warn(er.errorMessage);
 										return true;
 									}
 								}
 							}
+							else
+							{
+								p.sendMessage(RED + C("MsgNotEnoughAuto") + " " + C("WordMissing") + " " + RESET + Util().moneyFormat(price - balance, false));
+								return true;
+							}
 						}
-					
-						p.sendMessage(RED + C("MsgNoPlotFound1") + " " + (limit^2) + " " + C("MsgNoPlotFound2"));
+						else
+						{
+							event = PlotMeEventFactory.callPlotCreatedEvent(plugin, w, id, p);
+						}
+						
+						if(!event.isCancelled())
+						{
+							plugin.getPlotMeCoreManager().createPlot(w, id, name);
+							pmi.removeFreed(id);
+							
+							//plugin.getPlotMeCoreManager().adjustLinkedPlots(id, w);
+							
+							p.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, id));
+
+							p.sendMessage(C("MsgThisPlotYours") + " " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt") + " " + Util().moneyFormat(-price));
+							
+							if(isAdv)
+								plugin.getLogger().info(LOG + name + " " + C("MsgClaimedPlot") + " " + id + ((price != 0) ? " " + C("WordFor") + " " + price : ""));
+							
+						}
+						return true;
 					}
 				}
 			}

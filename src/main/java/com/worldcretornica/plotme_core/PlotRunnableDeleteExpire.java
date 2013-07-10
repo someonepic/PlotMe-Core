@@ -5,6 +5,9 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
+import com.worldcretornica.plotme_core.event.PlotResetEvent;
+
 public class PlotRunnableDeleteExpire implements Runnable 
 {
 	private PlotMe_Core plugin;
@@ -33,19 +36,24 @@ public class PlotRunnableDeleteExpire implements Runnable
 				String ids = "";
 				
 				for(Plot expiredplot : expiredplots)
-				{										
-					coremanager.clear(w, expiredplot, plugin.getCommandSenderCurrentlyProcessingExpired(), ClearReason.Expired);
+				{
+					PlotResetEvent event = PlotMeEventFactory.callPlotResetEvent(plugin, w, expiredplot, plugin.getCommandSenderCurrentlyProcessingExpired());
 					
-					String id = expiredplot.id;
-					ids += ChatColor.RED + id + ChatColor.RESET + ", ";
-					
-					coremanager.removePlot(w, id);
-					coremanager.removeOwnerSign(w, id);
-					coremanager.removeSellSign(w, id);
-										
-					sqlmanager.deletePlot(coremanager.getIdX(id), coremanager.getIdZ(id), w.getName().toLowerCase());
-					
-					plugin.setCounterExpired(plugin.getCounterExpired() - 1);
+					if(!event.isCancelled())
+					{
+						coremanager.clear(w, expiredplot, plugin.getCommandSenderCurrentlyProcessingExpired(), ClearReason.Expired);
+						
+						String id = expiredplot.id;
+						ids += ChatColor.RED + id + ChatColor.RESET + ", ";
+						
+						coremanager.removePlot(w, id);
+						coremanager.removeOwnerSign(w, id);
+						coremanager.removeSellSign(w, id);
+											
+						sqlmanager.deletePlot(coremanager.getIdX(id), coremanager.getIdZ(id), w.getName().toLowerCase());
+						
+						plugin.setCounterExpired(plugin.getCounterExpired() - 1);
+					}
 				}
 				
 				if(ids.substring(ids.length() - 2).equals(", "))
