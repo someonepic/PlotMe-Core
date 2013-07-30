@@ -401,7 +401,7 @@ public class PlotMe_Core extends JavaPlugin
 				
 				if(!oldfile.getName().contains("config.backup.yml"))
 				{
-					oldfile.renameTo(new File(getDataFolder().getParentFile().getAbsolutePath() + "/PlotMe/config.backup.yml"));
+					oldfile.renameTo(new File(getDataFolder().getParentFile().getAbsolutePath() + File.separator+ "PlotMe/config.backup.yml"));
 				}
 			} 
 			catch (IOException e) 
