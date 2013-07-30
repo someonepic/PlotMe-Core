@@ -421,7 +421,7 @@ public class PlotMe_Core extends JavaPlugin
 		PluginDescriptionFile pdfFile = this.getDescription();
 		//PREFIX = ChatColor.BLUE + "[" + NAME + "] " + ChatColor.RESET;
 		VERSION = pdfFile.getVersion();
-		configpath = getDataFolder().getParentFile().getAbsolutePath() + "\\PlotMe";
+		configpath = getDataFolder().getParentFile().getAbsolutePath() + File.separator+ "PlotMe";
 				
 		File configfolder = new File(getConfigPath());
 		
