@@ -1112,12 +1112,12 @@ public class PlotMe_Core extends JavaPlugin
 		properties.put("ErrInvalidWorldName", "Cannot create new world, invalid world name chosen.");
 		properties.put("ErrSpoolInterrupted", "The spool sleep was interrupted");
 		
-		CreateConfig(filelang, properties, "PlotMe Caption configuration αω");
+		createConfig(filelang, properties, "PlotMe Caption configuration αω");
 		
 		if (!language.equalsIgnoreCase("english"))
 		{
 			filelang = new File(getConfigPath(), "caption-" + language + ".yml");
-			CreateConfig(filelang, properties, "PlotMe Caption configuration");
+			createConfig(filelang, properties, "PlotMe Caption configuration");
 		}
 		
 		InputStream input = null;
@@ -1153,7 +1153,7 @@ public class PlotMe_Core extends JavaPlugin
 		}
 	}
 	
-	private void CreateConfig(File file, TreeMap<String, String> properties, String Title)
+	private void createConfig(File file, TreeMap<String, String> properties, String Title)
 	{
 		if(!file.exists())
 		{
