@@ -63,7 +63,7 @@ public class CmdHome extends PlotCommand
 					}
 				}
 				
-				if(args.length == 2)
+				if(args.length >= 2)
 				{
 					if(Bukkit.getWorld(args[1]) == null)
 					{
