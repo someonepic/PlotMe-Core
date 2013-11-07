@@ -271,11 +271,11 @@ public class PlotMe_Core extends JavaPlugin
 	{
 		File oldfile;
 		
-		oldfile = new File(getDataFolder().getParentFile().getAbsolutePath() + "/PlotMe/config.yml");
+		oldfile = new File(getDataFolder().getParentFile().getAbsolutePath() + File.separator + "PlotMe" + File.separator + "config.yml");
 		
 		if(!oldfile.exists())
 		{
-			oldfile = new File(getDataFolder().getParentFile().getAbsolutePath() + "/PlotMe/config.backup.yml");
+			oldfile = new File(getDataFolder().getParentFile().getAbsolutePath() + File.separator + "PlotMe" + File.separator + "config.backup.yml");
 		}
 		
 		if(oldfile.exists())
@@ -401,7 +401,7 @@ public class PlotMe_Core extends JavaPlugin
 				
 				if(!oldfile.getName().contains("config.backup.yml"))
 				{
-					oldfile.renameTo(new File(getDataFolder().getParentFile().getAbsolutePath() + File.separator+ "PlotMe/config.backup.yml"));
+					oldfile.renameTo(new File(getDataFolder().getParentFile().getAbsolutePath() + File.separator + "PlotMe" + File.separator + "config.backup.yml"));
 				}
 			} 
 			catch (IOException e) 
