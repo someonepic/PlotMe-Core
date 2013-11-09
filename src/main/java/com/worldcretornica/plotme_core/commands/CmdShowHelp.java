@@ -98,6 +98,14 @@ public class CmdShowHelp extends PlotCommand {
         if (plugin.cPerms(p, "PlotMe.admin.setowner")) {
             allowed_commands.add("setowner");
         }
+        if (plugin.cPerms(p, "PlotMe.admin.setheight")) {
+            allowed_commands.add("setheight");
+            allowed_commands.add("addheight");
+            allowed_commands.add("subheight");
+        }
+        if (plugin.cPerms(p, "PlotMe.admin.setbase")) {
+            allowed_commands.add("setbase");
+        }
         if (plugin.cPerms(p, "PlotMe.admin.move")) {
             allowed_commands.add("move");
         }
@@ -311,6 +319,18 @@ public class CmdShowHelp extends PlotCommand {
             } else if (allowedcmd.equalsIgnoreCase("setowner")) {
                 p.sendMessage(GREEN + " /plotme " + C("CommandSetowner") + " <" + C("WordPlayer") + ">");
                 p.sendMessage(AQUA + " " + C("HelpSetowner"));
+            } else if (allowedcmd.equalsIgnoreCase("setheight")) {
+                p.sendMessage(GREEN + " /plotme " + C("CommandSetHeight") + " <" + C("WordHeight") + ">");
+                p.sendMessage(AQUA + " " + C("HelpSetHeight"));
+            } else if (allowedcmd.equalsIgnoreCase("addheight")) {
+                p.sendMessage(GREEN + " /plotme " + C("CommandAddHeight") + " <" + C("WordHeight") + ">");
+                p.sendMessage(AQUA + " " + C("HelpAddHeight"));
+            } else if (allowedcmd.equalsIgnoreCase("subheight")) {
+                p.sendMessage(GREEN + " /plotme " + C("CommandSubHeight") + " <" + C("WordHeight") + ">");
+                p.sendMessage(AQUA + " " + C("HelpSubHeight"));
+            } else if (allowedcmd.equalsIgnoreCase("setbase")) {
+                p.sendMessage(GREEN + " /plotme " + C("CommandSetBase") + " <" + C("WordHeight") + ">");
+                p.sendMessage(AQUA + " " + C("HelpSetBase"));
             } else if (allowedcmd.equalsIgnoreCase("move")) {
                 p.sendMessage(GREEN + " /plotme " + C("CommandMove") + " <" + C("WordIdFrom") + "> <" + C("WordIdTo") + ">");
                 p.sendMessage(AQUA + " " + C("HelpMove"));

@@ -29,6 +29,8 @@ import com.worldcretornica.plotme_core.commands.CmdRemove;
 import com.worldcretornica.plotme_core.commands.CmdReset;
 import com.worldcretornica.plotme_core.commands.CmdResetExpired;
 import com.worldcretornica.plotme_core.commands.CmdSell;
+import com.worldcretornica.plotme_core.commands.CmdSetBase;
+import com.worldcretornica.plotme_core.commands.CmdSetHeight;
 import com.worldcretornica.plotme_core.commands.CmdSetOwner;
 import com.worldcretornica.plotme_core.commands.CmdShowHelp;
 import com.worldcretornica.plotme_core.commands.CmdTP;
@@ -71,6 +73,8 @@ public class PMCommand implements CommandExecutor {
     private final CmdResetExpired resetexpired;
     private final CmdSell sell;
     private final CmdSetOwner setowner;
+    private final CmdSetHeight setHeight;
+    private final CmdSetBase setBase;
     private final CmdShowHelp showhelp;
     private final CmdTP tp;
     private final CmdUndeny undeny;
@@ -108,6 +112,8 @@ public class PMCommand implements CommandExecutor {
         resetexpired = new CmdResetExpired(plugin);
         sell = new CmdSell(plugin);
         setowner = new CmdSetOwner(plugin);
+        setHeight = new CmdSetHeight(plugin);
+        setBase = new CmdSetBase(plugin);
         showhelp = new CmdShowHelp(plugin);
         tp = new CmdTP(plugin);
         undeny = new CmdUndeny(plugin);
@@ -226,6 +232,18 @@ public class PMCommand implements CommandExecutor {
                             return remove.exec(p, args);
                         }
                         if (a0.equalsIgnoreCase(C("CommandSetowner")) || a0.equalsIgnoreCase("o")) {
+                            return setowner.exec(p, args);
+                        }
+                        if (a0.equalsIgnoreCase(C("CommandSetHeight")) || a0.equalsIgnoreCase("h")) {
+                            return setowner.exec(p, args);
+                        }
+                        if (a0.equalsIgnoreCase(C("CommandAddHeight")) || a0.equalsIgnoreCase("+h")) {
+                            return setowner.exec(p, args);
+                        }
+                        if (a0.equalsIgnoreCase(C("CommandSubHeight")) || a0.equalsIgnoreCase("-h")) {
+                            return setowner.exec(p, args);
+                        }
+                        if (a0.equalsIgnoreCase(C("CommandSetBase")) || a0.equalsIgnoreCase("b")) {
                             return setowner.exec(p, args);
                         }
                         if (a0.equalsIgnoreCase(C("CommandMove")) || a0.equalsIgnoreCase("m")) {

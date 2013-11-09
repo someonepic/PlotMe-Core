@@ -872,6 +872,10 @@ public class PlotMe_Core extends JavaPlugin {
         properties.put("HelpRemove", "Revokes a players access to the plot.");
         properties.put("HelpUndeny", "Allows a previously denied player to move onto your plot.");
         properties.put("HelpSetowner", "Sets the player provided as the owner of the plot your currently on.");
+        properties.put("HelpSetHeight", "Sets the buildable height from the base of the plot your currently on.");
+        properties.put("HelpAddHeight", "Adds to the buildable height from the base of the plot your currently on.");
+        properties.put("HelpSubHeight", "Subtracts from the buildable height from the base of the plot your currently on.");
+        properties.put("HelpSetBase", "Sets the lowest level that can be built on of the plot your currently on.");
         properties.put("HelpMove", "Swaps the plots blocks(highly experimental for now, use at your own risk).");
         properties.put("HelpWEAnywhere", "Toggles using worldedit anywhere.");
         properties.put("HelpExpired", "Lists expired plots.");
@@ -907,6 +911,7 @@ public class PlotMe_Core extends JavaPlugin {
         properties.put("WordPlayer", "Player");
         properties.put("WordComment", "comment");
         properties.put("WordBiome", "biome");
+        properties.put("WordHeight", "height");
         properties.put("WordId", "id");
         properties.put("WordIdFrom", "id-from");
         properties.put("WordIdTo", "id-to");
@@ -981,6 +986,10 @@ public class PlotMe_Core extends JavaPlugin {
         properties.put("CommandRemove", "remove");
         properties.put("CommandUndeny", "undeny");
         properties.put("CommandSetowner", "setowner");
+        properties.put("CommandSetHeight", "setheight");
+        properties.put("CommandAddHeight", "addheight");
+        properties.put("CommandSubHeight", "subheight");
+        properties.put("CommandSetBase", "setbase");
         properties.put("CommandMove", "move");
         properties.put("CommandWEAnywhere", "weanywhere");
         properties.put("CommandList", "list");
@@ -1015,6 +1024,8 @@ public class PlotMe_Core extends JavaPlugin {
         properties.put("ErrWorldExists", "Cannot create new world, name chosen already exists");
         properties.put("ErrInvalidWorldName", "Cannot create new world, invalid world name chosen.");
         properties.put("ErrSpoolInterrupted", "The spool sleep was interrupted");
+        properties.put("ErrOutsideRange", "is outside the permitted range");
+        properties.put("ErrNotANumber", "is not a valid number");
 
         createConfig(filelang, properties, "PlotMe Caption configuration αω");
 
