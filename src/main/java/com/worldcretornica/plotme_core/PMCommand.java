@@ -42,40 +42,40 @@ import org.bukkit.entity.Player;
 public class PMCommand implements CommandExecutor {
 
     private PlotMe_Core plugin = null;
-    private CmdAdd add;
-    private CmdAddTime addtime;
-    private CmdAuction auction;
-    private CmdAuto auto;
-    private CmdBid bid;
-    private CmdBiome biome;
-    private CmdBiomeList biomelist;
-    private CmdBuy buy;
-    private CmdClaim claim;
-    private CmdClear clear;
-    private CmdComment comment;
-    private CmdComments comments;
-    private CmdDeny deny;
-    private CmdDispose dispose;
-    private CmdDone done;
-    private CmdDoneList donelist;
-    private CmdExpired expired;
-    private CmdHome home;
-    private CmdID id;
-    private CmdInfo info;
-    private CmdMove move;
-    private CmdPlotList plotlist;
-    private CmdProtect protect;
-    private CmdReload reload;
-    private CmdRemove remove;
-    private CmdReset reset;
-    private CmdResetExpired resetexpired;
-    private CmdSell sell;
-    private CmdSetOwner setowner;
-    private CmdShowHelp showhelp;
-    private CmdTP tp;
-    private CmdUndeny undeny;
-    private CmdWEAnywhere weanywhere;
-    private CmdCreateWorld createworld;
+    private final CmdAdd add;
+    private final CmdAddTime addtime;
+    private final CmdAuction auction;
+    private final CmdAuto auto;
+    private final CmdBid bid;
+    private final CmdBiome biome;
+    private final CmdBiomeList biomelist;
+    private final CmdBuy buy;
+    private final CmdClaim claim;
+    private final CmdClear clear;
+    private final CmdComment comment;
+    private final CmdComments comments;
+    private final CmdDeny deny;
+    private final CmdDispose dispose;
+    private final CmdDone done;
+    private final CmdDoneList donelist;
+    private final CmdExpired expired;
+    private final CmdHome home;
+    private final CmdID id;
+    private final CmdInfo info;
+    private final CmdMove move;
+    private final CmdPlotList plotlist;
+    private final CmdProtect protect;
+    private final CmdReload reload;
+    private final CmdRemove remove;
+    private final CmdReset reset;
+    private final CmdResetExpired resetexpired;
+    private final CmdSell sell;
+    private final CmdSetOwner setowner;
+    private final CmdShowHelp showhelp;
+    private final CmdTP tp;
+    private final CmdUndeny undeny;
+    private final CmdWEAnywhere weanywhere;
+    private final CmdCreateWorld createworld;
 
     public PMCommand(PlotMe_Core instance) {
         plugin = instance;
@@ -119,6 +119,7 @@ public class PMCommand implements CommandExecutor {
         return plugin.getUtil().C(caption);
     }
 
+    @Override
     public boolean onCommand(CommandSender s, Command c, String l, String[] args) {
         if (l.equalsIgnoreCase("plotme") || l.equalsIgnoreCase("plot") || l.equalsIgnoreCase("p")) {
             if (!(s instanceof Player)) {
@@ -152,7 +153,7 @@ public class PMCommand implements CommandExecutor {
 
                     try {
                         ipage = Integer.parseInt(a0);
-                    } catch (Exception e) {
+                    } catch (NumberFormatException e) {
                     }
 
                     if (ipage != -1) {
@@ -167,7 +168,7 @@ public class PMCommand implements CommandExecutor {
 
                                 try {
                                     ipage = Integer.parseInt(a1);
-                                } catch (Exception e) {
+                                } catch (NumberFormatException e) {
                                 }
                             }
 
