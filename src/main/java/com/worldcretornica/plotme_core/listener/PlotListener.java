@@ -85,7 +85,7 @@ public class PlotListener implements Listener {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
                         }
-                    } else if (!plot.isAllowed(p.getName())) {
+                    } else if (!plot.isAllowed(p.getName(), b.getY())) {
                         if (!canbuild) {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
@@ -136,7 +136,7 @@ public class PlotListener implements Listener {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
                         }
-                    } else if (!plot.isAllowed(p.getName())) {
+                    } else if (!plot.isAllowed(p.getName(), b.getY())) {
                         if (!canbuild) {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
@@ -183,7 +183,7 @@ public class PlotListener implements Listener {
                         if (plot == null) {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
-                        } else if (!plot.isAllowed(p.getName())) {
+                        } else if (!plot.isAllowed(p.getName(), b.getY())) {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
                         }
@@ -226,7 +226,7 @@ public class PlotListener implements Listener {
                         if (plot == null) {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
-                        } else if (!plot.isAllowed(p.getName())) {
+                        } else if (!plot.isAllowed(p.getName(), b.getY())) {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
                         }
@@ -285,7 +285,7 @@ public class PlotListener implements Listener {
                                 event.setCancelled(true);
                             }
                         } else {
-                            if (!plot.isAllowed(p.getName())) {
+                            if (!plot.isAllowed(p.getName(), b.getY())) {
                                 if (!canbuild) {
                                     p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                                     event.setCancelled(true);
@@ -336,7 +336,7 @@ public class PlotListener implements Listener {
                                     }
                                     event.setCancelled(true);
                                 }
-                            } else if (!plot.isAllowed(p.getName())) {
+                            } else if (!plot.isAllowed(p.getName(), b.getY())) {
                                 if (!canbuild) {
                                     if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                                         p.sendMessage(plugin.getUtil().C("ErrCannotUse"));
@@ -586,7 +586,7 @@ public class PlotListener implements Listener {
 
                             if (plot == null) {
                                 event.setCancelled(true);
-                            } else if (!plot.isAllowed(p.getName())) {
+                            } else if (!plot.isAllowed(p.getName(), b.getY())) {
                                 event.setCancelled(true);
                             }
                         }
@@ -634,7 +634,7 @@ public class PlotListener implements Listener {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
                         }
-                    } else if (!plot.isAllowed(p.getName())) {
+                    } else if (!plot.isAllowed(p.getName(), b.getY())) {
                         if (!canbuild) {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
@@ -690,7 +690,7 @@ public class PlotListener implements Listener {
                                 p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                                 event.setCancelled(true);
                             }
-                        } else if (!plot.isAllowed(p.getName())) {
+                        } else if (!plot.isAllowed(p.getName(), l.getBlockY())) {
                             if (!canbuild) {
                                 p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                                 event.setCancelled(true);
@@ -742,7 +742,7 @@ public class PlotListener implements Listener {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
                         }
-                    } else if (!plot.isAllowed(p.getName())) {
+                    } else if (!plot.isAllowed(p.getName(), l.getBlockY())) {
                         if (!canbuild) {
                             p.sendMessage(plugin.getUtil().C("ErrCannotBuild"));
                             event.setCancelled(true);
@@ -777,7 +777,7 @@ public class PlotListener implements Listener {
                         p.sendMessage(plugin.getUtil().C("ErrCannotUseEggs"));
                         event.setHatching(false);
                     }
-                } else if (!plot.isAllowed(p.getName())) {
+                } else if (!plot.isAllowed(p.getName(), l.getBlockY())) {
                     if (!canbuild) {
                         p.sendMessage(plugin.getUtil().C("ErrCannotUseEggs"));
                         event.setHatching(false);

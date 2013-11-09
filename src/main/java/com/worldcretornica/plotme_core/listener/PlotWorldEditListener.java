@@ -121,7 +121,7 @@ public class PlotWorldEditListener implements Listener {
             } else if (event.getMessage().startsWith("//up")) {
                 Plot plot = plugin.getPlotMeCoreManager().getPlotById(p);
 
-                if (plot == null || !plot.isAllowed(p.getName())) {
+                if (plot == null || !plot.isAllowed(p.getName(), p.getLocation().getBlockY())) {
                     event.setCancelled(true);
                 }
             }
@@ -138,7 +138,7 @@ public class PlotWorldEditListener implements Listener {
                 Block b = event.getClickedBlock();
                 Plot plot = plugin.getPlotMeCoreManager().getPlotById(b);
 
-                if (plot != null && plot.isAllowed(p.getName())) {
+                if (plot != null && plot.isAllowed(p.getName(), b.getY())) {
                     plugin.getPlotWorldEdit().setMask(p, b.getLocation());
                 } else {
                     event.setCancelled(true);

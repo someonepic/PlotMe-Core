@@ -275,10 +275,18 @@ public class Plot implements Comparable<Plot> {
     }
 
     public boolean isAllowed(String name) {
-        return isAllowed(name, true, true);
+        return isAllowed(name, null);
     }
 
-    public boolean isAllowed(String name, boolean IncludeStar, boolean IncludeGroup) {
+    public boolean isAllowed(String name, Integer y) {
+        return isAllowed(name, y, true, true);
+    }
+
+    public boolean isAllowed(String name, Integer y, boolean IncludeStar, boolean IncludeGroup) {
+        if (y != null && contains(y)) {
+            return false;
+        }
+
         if (owner.equalsIgnoreCase(name) || (IncludeStar && owner.equals("*"))) {
             return true;
         }
@@ -304,8 +312,16 @@ public class Plot implements Comparable<Plot> {
         return false;
     }
 
+    private boolean contains(int y) {
+        return y >= baseY && y <= baseY + height;
+    }
+
     public boolean isDenied(String name) {
-        if (isAllowed(name, false, false)) {
+        return isDenied(name, null);
+    }
+
+    public boolean isDenied(String name, Integer y) {
+        if (isAllowed(name, y, false, false)) {
             return false;
         }
 
