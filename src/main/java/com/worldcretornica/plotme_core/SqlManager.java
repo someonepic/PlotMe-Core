@@ -28,7 +28,7 @@ public class SqlManager {
 
     public final String sqlitedb = "plots.db";
 
-	//todo add update to table for customprice, forsale
+    //todo add update to table for customprice, forsale
     private final String PLOT_TABLE = "CREATE TABLE `plotmePlots` ("
             + "`idX` INTEGER,"
             + "`idZ` INTEGER,"
@@ -417,7 +417,7 @@ public class SqlManager {
                 }
 
                 if (found) {
-            		//statement.execute("ALTER TABLE plotmePlots CHANGE auctionenddate auctionneddate varchar(16) NULL;"); <- doesn't work
+                    //statement.execute("ALTER TABLE plotmePlots CHANGE auctionenddate auctionneddate varchar(16) NULL;"); <- doesn't work
 
                     ResultSet plotset = null;
                     Statement plotstatement = conn.createStatement();
@@ -635,10 +635,12 @@ public class SqlManager {
                         int topZ = setPlots.getInt("topZ");
                         int bottomZ = setPlots.getInt("bottomZ");
                         String biome = setPlots.getString("biome");
+                        int baseY = setPlots.getInt("baseY");
+                        int height = setPlots.getInt("height");
                         java.sql.Date expireddate = null;
                         try {
                             expireddate = setPlots.getDate("expireddate");
-                        } catch (Exception e) {
+                        } catch (SQLException e) {
                         }
                         boolean finished = setPlots.getBoolean("finished");
                         HashSet<String> allowed = new HashSet<String>();
@@ -687,7 +689,7 @@ public class SqlManager {
                             comments.add(comment);
                         }
 
-                        Plot plot = new Plot(plugin, owner, world, biome, expireddate, finished, allowed,
+                        Plot plot = new Plot(plugin, owner, world, biome, baseY, height, expireddate, finished, allowed,
                                 comments, "" + idX + ";" + idZ, customprice, forsale, finisheddate,
                                 protect, currentbidder, currentbid, auctionned, denied, auctionneddate);
                         addPlot(plot, idX, idZ, topX, bottomX, topZ, bottomZ);
@@ -807,9 +809,9 @@ public class SqlManager {
         try {
             conn = getConnection();
 
-            ps = conn.prepareStatement("INSERT INTO plotmePlots (idX, idZ, owner, world, topX, bottomX, topZ, bottomZ, biome, "
+            ps = conn.prepareStatement("INSERT INTO plotmePlots (idX, idZ, owner, world, topX, bottomX, topZ, bottomZ, biome, baseY, height, "
                     + "expireddate, finished, customprice, forsale, finisheddate, protected, auctionned, auctionneddate, currentbid, currentbidder) "
-                    + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                    + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
             ps.setInt(1, idX);
             ps.setInt(2, idZ);
             ps.setString(3, plot.owner);
@@ -819,16 +821,18 @@ public class SqlManager {
             ps.setInt(7, topZ);
             ps.setInt(8, bottomZ);
             ps.setString(9, plot.biome.name());
-            ps.setDate(10, plot.expireddate);
-            ps.setBoolean(11, plot.finished);
-            ps.setDouble(12, plot.customprice);
-            ps.setBoolean(13, plot.forsale);
-            ps.setString(14, plot.finisheddate);
-            ps.setBoolean(15, plot.protect);
-            ps.setBoolean(16, plot.auctionned);
-            ps.setString(17, "");
-            ps.setDouble(18, plot.currentbid);
-            ps.setString(19, plot.currentbidder);
+            ps.setInt(10, plot.baseY);
+            ps.setInt(11, plot.height);
+            ps.setDate(12, plot.expireddate);
+            ps.setBoolean(13, plot.finished);
+            ps.setDouble(14, plot.customprice);
+            ps.setBoolean(15, plot.forsale);
+            ps.setString(16, plot.finisheddate);
+            ps.setBoolean(17, plot.protect);
+            ps.setBoolean(18, plot.auctionned);
+            ps.setString(19, "");
+            ps.setDouble(20, plot.currentbid);
+            ps.setString(21, plot.currentbidder);
 
             ps.executeUpdate();
             conn.commit();
@@ -1286,6 +1290,8 @@ public class SqlManager {
             if (setPlots.next()) {
                 String owner = setPlots.getString("owner");
                 String biome = setPlots.getString("biome");
+                int baseY = setPlots.getInt("baseY");
+                int height = setPlots.getInt("height");
                 java.sql.Date expireddate = null;
                 try {
                     expireddate = setPlots.getDate("expireddate");
@@ -1347,7 +1353,7 @@ public class SqlManager {
                     comments.add(comment);
                 }
 
-                plot = new Plot(plugin, owner, world, biome, expireddate, finished, allowed,
+                plot = new Plot(plugin, owner, world, biome, baseY, height, expireddate, finished, allowed,
                         comments, "" + idX + ";" + idZ, customprice, forsale, finisheddate, protect,
                         currentbidder, currentbid, auctionned, denied, auctionneddate);
             }
@@ -1877,6 +1883,8 @@ public class SqlManager {
                 int idX = setPlots.getInt("idX");
                 int idZ = setPlots.getInt("idZ");
                 String biome = setPlots.getString("biome");
+                int baseY = setPlots.getInt("baseY");
+                int height = setPlots.getInt("height");
                 java.sql.Date expireddate = null;
                 try {
                     expireddate = setPlots.getDate("expireddate");
@@ -1939,7 +1947,7 @@ public class SqlManager {
                     comments.add(comment);
                 }
 
-                Plot plot = new Plot(plugin, owner, world, biome, expireddate, finished, allowed,
+                Plot plot = new Plot(plugin, owner, world, biome, baseY, height, expireddate, finished, allowed,
                         comments, "" + idX + ";" + idZ, customprice, forsale, finisheddate, protect,
                         currentbidder, currentbid, auctionned, denied, auctionneddate);
 
@@ -1988,6 +1996,8 @@ public class SqlManager {
                 int idX = setPlots.getInt("idX");
                 int idZ = setPlots.getInt("idZ");
                 String biome = setPlots.getString("biome");
+                int baseY = setPlots.getInt("baseY");
+                int height = setPlots.getInt("height");
                 java.sql.Date expireddate = null;
                 try {
                     expireddate = setPlots.getDate("expireddate");
@@ -2050,7 +2060,7 @@ public class SqlManager {
                     comments.add(comment);
                 }
 
-                Plot plot = new Plot(plugin, owner, world, biome, expireddate, finished, allowed,
+                Plot plot = new Plot(plugin, owner, world, biome, baseY, height, expireddate, finished, allowed,
                         comments, "" + idX + ";" + idZ, customprice, forsale, finisheddate, protect,
                         currentbidder, currentbid, auctionned, denied, auctionneddate);
 
