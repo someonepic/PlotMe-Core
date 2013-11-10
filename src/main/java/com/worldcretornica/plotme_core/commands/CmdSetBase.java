@@ -33,12 +33,15 @@ public class CmdSetBase extends PlotCommand {
             p.sendMessage(args[1] + " " + C("ErrNotANumber"));
             return true;
         }
-        if (base > 256 || base < 0) {
-            p.sendMessage(args[1] + " " + C("ErrOutsideRange"));
+        if (base > 256) {
+            base = 256;
+        } else if (base < 0) {
+            base = 0;
         }
         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
         plot.baseY = base;
         plot.updateField("baseY", base);
+        p.sendMessage(C("MsgBaseChangedTo") + " " + base);
         return true;
     }
 }

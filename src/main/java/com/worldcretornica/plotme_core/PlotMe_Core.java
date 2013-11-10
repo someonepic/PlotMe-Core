@@ -824,6 +824,8 @@ public class PlotMe_Core extends JavaPlugin {
         properties.put("MsgChangedOwnerFrom", "changed owner from");
         properties.put("MsgChangedOwnerOf", "changed owner of");
         properties.put("MsgOwnerChangedTo", "Plot Owner has been set to");
+        properties.put("MsgHeightChangedTo", "Plot height has been set to");
+        properties.put("MsgBaseChangedTo", "Plot base has been set to");
         properties.put("MsgPlotMovedSuccess", "Plot moved successfully");
         properties.put("MsgExchangedPlot", "exchanged plot");
         properties.put("MsgAndPlot", "and plot");

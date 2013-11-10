@@ -41,6 +41,7 @@ public class CmdSetHeight extends PlotCommand {
         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
         plot.height = height;
         plot.updateField("height", height);
+        p.sendMessage(C("MsgHeightChangedTo") + " " + height);
         return true;
     }
 
