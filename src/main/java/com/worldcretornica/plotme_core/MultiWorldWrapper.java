@@ -10,6 +10,7 @@ package com.worldcretornica.plotme_core;
 
 import multiworld.ConfigException;
 import multiworld.InvalidWorldGenException;
+import multiworld.InvalidWorldNameException;
 import multiworld.MultiWorldPlugin;
 import multiworld.WorldGenException;
 import multiworld.data.DataHandler;
@@ -23,26 +24,26 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class MultiWorldWrapper implements Delegate<MultiWorldPlugin> {
 
-    private final MultiWorldPlugin multiworld;
+    private final MultiWorldPlugin multiWorldPlugin;
 
     public MultiWorldWrapper(JavaPlugin multiworld) {
         if (!(multiworld instanceof MultiWorldPlugin)) {
             throw new IllegalArgumentException("JavaPlugin must be castable to MultiWorldPlugin");
         }
-        this.multiworld = (MultiWorldPlugin) multiworld;
+        this.multiWorldPlugin = (MultiWorldPlugin) multiworld;
     }
 
     @Override
     public MultiWorldPlugin getDelegate() {
-        return multiworld;
+        return multiWorldPlugin;
     }
 
     public final boolean isEnabled() {
-        return multiworld.isEnabled();
+        return multiWorldPlugin.isEnabled();
     }
 
     public DataHandlerWrapper getDataManager() {
-        return new DataHandlerWrapper(multiworld.getDataManager());
+        return new DataHandlerWrapper(multiWorldPlugin.getDataManager());
     }
 
     public static class DataHandlerWrapper implements Delegate<DataHandler> {
@@ -107,6 +108,17 @@ public class MultiWorldWrapper implements Delegate<MultiWorldPlugin> {
             }
         }
 
+    }
+
+    public static class Utils {
+
+        public static void checkWorldName(String name) throws DelegateClassException {
+            try {
+                multiworld.Utils.checkWorldName(name);
+            } catch (InvalidWorldNameException ex) {
+                throw new DelegateClassException(ex);
+            }
+        }
     }
 
 }

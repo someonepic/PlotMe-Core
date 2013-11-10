@@ -281,6 +281,10 @@ public class Plot implements Comparable<Plot> {
     }
 
     public boolean isAllowed(String name, Integer y, boolean IncludeStar, boolean IncludeGroup) {
+        System.out.println("BaseY: " + baseY);
+        System.out.println("Height: " + height);
+        System.out.println("y: " + y);
+        System.out.println("Contains: " + contains(y));
         if (y != null && contains(y)) {
             return false;
         }

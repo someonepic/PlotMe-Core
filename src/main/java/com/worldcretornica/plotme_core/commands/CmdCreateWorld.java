@@ -1,6 +1,8 @@
 package com.worldcretornica.plotme_core.commands;
 
 import com.onarandombox.MultiverseCore.MultiverseCore;
+import com.worldcretornica.plotme_core.DelegateClassException;
+import com.worldcretornica.plotme_core.MultiWorldWrapper;
 import com.worldcretornica.plotme_core.PlotMe_Core;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
 import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
@@ -8,12 +10,12 @@ import com.worldcretornica.plotme_core.event.PlotWorldCreateEvent;
 import com.worldcretornica.plotme_core.utils.MinecraftFontWidthCalculator;
 import java.util.HashMap;
 import java.util.Map;
-import multiworld.MultiWorldPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class CmdCreateWorld extends PlotCommand {
 
@@ -81,12 +83,13 @@ public class CmdCreateWorld extends PlotCommand {
                     cs.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandCreateWorld") + " <" + C("WordWorld") + "> [" + C("WordGenerator") + "]");
                     cs.sendMessage("  " + C("MsgCreateWorldHelp"));
                 } else {
-
+                    // TODO: Should this call PlotMeCoreManager.CreatePlotWorld?
                     if (plugin.getPlotMeCoreManager().getMultiworld() == null) {
                         if (Bukkit.getPluginManager().isPluginEnabled("MultiWorld")) {
-                            plugin.getPlotMeCoreManager().setMultiworld((MultiWorldPlugin) Bukkit.getPluginManager().getPlugin("MultiWorld"));
+                            plugin.getPlotMeCoreManager().setMultiworld((JavaPlugin) Bukkit.getPluginManager().getPlugin("MultiWorld"));
                         }
                     }
+
                     if (plugin.getPlotMeCoreManager().getMultiverse() == null) {
                         if (Bukkit.getPluginManager().isPluginEnabled("Multiverse-Core")) {
                             plugin.getPlotMeCoreManager().setMultiverse((MultiverseCore) Bukkit.getPluginManager().getPlugin("Multiverse-Core"));
@@ -108,8 +111,8 @@ public class CmdCreateWorld extends PlotCommand {
 
                         if (plugin.getPlotMeCoreManager().getMultiworld() != null && plugin.getPlotMeCoreManager().getMultiworld().isEnabled()) {
                             try {
-                                multiworld.Utils.checkWorldName(args[1]);
-                            } catch (Exception e) {
+                                MultiWorldWrapper.Utils.checkWorldName(args[1]);
+                            } catch (DelegateClassException e) {
                                 cs.sendMessage("[" + plugin.getName() + "] " + C("ErrInvalidWorldName") + " '" + parameters.get("worldname") + "'");
                                 return true;
                             }
