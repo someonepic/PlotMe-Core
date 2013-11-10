@@ -235,16 +235,16 @@ public class PMCommand implements CommandExecutor {
                             return setowner.exec(p, args);
                         }
                         if (a0.equalsIgnoreCase(C("CommandSetHeight")) || a0.equalsIgnoreCase("h")) {
-                            return setowner.exec(p, args);
+                            return setHeight.exec(p, args);
                         }
                         if (a0.equalsIgnoreCase(C("CommandAddHeight")) || a0.equalsIgnoreCase("+h")) {
-                            return setowner.exec(p, args);
+                            return setHeight.add(p, args);
                         }
                         if (a0.equalsIgnoreCase(C("CommandSubHeight")) || a0.equalsIgnoreCase("-h")) {
-                            return setowner.exec(p, args);
+                            return setHeight.subtract(p, args);
                         }
                         if (a0.equalsIgnoreCase(C("CommandSetBase")) || a0.equalsIgnoreCase("b")) {
-                            return setowner.exec(p, args);
+                            return setBase.exec(p, args);
                         }
                         if (a0.equalsIgnoreCase(C("CommandMove")) || a0.equalsIgnoreCase("m")) {
                             return move.exec(p, args);
