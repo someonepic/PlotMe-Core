@@ -1024,7 +1024,6 @@ public class PlotMe_Core extends JavaPlugin {
         properties.put("ErrWorldExists", "Cannot create new world, name chosen already exists");
         properties.put("ErrInvalidWorldName", "Cannot create new world, invalid world name chosen.");
         properties.put("ErrSpoolInterrupted", "The spool sleep was interrupted");
-        properties.put("ErrOutsideRange", "is outside the permitted range");
         properties.put("ErrNotANumber", "is not a valid number");
 
         createConfig(filelang, properties, "PlotMe Caption configuration αω");

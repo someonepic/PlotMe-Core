@@ -33,8 +33,10 @@ public class CmdSetHeight extends PlotCommand {
             p.sendMessage(args[1] + " " + C("ErrNotANumber"));
             return true;
         }
-        if (height > 256 || height < 0) {
-            p.sendMessage(args[1] + " " + C("ErrOutsideRange"));
+        if (height > 256) {
+            height = 256;
+        } else if (height < 0) {
+            height = 0;
         }
         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
         plot.height = height;
@@ -53,11 +55,6 @@ public class CmdSetHeight extends PlotCommand {
         }
         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
         height += plot.height;
-        if (height > 256) {
-            height = 256;
-        } else if (height < 0) {
-            height = 0;
-        }
         args[1] = height.toString();
         return exec(p, args);
     }
