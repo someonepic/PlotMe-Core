@@ -3,6 +3,7 @@ package com.worldcretornica.plotme_core;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
 import com.onarandombox.MultiverseCore.MultiverseCore;
+import com.worldcretornica.plotme_core.MultiWorldWrapper.WorldGeneratorWrapper;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
 import com.worldcretornica.plotme_core.utils.Util;
@@ -13,11 +14,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import multiworld.ConfigException;
-import multiworld.InvalidWorldGenException;
-import multiworld.MultiWorldPlugin;
-import multiworld.WorldGenException;
-import multiworld.worldgen.WorldGenerator;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -34,11 +30,12 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class PlotMeCoreManager {
 
     private PlotMe_Core plugin = null;
-    private MultiWorldPlugin multiworld = null;
+    private MultiWorldWrapper multiworld = null;
     private MultiverseCore multiverse = null;
 
     private HashSet<String> playersignoringwelimit = null;
@@ -57,7 +54,7 @@ public class PlotMeCoreManager {
         //Check if we have multiworld
         if (getMultiworld() == null) {
             if (Bukkit.getPluginManager().isPluginEnabled("MultiWorld")) {
-                setMultiworld((MultiWorldPlugin) Bukkit.getPluginManager().getPlugin("MultiWorld"));
+                setMultiworld((JavaPlugin) Bukkit.getPluginManager().getPlugin("MultiWorld"));
             }
         }
         //Check if we have multiverse
@@ -206,22 +203,19 @@ public class PlotMeCoreManager {
             boolean success = false;
 
             if (getMultiworld().isEnabled()) {
-                WorldGenerator env = WorldGenerator.NORMAL;
+                WorldGeneratorWrapper env;
 
                 try {
-                    env = WorldGenerator.getGenByName("plugin");
-                } catch (InvalidWorldGenException e) {
-                    e.printStackTrace();
+                    env = WorldGeneratorWrapper.getGenByName("plugin");
+                } catch (DelegateClassException ex) {
+                    ex.printStackTrace();
                     return false;
                 }
 
                 try {
                     success = getMultiworld().getDataManager().makeWorld(worldname, env, seed, generator);
-                } catch (ConfigException e) {
-                    e.printStackTrace();
-                    return false;
-                } catch (WorldGenException e) {
-                    e.printStackTrace();
+                } catch (DelegateClassException ex) {
+                    ex.printStackTrace();
                     return false;
                 }
 
@@ -229,8 +223,8 @@ public class PlotMeCoreManager {
                     try {
                         getMultiworld().getDataManager().loadWorld(worldname, true);
                         getMultiworld().getDataManager().save();
-                    } catch (ConfigException e) {
-                        e.printStackTrace();
+                    } catch (DelegateClassException ex) {
+                        ex.printStackTrace();
                         return false;
                     }
                 } else {
@@ -1131,12 +1125,12 @@ public class PlotMeCoreManager {
         return plugin.getUtil();
     }
 
-    public MultiWorldPlugin getMultiworld() {
+    public MultiWorldWrapper getMultiworld() {
         return multiworld;
     }
 
-    public void setMultiworld(MultiWorldPlugin multiworld) {
-        this.multiworld = multiworld;
+    public void setMultiworld(JavaPlugin multiworld) {
+        this.multiworld = new MultiWorldWrapper(multiworld);
     }
 
     public MultiverseCore getMultiverse() {
