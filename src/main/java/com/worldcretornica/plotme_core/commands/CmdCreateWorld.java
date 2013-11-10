@@ -1,6 +1,5 @@
 package com.worldcretornica.plotme_core.commands;
 
-import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.worldcretornica.plotme_core.DelegateClassException;
 import com.worldcretornica.plotme_core.MultiWorldWrapper;
 import com.worldcretornica.plotme_core.PlotMe_Core;
@@ -92,7 +91,7 @@ public class CmdCreateWorld extends PlotCommand {
 
                     if (plugin.getPlotMeCoreManager().getMultiverse() == null) {
                         if (Bukkit.getPluginManager().isPluginEnabled("Multiverse-Core")) {
-                            plugin.getPlotMeCoreManager().setMultiverse((MultiverseCore) Bukkit.getPluginManager().getPlugin("Multiverse-Core"));
+                            plugin.getPlotMeCoreManager().setMultiverse((JavaPlugin) Bukkit.getPluginManager().getPlugin("Multiverse-Core"));
                         }
                     }
 

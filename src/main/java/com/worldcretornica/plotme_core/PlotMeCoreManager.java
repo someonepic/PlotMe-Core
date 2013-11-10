@@ -2,7 +2,6 @@ package com.worldcretornica.plotme_core;
 
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
-import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.worldcretornica.plotme_core.MultiWorldWrapper.WorldGeneratorWrapper;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
@@ -36,7 +35,7 @@ public class PlotMeCoreManager {
 
     private PlotMe_Core plugin = null;
     private MultiWorldWrapper multiworld = null;
-    private MultiverseCore multiverse = null;
+    private MultiverseWrapper multiverse = null;
 
     private HashSet<String> playersignoringwelimit = null;
     private Map<String, PlotMapInfo> plotmaps = null;
@@ -60,7 +59,7 @@ public class PlotMeCoreManager {
         //Check if we have multiverse
         if (getMultiverse() == null) {
             if (Bukkit.getPluginManager().isPluginEnabled("Multiverse-Core")) {
-                setMultiverse(((MultiverseCore) Bukkit.getPluginManager().getPlugin("Multiverse-Core")));
+                setMultiverse(((JavaPlugin) Bukkit.getPluginManager().getPlugin("Multiverse-Core")));
             }
         }
 
@@ -1133,11 +1132,11 @@ public class PlotMeCoreManager {
         this.multiworld = new MultiWorldWrapper(multiworld);
     }
 
-    public MultiverseCore getMultiverse() {
+    public MultiverseWrapper getMultiverse() {
         return multiverse;
     }
 
-    public void setMultiverse(MultiverseCore multiverse) {
-        this.multiverse = multiverse;
+    public void setMultiverse(JavaPlugin multiverse) {
+        this.multiverse = new MultiverseWrapper(multiverse);
     }
 }
