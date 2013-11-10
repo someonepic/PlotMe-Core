@@ -75,9 +75,7 @@ public class Plot implements Comparable<Plot> {
 
         FileConfiguration config = plotmecore.getConfig();
 
-        ConfigurationSection plotWorldConfig = null;
-
-        plotWorldConfig = config.getConfigurationSection("worlds." + world);
+        ConfigurationSection plotWorldConfig = config.getConfigurationSection("worlds." + world);
 
         if (plotWorldConfig == null) {
             baseY = 0;
@@ -356,6 +354,7 @@ public class Plot implements Comparable<Plot> {
         return denied.size();
     }
 
+    @Override
     public int compareTo(Plot plot) {
         if (expireddate.compareTo(plot.expireddate) == 0) {
             return owner.compareTo(plot.owner);

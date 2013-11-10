@@ -19,10 +19,10 @@ public class SqlManager {
 
     private PlotMe_Core plugin = null;
 
-    private Boolean usemySQL;
-    private String mySQLuname;
-    private String mySQLpass;
-    private String mySQLconn;
+    private final Boolean usemySQL;
+    private final String mySQLuname;
+    private final String mySQLpass;
+    private final String mySQLconn;
 
     private static Connection conn = null;
 
@@ -419,10 +419,9 @@ public class SqlManager {
                 if (found) {
                     //statement.execute("ALTER TABLE plotmePlots CHANGE auctionenddate auctionneddate varchar(16) NULL;"); <- doesn't work
 
-                    ResultSet plotset = null;
                     Statement plotstatement = conn.createStatement();
 
-                    plotset = plotstatement.executeQuery("SELECT SQL FROM SQLITE_MASTER WHERE NAME = 'plotmePlots';");
+                    ResultSet plotset = plotstatement.executeQuery("SELECT SQL FROM SQLITE_MASTER WHERE NAME = 'plotmePlots';");
 
                     if (plotset.next()) {
                         String createstring = plotset.getString(1);
