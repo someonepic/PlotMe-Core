@@ -649,6 +649,7 @@ public class PlotMe_Core extends JavaPlugin {
         return expireddate.toString();
     }
 
+    @SuppressWarnings("deprecation")
     public List<Integer> getDefaultProtectedBlocks() {
         List<Integer> protections = new ArrayList<Integer>();
 
@@ -670,6 +671,7 @@ public class PlotMe_Core extends JavaPlugin {
         return protections;
     }
 
+    @SuppressWarnings("deprecation")
     public List<String> getDefaultPreventedItems() {
         List<String> preventeditems = new ArrayList<String>();
 

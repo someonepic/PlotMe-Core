@@ -1,6 +1,5 @@
 package com.worldcretornica.plotme_core;
 
-import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -13,7 +12,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import org.bukkit.World;
 
 public class SqlManager {
 
@@ -793,11 +791,6 @@ public class SqlManager {
                 plugin.getLogger().severe("  " + ex.getMessage());
             }
         }
-    }
-
-    public void addPlot(Plot plot, int idX, int idZ, World w) {
-        IPlotMe_GeneratorManager gm = plugin.getPlotMeCoreManager().getGenMan(w);
-        addPlot(plot, idX, idZ, gm.topX(plot.id, w), gm.bottomX(plot.id, w), gm.topZ(plot.id, w), gm.bottomZ(plot.id, w));
     }
 
     public void addPlot(Plot plot, int idX, int idZ, int topX, int bottomX, int topZ, int bottomZ) {

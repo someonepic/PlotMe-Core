@@ -571,7 +571,7 @@ public class PlotMeCoreManager {
 
             addPlot(w, id, plot);
 
-            plugin.getSqlManager().addPlot(plot, getIdX(id), getIdZ(id), w);
+            plugin.getSqlManager().addPlot(plot, getIdX(id), getIdZ(id), topX(id, w), bottomX(id, w), topZ(id, w), bottomZ(id, w));
             return plot;
         } else {
             return null;
@@ -637,8 +637,8 @@ public class PlotMeCoreManager {
                 idZ = getIdZ(idFrom);
                 plugin.getSqlManager().deletePlot(idX, idZ, plot1.world);
 
-                plot2.id = "" + idX + ";" + idZ;
-                plugin.getSqlManager().addPlot(plot2, idX, idZ, w);
+                plot2.id = idFrom;
+                plugin.getSqlManager().addPlot(plot2, idX, idZ, topX(idFrom, w), bottomX(idFrom, w), topZ(idFrom, w), bottomZ(idFrom, w));
                 addPlot(w, idFrom, plot2);
 
                 for (int i = 0; i < plot2.comments.size(); i++) {
@@ -651,8 +651,8 @@ public class PlotMeCoreManager {
 
                 idX = getIdX(idTo);
                 idZ = getIdZ(idTo);
-                plot1.id = "" + idX + ";" + idZ;
-                plugin.getSqlManager().addPlot(plot1, idX, idZ, w);
+                plot1.id = idTo;
+                plugin.getSqlManager().addPlot(plot1, idX, idZ, topX(idTo, w), bottomX(idTo, w), topZ(idTo, w), bottomZ(idTo, w));
                 addPlot(w, idTo, plot1);
 
                 for (int i = 0; i < plot1.comments.size(); i++) {
@@ -675,8 +675,8 @@ public class PlotMeCoreManager {
                 removePlot(w, idFrom);
                 idX = getIdX(idTo);
                 idZ = getIdZ(idTo);
-                plot1.id = "" + idX + ";" + idZ;
-                plugin.getSqlManager().addPlot(plot1, idX, idZ, w);
+                plot1.id = idTo;
+                plugin.getSqlManager().addPlot(plot1, idX, idZ, topX(idTo, w), bottomX(idTo, w), topZ(idTo, w), bottomZ(idTo, w));
                 addPlot(w, idTo, plot1);
 
                 for (int i = 0; i < plot1.comments.size(); i++) {
@@ -702,8 +702,8 @@ public class PlotMeCoreManager {
 
                 idX = getIdX(idFrom);
                 idZ = getIdZ(idFrom);
-                plot2.id = "" + idX + ";" + idZ;
-                plugin.getSqlManager().addPlot(plot2, idX, idZ, w);
+                plot2.id = idFrom;
+                plugin.getSqlManager().addPlot(plot2, idX, idZ, topX(idFrom, w), bottomX(idFrom, w), topZ(idFrom, w), bottomZ(idFrom, w));
                 addPlot(w, idFrom, plot2);
 
                 for (int i = 0; i < plot2.comments.size(); i++) {
