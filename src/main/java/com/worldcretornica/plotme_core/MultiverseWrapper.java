@@ -1,11 +1,3 @@
-/*
- * Copyright (C) 2013 Fabrizio Lungo <fab@lungo.co.uk> - All Rights Reserved
- *
- * Unauthorized copying of this file, via any medium is strictly prohibited
- * Proprietary and confidential
- *
- * Created by Fabrizio Lungo <fab@lungo.co.uk>, November 2013
- */
 package com.worldcretornica.plotme_core;
 
 import com.onarandombox.MultiverseCore.MultiverseCore;
@@ -14,10 +6,6 @@ import org.bukkit.World;
 import org.bukkit.WorldType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/**
- *
- * @author Fabrizio Lungo <fab@lungo.co.uk>
- */
 public class MultiverseWrapper implements Delegate<MultiverseCore> {
 
     private final MultiverseCore multiverseCore;
