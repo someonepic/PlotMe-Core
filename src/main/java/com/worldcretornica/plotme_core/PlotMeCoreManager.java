@@ -6,9 +6,6 @@ import com.worldcretornica.plotme_core.MultiWorldWrapper.WorldGeneratorWrapper;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
 import com.worldcretornica.plotme_core.utils.Util;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,9 +20,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
@@ -91,21 +86,7 @@ public class PlotMeCoreManager {
         }
 
         //Create manager configurations
-        File configfile = new File(plugin.getConfigPath(), "core-config.yml");
-
-        FileConfiguration config = new YamlConfiguration();
-        try {
-            config.load(configfile);
-        } catch (FileNotFoundException e) {
-        } catch (IOException e) {
-            plugin.getLogger().severe("can't read configuration file");
-            e.printStackTrace();
-            return false;
-        } catch (InvalidConfigurationException e) {
-            plugin.getLogger().severe("invalid configuration format");
-            e.printStackTrace();
-            return false;
-        }
+        FileConfiguration config = plugin.getConfig();
 
         ConfigurationSection worlds;
 
@@ -183,19 +164,11 @@ public class PlotMeCoreManager {
         economysection.set("ProtectPrice", tempPlotInfo.ProtectPrice);
         economysection.set("DisposePrice", tempPlotInfo.DisposePrice);
 
-        currworld.set("economy", economysection);
-
         worlds.set(worldname, currworld);
 
         addPlotMap(worldname.toLowerCase(), tempPlotInfo);
 
-        try {
-            config.save(configfile);
-        } catch (IOException e) {
-            plugin.getLogger().severe("error writting configurations");
-            e.printStackTrace();
-            return false;
-        }
+        plugin.saveConfig();
 
         //Are we using multiworld?
         if (getMultiworld() != null) {
@@ -274,48 +247,29 @@ public class PlotMeCoreManager {
         return plugin.getSqlManager().getPlotCount(w.getName(), name);
     }
 
-    public boolean isEconomyEnabled(World w) {
-        PlotMapInfo pmi = getMap(w);
+    public boolean isEconomyEnabled(String worldname) {
+        if (plugin.getConfig().getBoolean("globalUseEconomy") || plugin.getEconomy() != null) {
+            return false;
+        }
+        PlotMapInfo pmi = getMap(worldname);
 
         if (pmi == null) {
             return false;
         } else {
-            return pmi.UseEconomy && plugin.getGlobalUseEconomy() && plugin.getEconomy() != null;
+            return pmi.UseEconomy && plugin.getConfig().getBoolean("globalUseEconomy") && plugin.getEconomy() != null;
         }
     }
 
-    public boolean isEconomyEnabled(String name) {
-        PlotMapInfo pmi = getMap(name);
-
-        if (pmi == null) {
-            return false;
-        } else {
-            return pmi.UseEconomy && plugin.getGlobalUseEconomy();
-        }
+    public boolean isEconomyEnabled(World w) {
+        return isEconomyEnabled(w.getName());
     }
 
     public boolean isEconomyEnabled(Player p) {
-        if (plugin.getEconomy() == null) {
-            return false;
-        }
-
-        PlotMapInfo pmi = getMap(p);
-
-        if (pmi == null) {
-            return false;
-        } else {
-            return pmi.UseEconomy && plugin.getGlobalUseEconomy();
-        }
+        return isEconomyEnabled(p.getWorld().getName());
     }
 
     public boolean isEconomyEnabled(Block b) {
-        PlotMapInfo pmi = getMap(b);
-
-        if (pmi == null) {
-            return false;
-        } else {
-            return pmi.UseEconomy && plugin.getGlobalUseEconomy();
-        }
+        return isEconomyEnabled(b.getWorld().getName());
     }
 
     public PlotMapInfo getMap(World w) {

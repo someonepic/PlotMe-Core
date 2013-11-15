@@ -35,7 +35,7 @@ public class CmdInfo extends PlotCommand {
                             p.sendMessage(GREEN + C("InfoHelpers") + ": " + AQUA + plot.getAllowed());
                         }
 
-                        if (plugin.getAllowToDeny() && plot.deniedcount() > 0) {
+                        if (plugin.getConfig().getBoolean("allowToDeny") && plot.deniedcount() > 0) {
                             p.sendMessage(GREEN + C("InfoDenied") + ": " + AQUA + plot.getDenied());
                         }
 

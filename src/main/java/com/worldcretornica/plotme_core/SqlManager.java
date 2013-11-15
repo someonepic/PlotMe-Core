@@ -101,7 +101,7 @@ public class SqlManager {
                 conn.setAutoCommit(false);
             } else {
                 Class.forName("org.sqlite.JDBC");
-                conn = DriverManager.getConnection("jdbc:sqlite:" + plugin.getConfigPath() + "/plots.db");
+                conn = DriverManager.getConnection("jdbc:sqlite:" + plugin.getDataFolder().getAbsolutePath() + "/plots.db");
                 conn.setAutoCommit(false);
             }
         } catch (SQLException ex) {
@@ -600,14 +600,14 @@ public class SqlManager {
             if (usemySQL) {
                 plugin.getLogger().info("Modifying database for MySQL support");
 
-                File sqlitefile = new File(plugin.getConfigPath(), sqlitedb);
+                File sqlitefile = new File(plugin.getDataFolder(), sqlitedb);
                 if (!sqlitefile.exists()) {
                     //plotmecore.getLogger().info("Could not find old " + sqlitedb);
                     return;
                 } else {
                     plugin.getLogger().info("Trying to import plots from plots.db");
                     Class.forName("org.sqlite.JDBC");
-                    Connection sqliteconn = DriverManager.getConnection("jdbc:sqlite:" + plugin.getConfigPath() + "\\" + sqlitedb);
+                    Connection sqliteconn = DriverManager.getConnection("jdbc:sqlite:" + plugin.getDataFolder().getAbsolutePath() + "\\" + sqlitedb);
 
                     sqliteconn.setAutoCommit(false);
                     Statement slstatement = sqliteconn.createStatement();
@@ -739,7 +739,7 @@ public class SqlManager {
                     }
 
                     plugin.getLogger().info("Renaming " + sqlitedb + " to " + sqlitedb + ".old");
-                    if (!sqlitefile.renameTo(new File(plugin.getConfigPath(), sqlitedb + ".old"))) {
+                    if (!sqlitefile.renameTo(new File(plugin.getDataFolder(), sqlitedb + ".old"))) {
                         plugin.getLogger().severe("Failed to rename " + sqlitedb + "! Please rename this manually!");
                     }
                 }

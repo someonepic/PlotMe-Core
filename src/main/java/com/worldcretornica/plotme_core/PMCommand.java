@@ -220,7 +220,7 @@ public class PMCommand implements CommandExecutor {
                         if (a0.equalsIgnoreCase(C("CommandAdd")) || a0.equalsIgnoreCase("+")) {
                             return add.exec(p, args);
                         }
-                        if (plugin.getAllowToDeny()) {
+                        if (plugin.getConfig().getBoolean("allowToDeny")) {
                             if (a0.equalsIgnoreCase(C("CommandDeny"))) {
                                 return deny.exec(p, args);
                             }

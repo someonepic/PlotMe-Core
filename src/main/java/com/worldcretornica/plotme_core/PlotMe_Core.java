@@ -44,20 +44,8 @@ public class PlotMe_Core extends JavaPlugin {
     public static final String DEFAULT_LANG = "english";
     public static final String CAPTIONS_PATTERN = "caption-%s.yml";
 
-    private String VERSION;
-
-    //Config accessors <lang, accessor>
+    //Config accessors for language <lang, accessor>
     private HashMap<String, ConfigAccessor> captionsCA;
-
-    private Boolean globalUseEconomy;
-    private Boolean advancedlogging;
-    private String language;
-    private Boolean allowWorldTeleport;
-    //private Boolean autoUpdate;
-    private Boolean allowToDeny;
-    private Boolean defaultWEAnywhere;
-    private int nbClearSpools;
-    private int nbBlocksPerClearStep;
 
     private Economy economy = null;
     private Boolean usinglwc = false;
@@ -80,15 +68,14 @@ public class PlotMe_Core extends JavaPlugin {
     private PlotWorldEdit plotworldedit = null;
     private Util util = null;
 
+    @Override
     public void onDisable() {
         for (PlotMeSpool spool : spools) {
             spool.Stop();
-            spool = null;
         }
         spools.clear();
         for (BukkitTask bt : spoolTasks) {
             bt.cancel();
-            bt = null;
         }
         spoolTasks = null;
         getSqlManager().closeConnection();
@@ -98,8 +85,6 @@ public class PlotMe_Core extends JavaPlugin {
         getPlotMeCoreManager().setPlayersIgnoringWELimit(null);
         setWorldCurrentlyProcessingExpired(null);
         setCommandSenderCurrentlyProcessingExpired(null);
-        setDefaultWEAnywhere(null);
-        setAllowToDeny(null);
         creationbuffer = null;
         plotsToClear.clear();
         plotsToClear = null;
@@ -108,51 +93,28 @@ public class PlotMe_Core extends JavaPlugin {
             creationbuffer.clear();
             creationbuffer = null;
         }
-        //multiverse = null;
-        //multiworld = null;
     }
 
+    @Override
     public void onEnable() {
         setupConfig();
         setupDefaultCaptions();
-        initialize();
-
-        PluginManager pm = getServer().getPluginManager();
-
-        pm.registerEvents(new PlotListener(this), this);
-
-        if (pm.getPlugin("Vault") != null) {
-            setupEconomy();
-        }
-
-        if (pm.getPlugin("WorldEdit") != null) {
-            setPlotWorldEdit(new PlotWorldEdit(this, (WorldEditPlugin) pm.getPlugin("WorldEdit")));
-            pm.registerEvents(new PlotWorldEditListener(this), this);
-        }
-
-        if (pm.getPlugin("LWC") != null) {
-            setUsinglwc(true);
-        }
-
-        if (getAllowToDeny()) {
-            pm.registerEvents(new PlotDenyListener(this), this);
-        }
-
-        creationbuffer = new HashMap<String, Map<String, String>>();
-        plotsToClear = new ConcurrentLinkedQueue<PlotToClear>();
-
-        getCommand("plotme").setExecutor(new PMCommand(this));
-
-        //Start the spools
-        spoolTasks = new HashSet<BukkitTask>();
-        spools = new HashSet<PlotMeSpool>();
-        for (int i = 1; i <= getNbClearSpools(); i++) {
-            PlotMeSpool pms = new PlotMeSpool(this);
-            spools.add(pms);
-            spoolTasks.add(Bukkit.getServer().getScheduler().runTaskAsynchronously(this, pms));
-        }
-
+        setupMySQL();
+        setupListeners();
+        setupCommands();
+        setupHooks();
+        setPlotMeCoreManager(new PlotMeCoreManager(this));
+        setUtil(new Util(this));
+        setupClearSpools();
         doMetric();
+    }
+
+    public void reload() {
+        getSqlManager().closeConnection();
+        setupConfig();
+        setupDefaultCaptions();
+        setupMySQL();
+
     }
 
     private void doMetric() {
@@ -235,6 +197,12 @@ public class PlotMe_Core extends JavaPlugin {
             }
         }
 
+        // Do any config validation
+        if (config.getInt("NbClearSpools") > 100) {
+            getLogger().warning("Having more than 100 clear spools seems drastic, changing to 100");
+            config.set("NbClearSpools", 100);
+        }
+
         // Load config-old.yml
         // config-old.yml should be used to import settings from by DefaultGenerator
         final ConfigAccessor oldConfCA = new ConfigAccessor(this, "config-old.yml");
@@ -298,6 +266,18 @@ public class PlotMe_Core extends JavaPlugin {
         saveConfig();
     }
 
+    private ConfigurationSection getDefaultWorld() {
+        InputStream defConfigStream = getResource("default-world.yml");
+
+        return YamlConfiguration.loadConfiguration(defConfigStream);
+    }
+
+    private ConfigurationSection getDefaultEconomy() {
+        InputStream defConfigStream = getResource("default-economy.yml");
+
+        return YamlConfiguration.loadConfiguration(defConfigStream);
+    }
+
     private String loadCaptionConfig(String lang) {
         if (!captionsCA.containsKey(lang)) {
             String configFilename = String.format(CAPTIONS_PATTERN, lang);
@@ -350,16 +330,60 @@ public class PlotMe_Core extends JavaPlugin {
         saveResource(fileName, true);
     }
 
-    private ConfigurationSection getDefaultWorld() {
-        InputStream defConfigStream = getResource("default-world.yml");
+    private void setupMySQL() {
+        FileConfiguration config = getConfig();
 
-        return YamlConfiguration.loadConfiguration(defConfigStream);
+        boolean usemySQL = config.getBoolean("usemySQL", false);
+        String mySQLconn = config.getString("mySQLconn", "jdbc:mysql://localhost:3306/minecraft");
+        String mySQLuname = config.getString("mySQLuname", "root");
+        String mySQLpass = config.getString("mySQLpass", "password");
+
+        setSqlManager(new SqlManager(this, usemySQL, mySQLuname, mySQLpass, mySQLconn));
     }
 
-    private ConfigurationSection getDefaultEconomy() {
-        InputStream defConfigStream = getResource("default-economy.yml");
+    private void setupListeners() {
+        PluginManager pm = getServer().getPluginManager();
 
-        return YamlConfiguration.loadConfiguration(defConfigStream);
+        pm.registerEvents(new PlotListener(this), this);
+
+        if (getConfig().getBoolean("allowToDeny")) {
+            pm.registerEvents(new PlotDenyListener(this), this);
+        }
+    }
+
+    private void setupHooks() {
+        PluginManager pm = getServer().getPluginManager();
+
+        if (pm.getPlugin("Vault") != null) {
+            setupEconomy();
+        }
+
+        if (pm.getPlugin("WorldEdit") != null) {
+            setPlotWorldEdit(new PlotWorldEdit(this, (WorldEditPlugin) pm.getPlugin("WorldEdit")));
+            pm.registerEvents(new PlotWorldEditListener(this), this);
+        }
+
+        if (pm.getPlugin("LWC") != null) {
+            setUsinglwc(true);
+        }
+    }
+
+    private void setupCommands() {
+        getCommand("plotme").setExecutor(new PMCommand(this));
+    }
+
+    private void setupClearSpools() {
+        creationbuffer = new HashMap<String, Map<String, String>>();
+        plotsToClear = new ConcurrentLinkedQueue<PlotToClear>();
+
+        //Start the spools
+        spoolTasks = new HashSet<BukkitTask>();
+        spools = new HashSet<PlotMeSpool>();
+        for (int i = 1; i <= getConfig().getInt("NbClearSpools"); i++) {
+            PlotMeSpool pms = new PlotMeSpool(this);
+            spools.add(pms);
+            spoolTasks.add(Bukkit.getServer().getScheduler().runTaskAsynchronously(this, pms));
+        }
     }
 
     public boolean cPerms(CommandSender sender, String node) {
@@ -382,36 +406,6 @@ public class PlotMe_Core extends JavaPlugin {
         } else {
             return getGenManager(getServer().getWorld(name));
         }
-    }
-
-    public void initialize() {
-        setPlotMeCoreManager(new PlotMeCoreManager(this));
-        setUtil(new Util(this));
-
-        VERSION = getDescription().getVersion();
-
-        FileConfiguration config = getConfig();
-
-        boolean usemySQL = config.getBoolean("usemySQL", false);
-        String mySQLconn = config.getString("mySQLconn", "jdbc:mysql://localhost:3306/minecraft");
-        String mySQLuname = config.getString("mySQLuname", "root");
-        String mySQLpass = config.getString("mySQLpass", "password");
-
-        setSqlManager(new SqlManager(this, usemySQL, mySQLuname, mySQLpass, mySQLconn));
-
-        setGlobalUseEconomy(config.getBoolean("globalUseEconomy", false));
-        setAdvancedLogging(config.getBoolean("advancedLogging", false));
-        language = config.getString("language", "english");
-        setAllowWorldTeleport(config.getBoolean("allowWorldTeleport", true));
-        setDefaultWEAnywhere(config.getBoolean("defaultWEAnywhere", false));
-        //autoUpdate = config.getBoolean("auto-update", false);
-        setAllowToDeny(config.getBoolean("allowToDeny", true));
-        nbClearSpools = config.getInt("NbClearSpools", 3);
-        if (nbClearSpools > 100) {
-            getLogger().warning("Having more than 100 clear spools seems drastic, changing to 100");
-            nbClearSpools = 100;
-        }
-        nbBlocksPerClearStep = config.getInt("NbBlocksPerClearStep", 50000);
     }
 
     private void setupEconomy() {
@@ -552,7 +546,7 @@ public class PlotMe_Core extends JavaPlugin {
     }
 
     public String getVersion() {
-        return VERSION;
+        return getDescription().getVersion();
     }
 
     public World getWorldCurrentlyProcessingExpired() {
@@ -570,14 +564,6 @@ public class PlotMe_Core extends JavaPlugin {
 
     public void setCounterExpired(Integer counterexpired) {
         this.counterexpired = counterexpired;
-    }
-
-    public Boolean getGlobalUseEconomy() {
-        return globalUseEconomy;
-    }
-
-    private void setGlobalUseEconomy(Boolean globalUseEconomy) {
-        this.globalUseEconomy = globalUseEconomy;
     }
 
     public Economy getEconomy() {
@@ -733,43 +719,4 @@ public class PlotMe_Core extends JavaPlugin {
         this.util = util;
     }
 
-    public Boolean getAllowToDeny() {
-        return allowToDeny;
-    }
-
-    private void setAllowToDeny(Boolean allowToDeny) {
-        this.allowToDeny = allowToDeny;
-    }
-
-    public Boolean getAdvancedLogging() {
-        return advancedlogging;
-    }
-
-    public void setAdvancedLogging(Boolean advancedlogging) {
-        this.advancedlogging = advancedlogging;
-    }
-
-    public Boolean getDefaultWEAnywhere() {
-        return defaultWEAnywhere;
-    }
-
-    private void setDefaultWEAnywhere(Boolean defaultWEAnywhere) {
-        this.defaultWEAnywhere = defaultWEAnywhere;
-    }
-
-    public Boolean getAllowWorldTeleport() {
-        return allowWorldTeleport;
-    }
-
-    private void setAllowWorldTeleport(Boolean allowWorldTeleport) {
-        this.allowWorldTeleport = allowWorldTeleport;
-    }
-
-    public int getNbClearSpools() {
-        return nbClearSpools;
-    }
-
-    public int getNbBlocksPerClearStep() {
-        return nbBlocksPerClearStep;
-    }
 }
