@@ -79,10 +79,9 @@ public class Plot implements Comparable<Plot> {
 
         if (plotWorldConfig == null) {
             baseY = 0;
-            height = 256;
         } else {
-            baseY = plotWorldConfig.getInt("PlotBase", 0);
-            height = plotWorldConfig.getInt("PlotHeight", 256);
+            baseY = plotWorldConfig.getInt("DefaultPlotBase");
+            height = plotWorldConfig.getInt("DefaultPlotHeight");
         }
 
         if (days == 0) {
