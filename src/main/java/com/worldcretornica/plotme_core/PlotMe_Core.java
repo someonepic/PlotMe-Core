@@ -241,21 +241,21 @@ public class PlotMe_Core extends JavaPlugin {
         final FileConfiguration oldConfig = oldConfCA.getConfig();
 
         // Create a list of old world configs that should be moved to config-old.yml
-        final Set<String> oldConfigs = new HashSet<String>();
-        oldConfigs.add("PathWidth");
-        oldConfigs.add("PlotSize");
-        oldConfigs.add("XTranslation");
-        oldConfigs.add("ZTranslation");
-        oldConfigs.add("BottomBlockId");
-        oldConfigs.add("WallBlockId");
-        oldConfigs.add("PlotFloorBlockId");
-        oldConfigs.add("PlotFillingBlockId");
-        oldConfigs.add("RoadMainBlockId");
-        oldConfigs.add("RoadStripeBlockId");
-        oldConfigs.add("RoadHeight");
-        oldConfigs.add("ProtectedWallBlockId");
-        oldConfigs.add("ForSaleWallBlockId");
-        oldConfigs.add("AuctionWallBlockId");
+        final Set<String> oldWorldConfigs = new HashSet<String>();
+        oldWorldConfigs.add("PathWidth");
+        oldWorldConfigs.add("PlotSize");
+        oldWorldConfigs.add("XTranslation");
+        oldWorldConfigs.add("ZTranslation");
+        oldWorldConfigs.add("BottomBlockId");
+        oldWorldConfigs.add("WallBlockId");
+        oldWorldConfigs.add("PlotFloorBlockId");
+        oldWorldConfigs.add("PlotFillingBlockId");
+        oldWorldConfigs.add("RoadMainBlockId");
+        oldWorldConfigs.add("RoadStripeBlockId");
+        oldWorldConfigs.add("RoadHeight");
+        oldWorldConfigs.add("ProtectedWallBlockId");
+        oldWorldConfigs.add("ForSaleWallBlockId");
+        oldWorldConfigs.add("AuctionWallBlockId");
 
         // Copy defaults for all worlds
         ConfigurationSection worldsCS = config.getConfigurationSection("worlds");
@@ -269,7 +269,7 @@ public class PlotMe_Core extends JavaPlugin {
 
             // Find old world data an move it to oldConfig
             ConfigurationSection oldWorldCS = oldConfig.getConfigurationSection("worlds." + worldname);
-            for (String path : oldConfigs) {
+            for (String path : oldWorldConfigs) {
                 if (worldCS.contains(path)) {
                     oldConfig.set(path, worldCS.get(path));
                     worldCS.set(path, null);
@@ -309,7 +309,7 @@ public class PlotMe_Core extends JavaPlugin {
                 setupDefaultCaptions();
             } else {
                 getLogger().log(Level.WARNING, "Could not load caption file for {0}"
-                        + " or the language file was empty. Setting language to " + DEFAULT_LANG, lang);
+                        + " or the language file was empty. Using " + DEFAULT_LANG, lang);
                 return loadCaptionConfig(DEFAULT_LANG);
             }
         }
