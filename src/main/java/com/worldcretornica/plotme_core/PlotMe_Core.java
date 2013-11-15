@@ -239,7 +239,7 @@ public class PlotMe_Core extends JavaPlugin {
             ConfigurationSection oldWorldCS = oldConfig.getConfigurationSection("worlds." + worldname);
             for (String path : oldWorldConfigs) {
                 if (worldCS.contains(path)) {
-                    oldConfig.set(path, worldCS.get(path));
+                    oldWorldCS.set(path, worldCS.get(path));
                     worldCS.set(path, null);
                 }
             }
