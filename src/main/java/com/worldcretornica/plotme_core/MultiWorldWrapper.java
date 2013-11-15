@@ -1,11 +1,3 @@
-/*
- * Copyright (C) 2013 Fabrizio Lungo <fab@lungo.co.uk> - All Rights Reserved
- *
- * Unauthorized copying of this file, via any medium is strictly prohibited
- * Proprietary and confidential
- *
- * Created by Fabrizio Lungo <fab@lungo.co.uk>, November 2013
- */
 package com.worldcretornica.plotme_core;
 
 import multiworld.ConfigException;
@@ -18,10 +10,6 @@ import multiworld.worldgen.WorldGenerator;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/**
- *
- * @author Fabrizio Lungo <fab@lungo.co.uk>
- */
 public class MultiWorldWrapper implements Delegate<MultiWorldPlugin> {
 
     private final MultiWorldPlugin multiWorldPlugin;
