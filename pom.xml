@@ -77,6 +77,10 @@
             </snapshots>
         </repository>
         <repository>
+            <id>flungo-repo</id>
+            <url>http://ci.flungo.me/plugin/repository/everything</url>
+        </repository>
+        <repository>
             <id>onarandombox-repo</id>
             <url>http://repo.onarandombox.com/content/groups/public</url>
         </repository>
