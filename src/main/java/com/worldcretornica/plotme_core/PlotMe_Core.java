@@ -45,7 +45,7 @@ public class PlotMe_Core extends JavaPlugin {
     public static final String CAPTIONS_PATTERN = "caption-%s.yml";
 
     //Config accessors for language <lang, accessor>
-    private HashMap<String, ConfigAccessor> captionsCA;
+    private final HashMap<String, ConfigAccessor> captionsCA = new HashMap<>();
 
     private Economy economy = null;
     private Boolean usinglwc = false;
@@ -79,7 +79,6 @@ public class PlotMe_Core extends JavaPlugin {
         }
         spoolTasks = null;
         getSqlManager().closeConnection();
-        getUtil().Dispose();
         setEconomy(null);
         setUsinglwc(null);
         getPlotMeCoreManager().setPlayersIgnoringWELimit(null);
@@ -227,6 +226,10 @@ public class PlotMe_Core extends JavaPlugin {
 
         // Copy defaults for all worlds
         ConfigurationSection worldsCS = config.getConfigurationSection("worlds");
+        ConfigurationSection oldWorldsCS = oldConfig.getConfigurationSection("worlds");
+        if (oldWorldsCS == null) {
+            oldWorldsCS = oldConfig.createSection("worlds");
+        }
         for (String worldname : worldsCS.getKeys(false)) {
             final ConfigurationSection worldCS = worldsCS.getConfigurationSection(worldname);
 
@@ -236,9 +239,12 @@ public class PlotMe_Core extends JavaPlugin {
             }
 
             // Find old world data an move it to oldConfig
-            ConfigurationSection oldWorldCS = oldConfig.getConfigurationSection("worlds." + worldname);
+            ConfigurationSection oldWorldCS = oldWorldsCS.getConfigurationSection(worldname);
             for (String path : oldWorldConfigs) {
                 if (worldCS.contains(path)) {
+                    if (oldWorldCS == null) {
+                        oldWorldCS = oldWorldsCS.createSection(worldname);
+                    }
                     oldWorldCS.set(path, worldCS.get(path));
                     worldCS.set(path, null);
                 }
@@ -260,7 +266,7 @@ public class PlotMe_Core extends JavaPlugin {
         config.options().copyDefaults(true);
 
         // Save the config file back to disk
-        if (!oldConfig.getConfigurationSection("worlds").getKeys(false).isEmpty()) {
+        if (!oldWorldsCS.getKeys(false).isEmpty()) {
             oldConfCA.saveConfig();
         }
         saveConfig();
@@ -282,7 +288,7 @@ public class PlotMe_Core extends JavaPlugin {
         if (!captionsCA.containsKey(lang)) {
             String configFilename = String.format(CAPTIONS_PATTERN, lang);
             ConfigAccessor ca = new ConfigAccessor(this, configFilename);
-            captionsCA.put(lang, null);
+            captionsCA.put(lang, ca);
         }
         if (captionsCA.get(lang).getConfig().getKeys(false).isEmpty()) {
             if (lang.equals(DEFAULT_LANG)) {
