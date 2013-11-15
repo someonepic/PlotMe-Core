@@ -20,7 +20,7 @@ public abstract class PlotCommand {
 
     public PlotCommand(PlotMe_Core instance) {
         plugin = instance;
-        isAdv = plugin.getAdvancedLogging();
+        isAdv = plugin.getConfig().getBoolean("advancedLogging");
     }
 
     protected Util Util() {

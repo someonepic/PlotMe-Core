@@ -85,7 +85,7 @@ public class CmdShowHelp extends PlotCommand {
                 || plugin.cPerms(p, "PlotMe.admin.remove")) {
             allowed_commands.add("remove");
         }
-        if (plugin.getAllowToDeny()) {
+        if (plugin.getConfig().getBoolean("allowToDeny")) {
             if (plugin.cPerms(p, "PlotMe.use.deny")
                     || plugin.cPerms(p, "PlotMe.admin.deny")) {
                 allowed_commands.add("deny");
@@ -160,12 +160,12 @@ public class CmdShowHelp extends PlotCommand {
             String allowedcmd = allowed_commands.get(ctr);
 
             if (allowedcmd.equalsIgnoreCase("limit")) {
-                if (plugin.getPlotMeCoreManager().isPlotWorld(p) || plugin.getAllowWorldTeleport()) {
+                if (plugin.getPlotMeCoreManager().isPlotWorld(p) || plugin.getConfig().getBoolean("allowWorldTeleport")) {
                     World w = null;
 
                     if (plugin.getPlotMeCoreManager().isPlotWorld(p)) {
                         w = p.getWorld();
-                    } else if (plugin.getAllowWorldTeleport()) {
+                    } else if (plugin.getConfig().getBoolean("allowWorldTeleport")) {
                         w = plugin.getPlotMeCoreManager().getFirstWorld();
                     }
 
@@ -197,7 +197,7 @@ public class CmdShowHelp extends PlotCommand {
                     p.sendMessage(AQUA + " " + C("HelpClaimOther"));
                 }
             } else if (allowedcmd.equalsIgnoreCase("auto")) {
-                if (plugin.getAllowWorldTeleport()) {
+                if (plugin.getConfig().getBoolean("allowWorldTeleport")) {
                     p.sendMessage(GREEN + " /plotme " + C("CommandAuto") + " [" + C("WordWorld") + "]");
                 } else {
                     p.sendMessage(GREEN + " /plotme " + C("CommandAuto"));
@@ -209,7 +209,7 @@ public class CmdShowHelp extends PlotCommand {
                     p.sendMessage(AQUA + " " + C("HelpAuto"));
                 }
             } else if (allowedcmd.equalsIgnoreCase("home")) {
-                if (plugin.getAllowWorldTeleport()) {
+                if (plugin.getConfig().getBoolean("allowWorldTeleport")) {
                     p.sendMessage(GREEN + " /plotme " + C("CommandHome") + "[:#] [" + C("WordWorld") + "]");
                 } else {
                     p.sendMessage(GREEN + " /plotme " + C("CommandHome") + "[:#]");
@@ -221,7 +221,7 @@ public class CmdShowHelp extends PlotCommand {
                     p.sendMessage(AQUA + " " + C("HelpHome"));
                 }
             } else if (allowedcmd.equalsIgnoreCase("home.other")) {
-                if (plugin.getAllowWorldTeleport()) {
+                if (plugin.getConfig().getBoolean("allowWorldTeleport")) {
                     p.sendMessage(GREEN + " /plotme " + C("CommandHome") + "[:#] <" + C("WordPlayer") + "> [" + C("WordWorld") + "]");
                 } else {
                     p.sendMessage(GREEN + " /plotme " + C("CommandHome") + "[:#] <" + C("WordPlayer") + ">");
@@ -268,7 +268,7 @@ public class CmdShowHelp extends PlotCommand {
                 p.sendMessage(GREEN + " /plotme " + C("CommandDone"));
                 p.sendMessage(AQUA + " " + C("HelpDone"));
             } else if (allowedcmd.equalsIgnoreCase("tp")) {
-                if (plugin.getAllowWorldTeleport()) {
+                if (plugin.getConfig().getBoolean("allowWorldTeleport")) {
                     p.sendMessage(GREEN + " /plotme " + C("CommandTp") + " <" + C("WordId") + "> [" + C("WordWorld") + "]");
                 } else {
                     p.sendMessage(GREEN + " /plotme " + C("CommandTp") + " <" + C("WordId") + ">");

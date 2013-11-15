@@ -638,8 +638,6 @@ public class PlotMe_Core extends JavaPlugin {
         currworld.set("UseProgressiveClear", pmi.UseProgressiveClear);
         currworld.set("NextFreed", pmi.NextFreed);
 
-        economysection = currworld.createSection("economy");
-
         economysection.set("UseEconomy", pmi.UseEconomy);
         economysection.set("CanPutOnSale", pmi.CanPutOnSale);
         economysection.set("CanSellToBank", pmi.CanSellToBank);
