@@ -96,11 +96,12 @@ public class PlotMe_Core extends JavaPlugin {
         setupConfig();
         setupDefaultCaptions();
         setupMySQL();
+        setPlotMeCoreManager(new PlotMeCoreManager(this));
+        setUtil(new Util(this));
+        setupWorlds(); // TODO: Remove concept of pmi so this is not needed
         setupListeners();
         setupCommands();
         setupHooks();
-        setPlotMeCoreManager(new PlotMeCoreManager(this));
-        setUtil(new Util(this));
         setupClearSpools();
         doMetric();
     }
@@ -269,13 +270,60 @@ public class PlotMe_Core extends JavaPlugin {
         saveConfig();
     }
 
-    protected ConfigurationSection getDefaultWorld() {
+    private void setupWorlds() {
+        final ConfigurationSection worldsCS = getConfig().getConfigurationSection("worlds");
+        for (String worldname : worldsCS.getKeys(false)) {
+            ConfigurationSection worldCS = worldsCS.getConfigurationSection(worldname);
+            PlotMapInfo tempPlotInfo = new PlotMapInfo(this, worldname);
+
+            tempPlotInfo.PlotAutoLimit = worldCS.getInt("PlotAutoLimit", 100);
+
+            tempPlotInfo.DaysToExpiration = worldCS.getInt("DaysToExpiration", 7);
+            tempPlotInfo.ProtectedBlocks = worldCS.getIntegerList("ProtectedBlocks");
+            tempPlotInfo.PreventedItems = worldCS.getStringList("PreventedItems");
+
+            tempPlotInfo.AutoLinkPlots = worldCS.getBoolean("AutoLinkPlots", true);
+            tempPlotInfo.DisableExplosion = worldCS.getBoolean("DisableExplosion", true);
+            tempPlotInfo.DisableIgnition = worldCS.getBoolean("DisableIgnition", true);
+            tempPlotInfo.UseProgressiveClear = worldCS.getBoolean("UseProgressiveClear", false);
+            tempPlotInfo.NextFreed = worldCS.getString("NextFreed", "0;0");
+
+            ConfigurationSection economyCS = worldCS.getConfigurationSection("economy");
+            if (economyCS == null) {
+                economyCS = getDefaultEconomy();
+            }
+            tempPlotInfo.UseEconomy = economyCS.getBoolean("UseEconomy", false);
+            tempPlotInfo.CanPutOnSale = economyCS.getBoolean("CanPutOnSale", false);
+            tempPlotInfo.CanSellToBank = economyCS.getBoolean("CanSellToBank", false);
+            tempPlotInfo.RefundClaimPriceOnReset = economyCS.getBoolean("RefundClaimPriceOnReset", false);
+            tempPlotInfo.RefundClaimPriceOnSetOwner = economyCS.getBoolean("RefundClaimPriceOnSetOwner", false);
+            tempPlotInfo.ClaimPrice = economyCS.getDouble("ClaimPrice", 0);
+            tempPlotInfo.ClearPrice = economyCS.getDouble("ClearPrice", 0);
+            tempPlotInfo.AddPlayerPrice = economyCS.getDouble("AddPlayerPrice", 0);
+            tempPlotInfo.DenyPlayerPrice = economyCS.getDouble("DenyPlayerPrice", 0);
+            tempPlotInfo.RemovePlayerPrice = economyCS.getDouble("RemovePlayerPrice", 0);
+            tempPlotInfo.UndenyPlayerPrice = economyCS.getDouble("UndenyPlayerPrice", 0);
+            tempPlotInfo.PlotHomePrice = economyCS.getDouble("PlotHomePrice", 0);
+            tempPlotInfo.CanCustomizeSellPrice = economyCS.getBoolean("CanCustomizeSellPrice", false);
+            tempPlotInfo.SellToPlayerPrice = economyCS.getDouble("SellToPlayerPrice", 0);
+            tempPlotInfo.SellToBankPrice = economyCS.getDouble("SellToBankPrice", 0);
+            tempPlotInfo.BuyFromBankPrice = economyCS.getDouble("BuyFromBankPrice", 0);
+            tempPlotInfo.AddCommentPrice = economyCS.getDouble("AddCommentPrice", 0);
+            tempPlotInfo.BiomeChangePrice = economyCS.getDouble("BiomeChangePrice", 0);
+            tempPlotInfo.ProtectPrice = economyCS.getDouble("ProtectPrice", 0);
+            tempPlotInfo.DisposePrice = economyCS.getDouble("DisposePrice", 0);
+
+            getPlotMeCoreManager().addPlotMap(worldname.toLowerCase(), tempPlotInfo);
+        }
+    }
+
+    protected final ConfigurationSection getDefaultWorld() {
         InputStream defConfigStream = getResource("default-world.yml");
 
         return YamlConfiguration.loadConfiguration(defConfigStream);
     }
 
-    protected ConfigurationSection getDefaultEconomy() {
+    protected final ConfigurationSection getDefaultEconomy() {
         InputStream defConfigStream = getResource("default-economy.yml");
 
         return YamlConfiguration.loadConfiguration(defConfigStream);
