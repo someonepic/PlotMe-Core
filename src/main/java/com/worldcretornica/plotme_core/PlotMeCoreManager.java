@@ -105,8 +105,8 @@ public class PlotMeCoreManager {
 
         tempPlotInfo.PlotAutoLimit = Integer.parseInt(args.get("PlotAutoLimit"));
         tempPlotInfo.DaysToExpiration = Integer.parseInt(args.get("DaysToExpiration"));
-        tempPlotInfo.ProtectedBlocks = plugin.getDefaultProtectedBlocks();
-        tempPlotInfo.PreventedItems = plugin.getDefaultPreventedItems();
+        tempPlotInfo.ProtectedBlocks = plugin.getDefaultWorld().getIntegerList("ProtectedBlocks");
+        tempPlotInfo.PreventedItems = plugin.getConfig().getStringList("PreventedItems");
         tempPlotInfo.AutoLinkPlots = Boolean.parseBoolean(args.get("AutoLinkPlots"));
         tempPlotInfo.DisableExplosion = Boolean.parseBoolean(args.get("DisableExplosion"));
         tempPlotInfo.DisableIgnition = Boolean.parseBoolean(args.get("DisableIgnition"));

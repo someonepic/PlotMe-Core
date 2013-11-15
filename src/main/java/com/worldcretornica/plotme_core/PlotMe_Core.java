@@ -10,11 +10,9 @@ import com.worldcretornica.plotme_core.listener.PlotWorldEditListener;
 import com.worldcretornica.plotme_core.utils.Util;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -23,7 +21,6 @@ import me.flungo.bukkit.tools.ConfigAccessor;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -272,13 +269,13 @@ public class PlotMe_Core extends JavaPlugin {
         saveConfig();
     }
 
-    private ConfigurationSection getDefaultWorld() {
+    protected ConfigurationSection getDefaultWorld() {
         InputStream defConfigStream = getResource("default-world.yml");
 
         return YamlConfiguration.loadConfiguration(defConfigStream);
     }
 
-    private ConfigurationSection getDefaultEconomy() {
+    protected ConfigurationSection getDefaultEconomy() {
         InputStream defConfigStream = getResource("default-economy.yml");
 
         return YamlConfiguration.loadConfiguration(defConfigStream);
@@ -477,42 +474,6 @@ public class PlotMe_Core extends JavaPlugin {
 
     public String getDate(java.sql.Date expireddate) {
         return expireddate.toString();
-    }
-
-    @SuppressWarnings("deprecation")
-    public List<Integer> getDefaultProtectedBlocks() {
-        List<Integer> protections = new ArrayList<Integer>();
-
-        protections.add(Material.CHEST.getId());
-        protections.add(Material.FURNACE.getId());
-        protections.add(Material.BURNING_FURNACE.getId());
-        protections.add(Material.ENDER_PORTAL_FRAME.getId());
-        protections.add(Material.DIODE_BLOCK_ON.getId());
-        protections.add(Material.DIODE_BLOCK_OFF.getId());
-        protections.add(Material.JUKEBOX.getId());
-        protections.add(Material.NOTE_BLOCK.getId());
-        protections.add(Material.BED.getId());
-        protections.add(Material.CAULDRON.getId());
-        protections.add(Material.BREWING_STAND.getId());
-        protections.add(Material.BEACON.getId());
-        protections.add(Material.FLOWER_POT.getId());
-        protections.add(Material.ANVIL.getId());
-
-        return protections;
-    }
-
-    @SuppressWarnings("deprecation")
-    public List<String> getDefaultPreventedItems() {
-        List<String> preventeditems = new ArrayList<String>();
-
-        preventeditems.add("" + Material.INK_SACK.getId() + ":15");
-        preventeditems.add("" + Material.FLINT_AND_STEEL.getId());
-        preventeditems.add("" + Material.MINECART.getId());
-        preventeditems.add("" + Material.POWERED_MINECART.getId());
-        preventeditems.add("" + Material.STORAGE_MINECART.getId());
-        preventeditems.add("" + Material.BOAT.getId());
-
-        return preventeditems;
     }
 
     public void scheduleTask(Runnable task, int eachseconds, int howmanytimes) {
