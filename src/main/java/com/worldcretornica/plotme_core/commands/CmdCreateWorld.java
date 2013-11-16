@@ -82,7 +82,6 @@ public class CmdCreateWorld extends PlotCommand {
                     cs.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandCreateWorld") + " <" + C("WordWorld") + "> [" + C("WordGenerator") + "]");
                     cs.sendMessage("  " + C("MsgCreateWorldHelp"));
                 } else {
-                    // TODO: Should this call PlotMeCoreManager.CreatePlotWorld?
                     if (plugin.getPlotMeCoreManager().getMultiworld() == null) {
                         if (Bukkit.getPluginManager().isPluginEnabled("MultiWorld")) {
                             plugin.getPlotMeCoreManager().setMultiworld((JavaPlugin) Bukkit.getPluginManager().getPlugin("MultiWorld"));

@@ -1,14 +1,14 @@
 package com.worldcretornica.plotme_core;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PlotMapInfo {
 
     private PlotMe_Core plugin = null;
 
-    private HashMap<String, Plot> _plots;
+    private ConcurrentHashMap<String, Plot> _plots;
     private List<String> _freedplots;
     private String _world;
 
@@ -46,7 +46,7 @@ public class PlotMapInfo {
 
     public PlotMapInfo(PlotMe_Core instance) {
         plugin = instance;
-        _plots = new HashMap<String, Plot>();
+        _plots = new ConcurrentHashMap<String, Plot>();
         _freedplots = new ArrayList<String>();
     }
 
@@ -54,6 +54,11 @@ public class PlotMapInfo {
         this(instance);
         _world = world;
         _freedplots = plugin.getSqlManager().getFreed(world);
+    }
+    
+    public int getNbPlots()
+    {
+        return _plots.size();
     }
 
     public Plot getPlot(String id) {
@@ -69,14 +74,12 @@ public class PlotMapInfo {
         return _plots.get(id);
     }
 
-    public HashMap<String, Plot> getLoadedPlots() {
+    public ConcurrentHashMap<String, Plot> getLoadedPlots() {
         return _plots;
     }
 
     public void addPlot(String id, Plot plot) {
-        if (!_plots.containsKey(id)) {
-            _plots.put(id, plot);
-        }
+        _plots.putIfAbsent(id, plot);
     }
 
     public void removePlot(String id) {

@@ -112,8 +112,6 @@ public class PlotMe_Core extends JavaPlugin {
             creationbuffer.clear();
             creationbuffer = null;
         }
-        //multiverse = null;
-        //multiworld = null;
     }
 
     public void onEnable() {

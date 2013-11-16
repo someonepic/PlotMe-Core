@@ -5,6 +5,7 @@ import com.griefcraft.model.Protection;
 import com.worldcretornica.plotme_core.MultiWorldWrapper.WorldGeneratorWrapper;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 import com.worldcretornica.plotme_core.utils.Util;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,7 +39,7 @@ public class PlotMeCoreManager {
     private MultiverseWrapper multiverse = null;
 
     private HashSet<String> playersignoringwelimit = null;
-    private Map<String, PlotMapInfo> plotmaps = null;
+    private HashMap<String, PlotMapInfo> plotmaps = null;
 
     public PlotMeCoreManager(PlotMe_Core instance) {
         plugin = instance;
@@ -472,6 +473,7 @@ public class PlotMeCoreManager {
         }
 
         pmi.addPlot(id, plot);
+        PlotMeEventFactory.callPlotLoadedEvent(plugin, w, plot);
     }
 
     public World getFirstWorld() {
@@ -1114,6 +1116,7 @@ public class PlotMeCoreManager {
 
     public void addPlotMap(String world, PlotMapInfo map) {
         this.plotmaps.put(world, map);
+        plugin.getSqlManager().loadPlotsAsynchronously(world);
     }
 
     public void removePlotMap(String world) {

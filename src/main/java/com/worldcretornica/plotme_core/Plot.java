@@ -371,23 +371,4 @@ public class Plot implements Comparable<Plot> {
     public void updateField(String field, Object value) {
         plotmecore.getSqlManager().updatePlot(plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), world, field, value);
     }
-
-    /*private static Map<String, Double> sortByValues(final Map<String, Double> map)
-     {
-     Comparator<String> valueComparator = new Comparator<String>()
-     {
-     public int compare(String k1, String k2)
-     {
-     int compare = map.get(k2).compareTo(map.get(k1));
-     if (compare == 0)
-     return 1;
-     else
-     return compare;
-     }
-     };
-
-     Map<String, Double> sortedByValues = new TreeMap<String, Double>(valueComparator);
-     sortedByValues.putAll(map);
-     return sortedByValues;
-     }*/
 }
