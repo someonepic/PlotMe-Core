@@ -47,7 +47,7 @@ public class PlotListener implements Listener {
         plugin = instance;
     }
 
-    @EventHandler(priority = EventPriority.HIGH) //, ignoreCancelled = true
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockBreak(final BlockBreakEvent event) {
         Block b = event.getBlock();
 
@@ -98,7 +98,7 @@ public class PlotListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH) //, ignoreCancelled = true
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockPlace(final BlockPlaceEvent event) {
         Block b = event.getBlock();
 
