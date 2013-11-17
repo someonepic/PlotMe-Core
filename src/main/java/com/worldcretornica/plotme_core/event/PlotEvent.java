@@ -5,12 +5,13 @@ import java.util.HashSet;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMe_Core;
 
-public abstract class PlotEvent extends Event
-{
+public class PlotEvent extends Event {
+    
 	protected PlotMe_Core plugin;
 	protected Plot plot;
 	protected World world;
@@ -135,5 +136,10 @@ public abstract class PlotEvent extends Event
         } else {
             return null;
         }
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return null;
     }
 }
