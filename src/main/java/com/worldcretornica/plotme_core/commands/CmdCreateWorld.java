@@ -29,7 +29,7 @@ public class CmdCreateWorld extends PlotCommand {
                     //try to create world
                     Map<String, String> parameters = plugin.creationbuffer.get(cs.getName());
 
-                    PlotWorldCreateEvent event = PlotMeEventFactory.callPlotWorldCreateEvent(plugin, parameters.get("worldname"), cs, parameters);
+                    PlotWorldCreateEvent event = PlotMeEventFactory.callPlotWorldCreateEvent(parameters.get("worldname"), cs, parameters);
 
                     if (!event.isCancelled()) {
                         if (plugin.getPlotMeCoreManager().CreatePlotWorld(cs, parameters.get("worldname"), parameters.get("generator"), parameters)) {

@@ -13,17 +13,13 @@ public class PlotTeleportEvent extends PlotEvent implements Cancellable
 {
 	private static final HandlerList handlers = new HandlerList();
     private boolean _canceled;
-    private Plot _plot;
-    private World _world;
     private Player _player;
     private String _plotid;
     private Location _loc;
 	
     public PlotTeleportEvent(PlotMe_Core instance, World world, Plot plot, Player player, Location loc, String plotId)
     {
-    	super(instance);
-    	_plot = plot;
-    	_world = world;
+    	super(instance, plot, world);
     	_player = player;
     	_loc = loc;
     	_plotid = plotId;
@@ -52,16 +48,6 @@ public class PlotTeleportEvent extends PlotEvent implements Cancellable
         return handlers;
     }
 	
-	public Plot getPlot()
-	{
-		return _plot;
-	}
-	
-	public World getWorld()
-	{
-		return _world;
-	}
-	
 	public Player getPlayer()
 	{
 		return _player;
@@ -79,24 +65,6 @@ public class PlotTeleportEvent extends PlotEvent implements Cancellable
 	
 	public boolean getIsPlotClaimed()
 	{
-		return (_plot != null);
-	}
-		
-	public String getOwner()
-	{
-		if(_plot != null)
-			return _plot.owner;
-		else
-			return "";
-	}
-	
-	public Location getUpperBound()
-	{
-		return plugin.getPlotMeCoreManager().getGenMan(_world).getPlotTopLoc(_world, _plotid);
-	}
-	
-	public Location getLowerBound()
-	{
-		return plugin.getPlotMeCoreManager().getGenMan(_world).getPlotBottomLoc(_world, _plotid);
+		return (plot != null);
 	}
 }

@@ -1,14 +1,12 @@
 package com.worldcretornica.plotme_core.event;
 
 import java.util.Map;
-
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import com.worldcretornica.plotme_core.PlotMe_Core;
-
-public class PlotWorldCreateEvent extends PlotEvent implements Cancellable
+public class PlotWorldCreateEvent extends Event implements Cancellable
 {
 	private static final HandlerList handlers = new HandlerList();
     private boolean _canceled;
@@ -16,9 +14,8 @@ public class PlotWorldCreateEvent extends PlotEvent implements Cancellable
     private CommandSender _creator;
     private Map<String, String> _parameters;
     
-    public PlotWorldCreateEvent(PlotMe_Core instance, String worldname, CommandSender cs, Map<String, String> parameters)
+    public PlotWorldCreateEvent(String worldname, CommandSender cs, Map<String, String> parameters)
     {
-    	super(instance);
     	_worldname = worldname;
     	_creator = cs;
     	_parameters = parameters;

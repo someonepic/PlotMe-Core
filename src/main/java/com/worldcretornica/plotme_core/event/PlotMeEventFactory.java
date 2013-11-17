@@ -84,9 +84,9 @@ public class PlotMeEventFactory
 		return event;
 	}	
 	
-	public static PlotWorldCreateEvent callPlotWorldCreateEvent(PlotMe_Core plugin, String worldname, CommandSender cs, Map<String, String> parameters)
+	public static PlotWorldCreateEvent callPlotWorldCreateEvent(String worldname, CommandSender cs, Map<String, String> parameters)
 	{
-		PlotWorldCreateEvent event = new PlotWorldCreateEvent(plugin, worldname, cs, parameters);
+		PlotWorldCreateEvent event = new PlotWorldCreateEvent(worldname, cs, parameters);
 		Bukkit.getPluginManager().callEvent(event);
 		return event;
 	}	

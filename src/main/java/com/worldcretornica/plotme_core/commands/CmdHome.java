@@ -107,7 +107,7 @@ public class CmdHome extends PlotCommand {
                                 }
 
                                 if (!event.isCancelled()) {
-                                    p.teleport(event.getLocation());
+                                    p.teleport(event.getHomeLocation());
 
                                     if (price != 0) {
                                         p.sendMessage(Util().moneyFormat(-price));

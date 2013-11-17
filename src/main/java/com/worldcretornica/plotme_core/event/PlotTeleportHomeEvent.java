@@ -1,28 +1,26 @@
 package com.worldcretornica.plotme_core.event;
 
+import com.worldcretornica.plotme_core.Plot;
+import com.worldcretornica.plotme_core.PlotMe_Core;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
-import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.PlotMe_Core;
-
 public class PlotTeleportHomeEvent extends PlotEvent implements Cancellable
 {
 	private static final HandlerList handlers = new HandlerList();
     private boolean _canceled;
-    private Plot _plot;
-    private World _world;
     private Player _player;
+    private Location loc;
 	
     public PlotTeleportHomeEvent(PlotMe_Core instance, World world, Plot plot, Player player)
     {
-    	super(instance);
-    	_plot = plot;
-    	_world = world;
+    	super(instance, plot, world);
     	_player = player;
+    	loc = null;
     }
     
 	@Override
@@ -48,38 +46,23 @@ public class PlotTeleportHomeEvent extends PlotEvent implements Cancellable
         return handlers;
     }
 	
-	public Plot getPlot()
-	{
-		return _plot;
-	}
-	
-	public World getWorld()
-	{
-		return _world;
-	}
-	
 	public Player getPlayer()
 	{
 		return _player;
 	}
 	
-	public Location getLocation()
+	public void setHomeLocation(Location homelocation)
 	{
-		return plugin.getPlotMeCoreManager().getPlotHome(_world, _plot.id);
+	    loc = homelocation;
 	}
 	
-	public String getOwner()
+	@Override
+	public Location getHomeLocation()
 	{
-		return _plot.owner;
-	}
-	
-	public Location getUpperBound()
-	{
-		return plugin.getPlotMeCoreManager().getGenMan(_world).getPlotTopLoc(_world, _plot.id);
-	}
-	
-	public Location getLowerBound()
-	{
-		return plugin.getPlotMeCoreManager().getGenMan(_world).getPlotBottomLoc(_world, _plot.id);
+	    if(loc == null) {
+	        return super.getHomeLocation();
+	    } else {
+	        return loc;
+	    }
 	}
 }
