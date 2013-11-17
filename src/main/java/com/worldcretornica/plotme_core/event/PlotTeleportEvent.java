@@ -4,15 +4,13 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.HandlerList;
 
 import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMe_Core;
 
 public class PlotTeleportEvent extends PlotEvent implements Cancellable
 {
-	private static final HandlerList handlers = new HandlerList();
-    private boolean _canceled;
+	private boolean _canceled;
     private Player _player;
     private String _plotid;
     private Location _loc;
@@ -36,17 +34,6 @@ public class PlotTeleportEvent extends PlotEvent implements Cancellable
 	{
 		_canceled = cancel;
 	}
-
-	@Override
-	public HandlerList getHandlers() 
-	{
-		return handlers;
-	}
-	
-	public static HandlerList getHandlerList() 
-	{
-        return handlers;
-    }
 	
 	public Player getPlayer()
 	{

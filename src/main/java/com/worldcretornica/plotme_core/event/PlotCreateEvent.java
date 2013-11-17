@@ -5,12 +5,10 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.HandlerList;
 
 public class PlotCreateEvent extends PlotEvent implements Cancellable
 {
-	private static final HandlerList handlers = new HandlerList();
-    private boolean _canceled;
+	private boolean _canceled;
     private String _plotId;
     private Player _creator;
     
@@ -32,17 +30,6 @@ public class PlotCreateEvent extends PlotEvent implements Cancellable
 	{
 		_canceled = cancel;
 	}
-
-	@Override
-	public HandlerList getHandlers() 
-	{
-		return handlers;
-	}
-	
-	public static HandlerList getHandlerList() 
-	{
-        return handlers;
-    }
 	
 	public String getPlotId()
 	{
