@@ -30,14 +30,14 @@ public class CmdProtect extends PlotCommand {
 
                         String name = p.getName();
 
-                        if (plot.owner.equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.protect")) {
+                        if (plot.getOwner().equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.protect")) {
                             PlotProtectChangeEvent event;
 
-                            if (plot.protect) {
+                            if (plot.isProtect()) {
                                 event = PlotMeEventFactory.callPlotProtectChangeEvent(plugin, p.getWorld(), plot, p, false);
 
                                 if (!event.isCancelled()) {
-                                    plot.protect = false;
+                                    plot.setProtect(false);
                                     plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
 
                                     plot.updateField("protected", false);
@@ -54,7 +54,7 @@ public class CmdProtect extends PlotCommand {
                                 double cost = 0;
 
                                 if (plugin.getPlotMeCoreManager().isEconomyEnabled(p)) {
-                                    cost = pmi.ProtectPrice;
+                                    cost = pmi.getProtectPrice();
 
                                     if (plugin.getEconomy().getBalance(name) < cost) {
                                         p.sendMessage(RED + C("MsgNotEnoughProtectPlot"));
@@ -80,7 +80,7 @@ public class CmdProtect extends PlotCommand {
                                 }
 
                                 if (!event.isCancelled()) {
-                                    plot.protect = true;
+                                    plot.setProtect(true);
                                     plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
 
                                     plot.updateField("protected", true);

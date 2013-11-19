@@ -27,7 +27,7 @@ public class CmdAddTime extends PlotCommand {
                         if (plot != null) {
                             String name = p.getName();
 
-                            plot.resetExpire(plugin.getPlotMeCoreManager().getMap(p).DaysToExpiration);
+                            plot.resetExpire(plugin.getPlotMeCoreManager().getMap(p).getDaysToExpiration());
                             p.sendMessage(C("MsgPlotExpirationReset"));
 
                             if (isAdv) {

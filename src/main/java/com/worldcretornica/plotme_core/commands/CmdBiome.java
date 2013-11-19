@@ -43,7 +43,7 @@ public class CmdBiome extends PlotCommand {
                                 Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
                                 String playername = p.getName();
 
-                                if (plot.owner.equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin")) {
+                                if (plot.getOwner().equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin")) {
                                     PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
 
                                     double price = 0;
@@ -51,7 +51,7 @@ public class CmdBiome extends PlotCommand {
                                     PlotBiomeChangeEvent event;
 
                                     if (plugin.getPlotMeCoreManager().isEconomyEnabled(w)) {
-                                        price = pmi.BiomeChangePrice;
+                                        price = pmi.getBiomeChangePrice();
                                         double balance = plugin.getEconomy().getBalance(playername);
 
                                         if (balance >= price) {
@@ -77,7 +77,7 @@ public class CmdBiome extends PlotCommand {
 
                                     if (!event.isCancelled()) {
                                         plugin.getPlotMeCoreManager().setBiome(w, id, biome);
-                                        plot.biome = biome;
+                                        plot.setBiome(biome);
 
                                         p.sendMessage(C("MsgBiomeSet") + " " + ChatColor.BLUE + Util().FormatBiome(biome.name()) + " " + Util().moneyFormat(-price));
 
@@ -93,7 +93,7 @@ public class CmdBiome extends PlotCommand {
                         } else {
                             Plot plot = plugin.getPlotMeCoreManager().getMap(w).getPlot(id);
 
-                            p.sendMessage(C("MsgPlotUsingBiome") + " " + ChatColor.BLUE + Util().FormatBiome(plot.biome.name()));
+                            p.sendMessage(C("MsgPlotUsingBiome") + " " + ChatColor.BLUE + Util().FormatBiome(plot.getBiome().name()));
                         }
                     } else {
                         p.sendMessage(RED + C("MsgThisPlot") + "(" + id + ") " + C("MsgHasNoOwner"));

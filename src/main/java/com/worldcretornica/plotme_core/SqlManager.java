@@ -809,25 +809,25 @@ public class SqlManager {
                     + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
             ps.setInt(1, idX);
             ps.setInt(2, idZ);
-            ps.setString(3, plot.owner);
-            ps.setString(4, plot.world.toLowerCase());
+            ps.setString(3, plot.getOwner());
+            ps.setString(4, plot.getWorld().toLowerCase());
             ps.setInt(5, topX);
             ps.setInt(6, bottomX);
             ps.setInt(7, topZ);
             ps.setInt(8, bottomZ);
-            ps.setString(9, plot.biome.name());
-            ps.setInt(10, plot.baseY);
-            ps.setInt(11, plot.height);
-            ps.setDate(12, plot.expireddate);
-            ps.setBoolean(13, plot.finished);
-            ps.setDouble(14, plot.customprice);
-            ps.setBoolean(15, plot.forsale);
-            ps.setString(16, plot.finisheddate);
-            ps.setBoolean(17, plot.protect);
-            ps.setBoolean(18, plot.auctionned);
+            ps.setString(9, plot.getBiome().name());
+            ps.setInt(10, plot.getBaseY());
+            ps.setInt(11, plot.getHeight());
+            ps.setDate(12, plot.getExpiredDate());
+            ps.setBoolean(13, plot.isFinished());
+            ps.setDouble(14, plot.getCustomPrice());
+            ps.setBoolean(15, plot.isForSale());
+            ps.setString(16, plot.getFinishedDate());
+            ps.setBoolean(17, plot.isProtect());
+            ps.setBoolean(18, plot.isAuctionned());
             ps.setString(19, "");
-            ps.setDouble(20, plot.currentbid);
-            ps.setString(21, plot.currentbidder);
+            ps.setDouble(20, plot.getCurrentBid());
+            ps.setString(21, plot.getCurrentBidder());
 
             ps.executeUpdate();
             conn.commit();
@@ -1731,9 +1731,9 @@ public class SqlManager {
                 String finisheddate = setPlots.getString("finisheddate");
 
                 Plot plot = new Plot(plugin);
-                plot.owner = owner;
-                plot.id = idX + ";" + idZ;
-                plot.finisheddate = finisheddate;
+                plot.setOwner(owner);
+                plot.setId(idX + ";" + idZ);
+                plot.setFinishedDate(finisheddate);
 
                 ret.add(plot);
             }
@@ -1788,9 +1788,9 @@ public class SqlManager {
                 }
 
                 Plot plot = new Plot(plugin);
-                plot.owner = owner;
-                plot.id = idX + ";" + idZ;
-                plot.expireddate = expireddate;
+                plot.setOwner(owner);
+                plot.setId(idX + ";" + idZ);
+                plot.setExpiredDate(expireddate);
 
                 ret.add(plot);
             }
@@ -1842,9 +1842,9 @@ public class SqlManager {
                 }
 
                 Plot plot = new Plot(plugin);
-                plot.owner = owner;
-                plot.id = idX + ";" + idZ;
-                plot.expireddate = expireddate;
+                plot.setOwner(owner);
+                plot.setId(idX + ";" + idZ);
+                plot.setExpiredDate(expireddate);
 
                 return plot;
             }

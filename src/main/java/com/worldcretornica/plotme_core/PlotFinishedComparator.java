@@ -6,10 +6,10 @@ public class PlotFinishedComparator implements Comparator<Plot> {
 
     @Override
     public int compare(Plot plot1, Plot plot2) {
-        if (plot1.finisheddate.compareTo(plot2.finisheddate) == 0) {
-            return plot1.owner.compareTo(plot2.owner);
+        if (plot1.getFinishedDate().compareTo(plot2.getFinishedDate()) == 0) {
+            return plot1.getOwner().compareTo(plot2.getOwner());
         } else {
-            return plot1.finisheddate.compareTo(plot2.finisheddate);
+            return plot1.getFinishedDate().compareTo(plot2.getFinishedDate());
         }
     }
 }

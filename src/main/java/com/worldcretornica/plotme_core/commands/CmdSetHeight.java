@@ -39,7 +39,7 @@ public class CmdSetHeight extends PlotCommand {
             height = 0;
         }
         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
-        plot.height = height;
+        plot.setHeight(height);
         plot.updateField("height", height);
         p.sendMessage(C("MsgHeightChangedTo") + " " + height);
         return true;
@@ -55,7 +55,7 @@ public class CmdSetHeight extends PlotCommand {
             return true;
         }
         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
-        height += plot.height;
+        height += plot.getHeight();
         args[1] = height.toString();
         return exec(p, args);
     }

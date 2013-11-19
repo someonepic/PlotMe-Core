@@ -93,7 +93,7 @@ public class PlotMoveEvent extends PlotEvent implements Cancellable
 	{
 		Plot plot = getPlotTo();
 		if(plot != null)
-			return plot.owner;
+			return plot.getOwner();
 		else
 			return "";
 	}

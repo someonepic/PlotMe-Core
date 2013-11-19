@@ -27,11 +27,11 @@ public class CmdDone extends PlotCommand {
                         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
                         String name = p.getName();
 
-                        if (plot.owner.equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.done")) {
-                            PlotDoneChangeEvent event = PlotMeEventFactory.callPlotDoneEvent(plugin, p.getWorld(), plot, p, plot.finished);
+                        if (plot.getOwner().equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.done")) {
+                            PlotDoneChangeEvent event = PlotMeEventFactory.callPlotDoneEvent(plugin, p.getWorld(), plot, p, plot.isFinished());
 
                             if (!event.isCancelled()) {
-                                if (plot.finished) {
+                                if (plot.isFinished()) {
                                     plot.setUnfinished();
                                     p.sendMessage(C("MsgUnmarkFinished"));
 

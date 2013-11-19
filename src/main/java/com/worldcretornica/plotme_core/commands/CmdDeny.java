@@ -35,7 +35,7 @@ public class CmdDeny extends PlotCommand {
                             String playername = p.getName();
                             String denied = args[1];
 
-                            if (plot.owner.equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.deny")) {
+                            if (plot.getOwner().equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.deny")) {
                                 if (plot.isDenied(denied)) {
                                     p.sendMessage(C("WordPlayer") + " " + RED + args[1] + RESET + " " + C("MsgAlreadyDenied"));
                                 } else {
@@ -48,7 +48,7 @@ public class CmdDeny extends PlotCommand {
                                     PlotDenyPlayerEvent event;
 
                                     if (plugin.getPlotMeCoreManager().isEconomyEnabled(w)) {
-                                        price = pmi.DenyPlayerPrice;
+                                        price = pmi.getDenyPlayerPrice();
                                         double balance = plugin.getEconomy().getBalance(playername);
 
                                         if (balance >= price) {
@@ -81,7 +81,7 @@ public class CmdDeny extends PlotCommand {
 
                                             for (Player deniedplayer : deniedplayers) {
                                                 if (!plot.isAllowed(deniedplayer.getName())) {
-                                                    deniedplayer.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, plot.id));
+                                                    deniedplayer.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, plot.getId()));
                                                 }
                                             }
                                         } else {
@@ -92,7 +92,7 @@ public class CmdDeny extends PlotCommand {
                                                     String deniedid = plugin.getPlotMeCoreManager().getPlotId(deniedplayer.getLocation());
 
                                                     if (deniedid.equalsIgnoreCase(id)) {
-                                                        deniedplayer.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, plot.id));
+                                                        deniedplayer.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, plot.getId()));
                                                     }
                                                 }
                                             }

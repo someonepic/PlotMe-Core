@@ -20,7 +20,7 @@ public class CmdAuction extends PlotCommand {
         if (plugin.getPlotMeCoreManager().isEconomyEnabled(p)) {
             PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
 
-            if (pmi.CanPutOnSale) {
+            if (pmi.isCanPutOnSale()) {
                 if (plugin.cPerms(p, "PlotMe.use.auction") || plugin.cPerms(p, "PlotMe.admin.auction")) {
                     String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
 
@@ -32,35 +32,35 @@ public class CmdAuction extends PlotCommand {
 
                             String name = p.getName();
 
-                            if (plot.owner.equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.auction")) {
+                            if (plot.getOwner().equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.auction")) {
                                 World w = p.getWorld();
 
-                                if (plot.auctionned) {
-                                    if (!plot.currentbidder.equals("") && !plugin.cPerms(p, "PlotMe.admin.auction")) {
+                                if (plot.isAuctionned()) {
+                                    if (!plot.getCurrentBidder().equals("") && !plugin.cPerms(p, "PlotMe.admin.auction")) {
                                         p.sendMessage(RED + C("MsgPlotHasBidsAskAdmin"));
                                     } else {
-                                        if (!plot.currentbidder.equals("")) {
-                                            EconomyResponse er = plugin.getEconomy().depositPlayer(plot.currentbidder, plot.currentbid);
+                                        if (!plot.getCurrentBidder().equals("")) {
+                                            EconomyResponse er = plugin.getEconomy().depositPlayer(plot.getCurrentBidder(), plot.getCurrentBid());
 
                                             if (!er.transactionSuccess()) {
                                                 p.sendMessage(RED + er.errorMessage);
                                                 plugin.getUtil().warn(er.errorMessage);
                                             } else {
                                                 for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-                                                    if (player.getName().equalsIgnoreCase(plot.currentbidder)) {
+                                                    if (player.getName().equalsIgnoreCase(plot.getCurrentBidder())) {
                                                         player.sendMessage(C("MsgAuctionCancelledOnPlot")
-                                                                + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + ". " + plugin.getUtil().moneyFormat(plot.currentbid));
+                                                                + " " + id + " " + C("MsgOwnedBy") + " " + plot.getOwner() + ". " + plugin.getUtil().moneyFormat(plot.getCurrentBid()));
                                                         break;
                                                     }
                                                 }
                                             }
                                         }
 
-                                        plot.auctionned = false;
+                                        plot.setAuctionned(false);
                                         plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
                                         plugin.getPlotMeCoreManager().setSellSign(w, plot);
-                                        plot.currentbid = 0;
-                                        plot.currentbidder = "";
+                                        plot.setCurrentBid(0);
+                                        plot.setCurrentBidder("");
 
                                         plot.updateField("currentbid", 0);
                                         plot.updateField("currentbidder", "");
@@ -89,8 +89,8 @@ public class CmdAuction extends PlotCommand {
                                         PlotAuctionEvent event = PlotMeEventFactory.callPlotAuctionEvent(plugin, w, plot, p, bid);
 
                                         if (!event.isCancelled()) {
-                                            plot.currentbid = bid;
-                                            plot.auctionned = true;
+                                            plot.setCurrentBid(bid);
+                                            plot.setAuctionned(true);
                                             plugin.getPlotMeCoreManager().adjustWall(p.getLocation());
                                             plugin.getPlotMeCoreManager().setSellSign(w, plot);
 

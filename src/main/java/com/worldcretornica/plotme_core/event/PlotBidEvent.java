@@ -43,11 +43,11 @@ public class PlotBidEvent extends PlotEvent implements Cancellable
 	
 	public double getPreviousBid()
 	{
-		return plot.currentbid;
+		return plot.getCurrentBid();
 	}
 	
 	public String getPreviousBidder()
 	{
-		return plot.currentbidder;
+		return plot.getCurrentBidder();
 	}
 }

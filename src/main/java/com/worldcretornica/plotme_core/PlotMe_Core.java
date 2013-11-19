@@ -465,27 +465,27 @@ public class PlotMe_Core extends JavaPlugin {
             PlotMapInfo tempPlotInfo = new PlotMapInfo(this, worldname);
             ConfigurationSection currworld = worlds.getConfigurationSection(worldname);
 
-            tempPlotInfo.PlotAutoLimit = currworld.getInt("PlotAutoLimit", 100);
+            tempPlotInfo.setPlotAutoLimit(currworld.getInt("PlotAutoLimit", 100));
 
-            tempPlotInfo.DaysToExpiration = currworld.getInt("DaysToExpiration", 7);
+            tempPlotInfo.setDaysToExpiration(currworld.getInt("DaysToExpiration", 7));
 
             if (currworld.contains("ProtectedBlocks")) {
-                tempPlotInfo.ProtectedBlocks = currworld.getIntegerList("ProtectedBlocks");
+                tempPlotInfo.setProtectedBlocks(currworld.getIntegerList("ProtectedBlocks"));
             } else {
-                tempPlotInfo.ProtectedBlocks = getDefaultProtectedBlocks();
+                tempPlotInfo.setProtectedBlocks(getDefaultProtectedBlocks());
             }
 
             if (currworld.contains("PreventedItems")) {
-                tempPlotInfo.PreventedItems = currworld.getStringList("PreventedItems");
+                tempPlotInfo.setPreventedItems(currworld.getStringList("PreventedItems"));
             } else {
-                tempPlotInfo.PreventedItems = getDefaultPreventedItems();
+                tempPlotInfo.setPreventedItems(getDefaultPreventedItems());
             }
 
-            tempPlotInfo.AutoLinkPlots = currworld.getBoolean("AutoLinkPlots", true);
-            tempPlotInfo.DisableExplosion = currworld.getBoolean("DisableExplosion", true);
-            tempPlotInfo.DisableIgnition = currworld.getBoolean("DisableIgnition", true);
-            tempPlotInfo.UseProgressiveClear = currworld.getBoolean("UseProgressiveClear", false);
-            tempPlotInfo.NextFreed = currworld.getString("NextFreed", "0;0");
+            tempPlotInfo.setAutoLinkPlots(currworld.getBoolean("AutoLinkPlots", true));
+            tempPlotInfo.setDisableExplosion(currworld.getBoolean("DisableExplosion", true));
+            tempPlotInfo.setDisableIgnition(currworld.getBoolean("DisableIgnition", true));
+            tempPlotInfo.setUseProgressiveClear(currworld.getBoolean("UseProgressiveClear", false));
+            tempPlotInfo.setNextFreed(currworld.getString("NextFreed", "0;0"));
 
             ConfigurationSection economysection;
 
@@ -495,61 +495,61 @@ public class PlotMe_Core extends JavaPlugin {
                 economysection = currworld.getConfigurationSection("economy");
             }
 
-            tempPlotInfo.UseEconomy = economysection.getBoolean("UseEconomy", false);
-            tempPlotInfo.CanPutOnSale = economysection.getBoolean("CanPutOnSale", false);
-            tempPlotInfo.CanSellToBank = economysection.getBoolean("CanSellToBank", false);
-            tempPlotInfo.RefundClaimPriceOnReset = economysection.getBoolean("RefundClaimPriceOnReset", false);
-            tempPlotInfo.RefundClaimPriceOnSetOwner = economysection.getBoolean("RefundClaimPriceOnSetOwner", false);
-            tempPlotInfo.ClaimPrice = economysection.getDouble("ClaimPrice", 0);
-            tempPlotInfo.ClearPrice = economysection.getDouble("ClearPrice", 0);
-            tempPlotInfo.AddPlayerPrice = economysection.getDouble("AddPlayerPrice", 0);
-            tempPlotInfo.DenyPlayerPrice = economysection.getDouble("DenyPlayerPrice", 0);
-            tempPlotInfo.RemovePlayerPrice = economysection.getDouble("RemovePlayerPrice", 0);
-            tempPlotInfo.UndenyPlayerPrice = economysection.getDouble("UndenyPlayerPrice", 0);
-            tempPlotInfo.PlotHomePrice = economysection.getDouble("PlotHomePrice", 0);
-            tempPlotInfo.CanCustomizeSellPrice = economysection.getBoolean("CanCustomizeSellPrice", false);
-            tempPlotInfo.SellToPlayerPrice = economysection.getDouble("SellToPlayerPrice", 0);
-            tempPlotInfo.SellToBankPrice = economysection.getDouble("SellToBankPrice", 0);
-            tempPlotInfo.BuyFromBankPrice = economysection.getDouble("BuyFromBankPrice", 0);
-            tempPlotInfo.AddCommentPrice = economysection.getDouble("AddCommentPrice", 0);
-            tempPlotInfo.BiomeChangePrice = economysection.getDouble("BiomeChangePrice", 0);
-            tempPlotInfo.ProtectPrice = economysection.getDouble("ProtectPrice", 0);
-            tempPlotInfo.DisposePrice = economysection.getDouble("DisposePrice", 0);
+            tempPlotInfo.setUseEconomy(economysection.getBoolean("UseEconomy", false));
+            tempPlotInfo.setCanPutOnSale(economysection.getBoolean("CanPutOnSale", false));
+            tempPlotInfo.setCanSellToBank(economysection.getBoolean("CanSellToBank", false));
+            tempPlotInfo.setRefundClaimPriceOnReset(economysection.getBoolean("RefundClaimPriceOnReset", false));
+            tempPlotInfo.setRefundClaimPriceOnSetOwner(economysection.getBoolean("RefundClaimPriceOnSetOwner", false));
+            tempPlotInfo.setClaimPrice(economysection.getDouble("ClaimPrice", 0));
+            tempPlotInfo.setClearPrice(economysection.getDouble("ClearPrice", 0));
+            tempPlotInfo.setAddPlayerPrice(economysection.getDouble("AddPlayerPrice", 0));
+            tempPlotInfo.setDenyPlayerPrice(economysection.getDouble("DenyPlayerPrice", 0));
+            tempPlotInfo.setRemovePlayerPrice(economysection.getDouble("RemovePlayerPrice", 0));
+            tempPlotInfo.setUndenyPlayerPrice(economysection.getDouble("UndenyPlayerPrice", 0));
+            tempPlotInfo.setPlotHomePrice(economysection.getDouble("PlotHomePrice", 0));
+            tempPlotInfo.setCanCustomizeSellPrice(economysection.getBoolean("CanCustomizeSellPrice", false));
+            tempPlotInfo.setSellToPlayerPrice(economysection.getDouble("SellToPlayerPrice", 0));
+            tempPlotInfo.setSellToBankPrice(economysection.getDouble("SellToBankPrice", 0));
+            tempPlotInfo.setBuyFromBankPrice(economysection.getDouble("BuyFromBankPrice", 0));
+            tempPlotInfo.setAddCommentPrice(economysection.getDouble("AddCommentPrice", 0));
+            tempPlotInfo.setBiomeChangePrice(economysection.getDouble("BiomeChangePrice", 0));
+            tempPlotInfo.setProtectPrice(economysection.getDouble("ProtectPrice", 0));
+            tempPlotInfo.setDisposePrice(economysection.getDouble("DisposePrice", 0));
 
-            currworld.set("PlotAutoLimit", tempPlotInfo.PlotAutoLimit);
+            currworld.set("PlotAutoLimit", tempPlotInfo.getPlotAutoLimit());
 
-            currworld.set("DaysToExpiration", tempPlotInfo.DaysToExpiration);
-            currworld.set("ProtectedBlocks", tempPlotInfo.ProtectedBlocks);
-            currworld.set("PreventedItems", tempPlotInfo.PreventedItems);
+            currworld.set("DaysToExpiration", tempPlotInfo.getDaysToExpiration());
+            currworld.set("ProtectedBlocks", tempPlotInfo.getProtectedBlocks());
+            currworld.set("PreventedItems", tempPlotInfo.getPreventedItems());
 
-            currworld.set("AutoLinkPlots", tempPlotInfo.AutoLinkPlots);
-            currworld.set("DisableExplosion", tempPlotInfo.DisableExplosion);
-            currworld.set("DisableIgnition", tempPlotInfo.DisableIgnition);
-            currworld.set("UseProgressiveClear", tempPlotInfo.UseProgressiveClear);
-            currworld.set("NextFreed", tempPlotInfo.NextFreed);
+            currworld.set("AutoLinkPlots", tempPlotInfo.isAutoLinkPlots());
+            currworld.set("DisableExplosion", tempPlotInfo.isDisableExplosion());
+            currworld.set("DisableIgnition", tempPlotInfo.isDisableIgnition());
+            currworld.set("UseProgressiveClear", tempPlotInfo.isUseProgressiveClear());
+            currworld.set("NextFreed", tempPlotInfo.getNextFreed());
 
             economysection = currworld.createSection("economy");
 
-            economysection.set("UseEconomy", tempPlotInfo.UseEconomy);
-            economysection.set("CanPutOnSale", tempPlotInfo.CanPutOnSale);
-            economysection.set("CanSellToBank", tempPlotInfo.CanSellToBank);
-            economysection.set("RefundClaimPriceOnReset", tempPlotInfo.RefundClaimPriceOnReset);
-            economysection.set("RefundClaimPriceOnSetOwner", tempPlotInfo.RefundClaimPriceOnSetOwner);
-            economysection.set("ClaimPrice", tempPlotInfo.ClaimPrice);
-            economysection.set("ClearPrice", tempPlotInfo.ClearPrice);
-            economysection.set("AddPlayerPrice", tempPlotInfo.AddPlayerPrice);
-            economysection.set("DenyPlayerPrice", tempPlotInfo.DenyPlayerPrice);
-            economysection.set("RemovePlayerPrice", tempPlotInfo.RemovePlayerPrice);
-            economysection.set("UndenyPlayerPrice", tempPlotInfo.UndenyPlayerPrice);
-            economysection.set("PlotHomePrice", tempPlotInfo.PlotHomePrice);
-            economysection.set("CanCustomizeSellPrice", tempPlotInfo.CanCustomizeSellPrice);
-            economysection.set("SellToPlayerPrice", tempPlotInfo.SellToPlayerPrice);
-            economysection.set("SellToBankPrice", tempPlotInfo.SellToBankPrice);
-            economysection.set("BuyFromBankPrice", tempPlotInfo.BuyFromBankPrice);
-            economysection.set("AddCommentPrice", tempPlotInfo.AddCommentPrice);
-            economysection.set("BiomeChangePrice", tempPlotInfo.BiomeChangePrice);
-            economysection.set("ProtectPrice", tempPlotInfo.ProtectPrice);
-            economysection.set("DisposePrice", tempPlotInfo.DisposePrice);
+            economysection.set("UseEconomy", tempPlotInfo.isUseEconomy());
+            economysection.set("CanPutOnSale", tempPlotInfo.isCanPutOnSale());
+            economysection.set("CanSellToBank", tempPlotInfo.isCanSellToBank());
+            economysection.set("RefundClaimPriceOnReset", tempPlotInfo.isRefundClaimPriceOnReset());
+            economysection.set("RefundClaimPriceOnSetOwner", tempPlotInfo.isRefundClaimPriceOnSetOwner());
+            economysection.set("ClaimPrice", tempPlotInfo.getClaimPrice());
+            economysection.set("ClearPrice", tempPlotInfo.getClearPrice());
+            economysection.set("AddPlayerPrice", tempPlotInfo.getAddPlayerPrice());
+            economysection.set("DenyPlayerPrice", tempPlotInfo.getDenyPlayerPrice());
+            economysection.set("RemovePlayerPrice", tempPlotInfo.getRemovePlayerPrice());
+            economysection.set("UndenyPlayerPrice", tempPlotInfo.getUndenyPlayerPrice());
+            economysection.set("PlotHomePrice", tempPlotInfo.getPlotHomePrice());
+            economysection.set("CanCustomizeSellPrice", tempPlotInfo.isCanCustomizeSellPrice());
+            economysection.set("SellToPlayerPrice", tempPlotInfo.getSellToPlayerPrice());
+            economysection.set("SellToBankPrice", tempPlotInfo.getSellToBankPrice());
+            economysection.set("BuyFromBankPrice", tempPlotInfo.getBuyFromBankPrice());
+            economysection.set("AddCommentPrice", tempPlotInfo.getAddCommentPrice());
+            economysection.set("BiomeChangePrice", tempPlotInfo.getBiomeChangePrice());
+            economysection.set("ProtectPrice", tempPlotInfo.getProtectPrice());
+            economysection.set("DisposePrice", tempPlotInfo.getDisposePrice());
 
             currworld.set("economy", economysection);
 
@@ -1230,7 +1230,7 @@ public class PlotMe_Core extends JavaPlugin {
 
     public boolean isPlotLocked(String world, String id) {
         for (PlotToClear ptc : plotsToClear.toArray(new PlotToClear[0])) {
-            if (ptc.world.equalsIgnoreCase(world) && ptc.plotid.equalsIgnoreCase(id)) {
+            if (ptc.getWorld().equalsIgnoreCase(world) && ptc.getPlotId().equalsIgnoreCase(id)) {
                 return true;
             }
         }
@@ -1240,7 +1240,7 @@ public class PlotMe_Core extends JavaPlugin {
 
     public PlotToClear getPlotLocked(String world, String id) {
         for (PlotToClear ptc : plotsToClear.toArray(new PlotToClear[0])) {
-            if (ptc.world.equalsIgnoreCase(world) && ptc.plotid.equalsIgnoreCase(id)) {
+            if (ptc.getWorld().equalsIgnoreCase(world) && ptc.getPlotId().equalsIgnoreCase(id)) {
                 return ptc;
             }
         }
@@ -1281,40 +1281,40 @@ public class PlotMe_Core extends JavaPlugin {
             economysection = currworld.getConfigurationSection("economy");
         }
 
-        currworld.set("PlotAutoLimit", pmi.PlotAutoLimit);
+        currworld.set("PlotAutoLimit", pmi.getPlotAutoLimit());
 
-        currworld.set("DaysToExpiration", pmi.DaysToExpiration);
-        currworld.set("ProtectedBlocks", pmi.ProtectedBlocks);
-        currworld.set("PreventedItems", pmi.PreventedItems);
+        currworld.set("DaysToExpiration", pmi.getDaysToExpiration());
+        currworld.set("ProtectedBlocks", pmi.getProtectedBlocks());
+        currworld.set("PreventedItems", pmi.getPreventedItems());
 
-        currworld.set("AutoLinkPlots", pmi.AutoLinkPlots);
-        currworld.set("DisableExplosion", pmi.DisableExplosion);
-        currworld.set("DisableIgnition", pmi.DisableIgnition);
-        currworld.set("UseProgressiveClear", pmi.UseProgressiveClear);
-        currworld.set("NextFreed", pmi.NextFreed);
+        currworld.set("AutoLinkPlots", pmi.isAutoLinkPlots());
+        currworld.set("DisableExplosion", pmi.isDisableExplosion());
+        currworld.set("DisableIgnition", pmi.isDisableIgnition());
+        currworld.set("UseProgressiveClear", pmi.isUseProgressiveClear());
+        currworld.set("NextFreed", pmi.getNextFreed());
 
         economysection = currworld.createSection("economy");
 
-        economysection.set("UseEconomy", pmi.UseEconomy);
-        economysection.set("CanPutOnSale", pmi.CanPutOnSale);
-        economysection.set("CanSellToBank", pmi.CanSellToBank);
-        economysection.set("RefundClaimPriceOnReset", pmi.RefundClaimPriceOnReset);
-        economysection.set("RefundClaimPriceOnSetOwner", pmi.RefundClaimPriceOnSetOwner);
-        economysection.set("ClaimPrice", pmi.ClaimPrice);
-        economysection.set("ClearPrice", pmi.ClearPrice);
-        economysection.set("AddPlayerPrice", pmi.AddPlayerPrice);
-        economysection.set("DenyPlayerPrice", pmi.DenyPlayerPrice);
-        economysection.set("RemovePlayerPrice", pmi.RemovePlayerPrice);
-        economysection.set("UndenyPlayerPrice", pmi.UndenyPlayerPrice);
-        economysection.set("PlotHomePrice", pmi.PlotHomePrice);
-        economysection.set("CanCustomizeSellPrice", pmi.CanCustomizeSellPrice);
-        economysection.set("SellToPlayerPrice", pmi.SellToPlayerPrice);
-        economysection.set("SellToBankPrice", pmi.SellToBankPrice);
-        economysection.set("BuyFromBankPrice", pmi.BuyFromBankPrice);
-        economysection.set("AddCommentPrice", pmi.AddCommentPrice);
-        economysection.set("BiomeChangePrice", pmi.BiomeChangePrice);
-        economysection.set("ProtectPrice", pmi.ProtectPrice);
-        economysection.set("DisposePrice", pmi.DisposePrice);
+        economysection.set("UseEconomy", pmi.isUseEconomy());
+        economysection.set("CanPutOnSale", pmi.isCanPutOnSale());
+        economysection.set("CanSellToBank", pmi.isCanSellToBank());
+        economysection.set("RefundClaimPriceOnReset", pmi.isRefundClaimPriceOnReset());
+        economysection.set("RefundClaimPriceOnSetOwner", pmi.isRefundClaimPriceOnSetOwner());
+        economysection.set("ClaimPrice", pmi.getClaimPrice());
+        economysection.set("ClearPrice", pmi.getClearPrice());
+        economysection.set("AddPlayerPrice", pmi.getAddPlayerPrice());
+        economysection.set("DenyPlayerPrice", pmi.getDenyPlayerPrice());
+        economysection.set("RemovePlayerPrice", pmi.getRemovePlayerPrice());
+        economysection.set("UndenyPlayerPrice", pmi.getUndenyPlayerPrice());
+        economysection.set("PlotHomePrice", pmi.getPlotHomePrice());
+        economysection.set("CanCustomizeSellPrice", pmi.isCanCustomizeSellPrice());
+        economysection.set("SellToPlayerPrice", pmi.getSellToPlayerPrice());
+        economysection.set("SellToBankPrice", pmi.getSellToBankPrice());
+        economysection.set("BuyFromBankPrice", pmi.getBuyFromBankPrice());
+        economysection.set("AddCommentPrice", pmi.getAddCommentPrice());
+        economysection.set("BiomeChangePrice", pmi.getBiomeChangePrice());
+        economysection.set("ProtectPrice", pmi.getProtectPrice());
+        economysection.set("DisposePrice", pmi.getDisposePrice());
 
         currworld.set("economy", economysection);
 

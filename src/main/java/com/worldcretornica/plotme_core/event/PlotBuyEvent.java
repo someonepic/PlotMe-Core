@@ -43,7 +43,7 @@ public class PlotBuyEvent extends PlotEvent implements Cancellable
 	
 	public String getPreviousOwner()
 	{
-		return plot.owner;
+		return plot.getOwner();
 	}
 	
 	@Override

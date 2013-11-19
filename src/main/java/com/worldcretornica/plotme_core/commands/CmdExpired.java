@@ -43,11 +43,11 @@ public class CmdExpired extends PlotCommand {
                     for (int i = (page - 1) * pagesize; i < expiredplots.size() && i < (page * pagesize); i++) {
                         Plot plot = expiredplots.get(i);
 
-                        String starttext = "  " + AQUA + plot.id + RESET + " -> " + plot.owner;
+                        String starttext = "  " + AQUA + plot.getId() + RESET + " -> " + plot.getOwner();
 
                         int textLength = MinecraftFontWidthCalculator.getStringWidth(starttext);
 
-                        String line = starttext + Util().whitespace(550 - textLength) + "@" + plot.expireddate.toString();
+                        String line = starttext + Util().whitespace(550 - textLength) + "@" + plot.getExpiredDate().toString();
 
                         p.sendMessage(line);
                     }

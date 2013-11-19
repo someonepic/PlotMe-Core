@@ -15,175 +15,181 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 public class Plot implements Comparable<Plot> {
 
-    private PlotMe_Core plotmecore = null;
+    private PlotMe_Core plugin = null;
 
-    public String owner;
-    public String world;
+    private String owner;
+    private String world;
     private HashSet<String> allowed;
     private HashSet<String> denied;
-    public Biome biome;
-    public int baseY;
-    public int height;
-    public Date expireddate;
-    public boolean finished;
-    public List<String[]> comments;
-    public String id;
-    public double customprice;
-    public boolean forsale;
-    public String finisheddate;
-    public boolean protect;
-    public boolean auctionned;
-    public String currentbidder;
-    public double currentbid;
-    public String auctionneddate;
+    private Biome biome;
+    private int baseY;
+    private int height;
+    private Date expireddate;
+    private boolean finished;
+    private List<String[]> comments;
+    private String id;
+    private double customprice;
+    private boolean forsale;
+    private String finisheddate;
+    private boolean protect;
+    private boolean auctionned;
+    private String currentbidder;
+    private double currentbid;
+    private String auctionneddate;
 
     public Plot(PlotMe_Core instance) {
-        plotmecore = instance;
-        owner = "";
-        world = "";
-        id = "";
-        allowed = new HashSet<String>();
-        denied = new HashSet<String>();
-        biome = Biome.PLAINS;
+        this.plugin = instance;
+        this.owner = "";
+        this.setWorld("");
+        this.setId("");
+        this.allowed = new HashSet<String>();
+        this.denied = new HashSet<String>();
+        this.setBiome(Biome.PLAINS);
 
-        baseY = 0;
-        height = 256;
+        this.setBaseY(0);
+        this.setHeight(256);
 
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_YEAR, 7);
         java.util.Date utlDate = cal.getTime();
-        expireddate = new java.sql.Date(utlDate.getTime());
+        this.setExpiredDate(new java.sql.Date(utlDate.getTime()));
 
-        comments = new ArrayList<String[]>();
-        customprice = 0;
-        forsale = false;
-        finisheddate = "";
-        protect = false;
-        auctionned = false;
-        currentbidder = "";
-        currentbid = 0;
+        this.comments = new ArrayList<String[]>();
+        this.setCustomPrice(0);
+        this.setForSale(false);
+        this.setFinishedDate("");
+        this.setProtect(false);
+        this.setAuctionned(false);
+        this.setCurrentBidder("");
+        this.setCurrentBid(0);
     }
 
     public Plot(PlotMe_Core instance, String own, World wor, String tid, int days) {
-        plotmecore = instance;
-        owner = own;
-        world = wor.getName();
-        allowed = new HashSet<String>();
-        denied = new HashSet<String>();
-        biome = Biome.PLAINS;
-        id = tid;
+        this.plugin = instance;
+        this.owner = own;
+        this.setWorld(wor.getName());
+        this.allowed = new HashSet<String>();
+        this.denied = new HashSet<String>();
+        this.setBiome(Biome.PLAINS);
+        this.setId(tid);
 
-        FileConfiguration config = plotmecore.getConfig();
+        FileConfiguration config = plugin.getConfig();
 
-        ConfigurationSection plotWorldConfig = config.getConfigurationSection("worlds." + world);
+        //TODO put these in the PlotMapInfo and get them from there, no reason to read from configs when creating a plot
+        ConfigurationSection plotWorldConfig = config.getConfigurationSection("worlds." + getWorld());
 
         if (plotWorldConfig == null) {
-            baseY = 0;
-            height = 256;
+            this.setBaseY(0);
+            this.setHeight(256);
         } else {
-            baseY = plotWorldConfig.getInt("PlotBase", 0);
-            height = plotWorldConfig.getInt("PlotHeight", 256);
+            this.setBaseY(plotWorldConfig.getInt("PlotBase", 0));
+            this.setHeight(plotWorldConfig.getInt("PlotHeight", 256));
         }
 
         if (days == 0) {
-            expireddate = null;
+            this.setExpiredDate(null);
         } else {
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DAY_OF_YEAR, days);
             java.util.Date utlDate = cal.getTime();
-            expireddate = new java.sql.Date(utlDate.getTime());
+            this.setExpiredDate(new java.sql.Date(utlDate.getTime()));
         }
 
-        comments = new ArrayList<String[]>();
-        customprice = 0;
-        forsale = false;
-        finisheddate = "";
-        protect = false;
-        auctionned = false;
-        currentbidder = "";
-        currentbid = 0;
+        this.comments = new ArrayList<String[]>();
+        this.setCustomPrice(0);
+        this.setForSale(false);
+        this.setFinishedDate("");
+        this.setProtect(false);
+        this.setAuctionned(false);
+        this.setCurrentBidder("");
+        this.setCurrentBid(0);
     }
 
     public Plot(PlotMe_Core instance, String o, String w, String bio, int baseY, int height, Date exp, boolean fini, HashSet<String> al,
             List<String[]> comm, String tid, double custprice, boolean sale, String finishdt, boolean prot, String bidder,
             Double bid, boolean isauctionned, HashSet<String> den, String auctdate) {
-        plotmecore = instance;
-        owner = o;
-        world = w;
-        biome = Biome.valueOf(bio);
-        this.baseY = baseY;
-        this.height = height;
-        expireddate = exp;
-        finished = fini;
-        allowed = al;
-        comments = comm;
-        id = tid;
-        customprice = custprice;
-        forsale = sale;
-        finisheddate = finishdt;
-        protect = prot;
-        auctionned = isauctionned;
-        currentbidder = bidder;
-        currentbid = bid;
-        denied = den;
-        auctionneddate = auctdate;
+        this.plugin = instance;
+        this.owner = o;
+        this.setWorld(w);
+        this.setBiome(Biome.valueOf(bio));
+        this.setBaseY(baseY);
+        this.setHeight(height);
+        this.setExpiredDate(exp);
+        this.setFinished(fini);
+        this.allowed = al;
+        this.comments = comm;
+        this.setId(tid);
+        this.setCustomPrice(custprice);
+        this.setForSale(sale);
+        this.setFinishedDate(finishdt);
+        this.setProtect(prot);
+        this.setAuctionned(isauctionned);
+        this.setCurrentBidder(bidder);
+        this.setCurrentBid(bid);
+        this.denied = den;
+        this.setAuctionnedDate(auctdate);
     }
 
     public void setExpire(Date date) {
-        if (!expireddate.equals(date)) {
-            expireddate = date;
-            updateField("expireddate", expireddate);
+        if (!this.getExpiredDate().equals(date)) {
+            this.setExpiredDate(date);
+            updateField("expireddate", this.getExpiredDate());
         }
     }
 
     public void resetExpire(int days) {
         if (days == 0) {
-            if (expireddate != null) {
-                expireddate = null;
-                updateField("expireddate", expireddate);
+            if (this.getExpiredDate() != null) {
+                this.setExpiredDate(null);
+                updateField("expireddate", this.getExpiredDate());
             }
         } else {
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DAY_OF_YEAR, days);
             java.util.Date utlDate = cal.getTime();
             java.sql.Date temp = new java.sql.Date(utlDate.getTime());
-            if (expireddate == null || !temp.toString().equalsIgnoreCase(expireddate.toString())) {
-                expireddate = temp;
-                updateField("expireddate", expireddate);
+            if (this.getExpiredDate() == null || !temp.toString().equalsIgnoreCase(this.getExpiredDate().toString())) {
+                this.setExpiredDate(temp);
+                updateField("expireddate", this.getExpiredDate());
             }
         }
     }
 
     public String getExpire() {
-        return DateFormat.getDateInstance().format(expireddate);
+        return DateFormat.getDateInstance().format(this.getExpiredDate());
     }
 
     public void setFinished() {
-        finisheddate = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(Calendar.getInstance().getTime());
-        finished = true;
+        this.setFinishedDate(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(Calendar.getInstance().getTime()));
+        this.finished = true;
 
-        updateFinished(finisheddate, finished);
+        updateFinished(this.getFinishedDate(), this.finished);
     }
 
     public void setUnfinished() {
-        finisheddate = "";
-        finished = false;
+        this.setFinishedDate("");
+        this.setFinished(false);
 
-        updateFinished(finisheddate, finished);
+        updateFinished(this.getFinishedDate(), this.isFinished());
     }
 
     public Biome getBiome() {
-        return biome;
+        return this.biome;
     }
 
     public String getOwner() {
-        return owner;
+        return this.owner;
+    }
+    
+    public void setOwner(String owner)
+    {
+        this.owner = owner;
     }
 
     public String getAllowed() {
         String list = "";
 
-        for (String s : allowed) {
+        for (String s : this.allowed) {
             list = list + s + ", ";
         }
         if (list.length() > 1) {
@@ -195,7 +201,7 @@ public class Plot implements Comparable<Plot> {
     public String getDenied() {
         String list = "";
 
-        for (String s : denied) {
+        for (String s : this.denied) {
             list = list + s + ", ";
         }
         if (list.length() > 1) {
@@ -205,31 +211,39 @@ public class Plot implements Comparable<Plot> {
     }
 
     public int getCommentsCount() {
-        return comments.size();
+        return this.comments.size();
     }
 
-    public String[] getComments(int i) {
-        return comments.get(i);
+    public String[] getComment(int i) {
+        return this.comments.get(i);
+    }
+    
+    public List<String[]> getComments() {
+        return this.comments;
+    }
+    
+    public void addComment(String[] comment) {
+        this.comments.add(comment);
     }
 
     public void addAllowed(String name) {
         if (!isAllowed(name)) {
-            allowed.add(name);
-            plotmecore.getSqlManager().addPlotAllowed(name, plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), world);
+            this.allowed.add(name);
+            this.plugin.getSqlManager().addPlotAllowed(name, this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), this.getWorld());
         }
     }
 
     public void addDenied(String name) {
         if (!isDenied(name)) {
-            denied.add(name);
-            plotmecore.getSqlManager().addPlotDenied(name, plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), world);
+            this.denied.add(name);
+            this.plugin.getSqlManager().addPlotDenied(name, this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), this.getWorld());
         }
     }
 
     public void removeAllowed(String name) {
         String found = "";
 
-        for (String n : allowed) {
+        for (String n : this.allowed) {
             if (n.equalsIgnoreCase(name)) {
                 found = n;
                 break;
@@ -237,15 +251,15 @@ public class Plot implements Comparable<Plot> {
         }
 
         if (!found.equals("")) {
-            allowed.remove(found);
-            plotmecore.getSqlManager().deletePlotAllowed(plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), found, world);
+            this.allowed.remove(found);
+            this.plugin.getSqlManager().deletePlotAllowed(this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), found, this.getWorld());
         }
     }
 
     public void removeDenied(String name) {
         String found = "";
 
-        for (String n : denied) {
+        for (String n : this.denied) {
             if (n.equalsIgnoreCase(name)) {
                 found = n;
                 break;
@@ -253,23 +267,23 @@ public class Plot implements Comparable<Plot> {
         }
 
         if (!found.equals("")) {
-            denied.remove(found);
-            plotmecore.getSqlManager().deletePlotDenied(plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), found, world);
+            this.denied.remove(found);
+            this.plugin.getSqlManager().deletePlotDenied(this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), found, this.getWorld());
         }
     }
 
     public void removeAllAllowed() {
-        for (String n : allowed) {
-            plotmecore.getSqlManager().deletePlotAllowed(plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), n, world);
+        for (String n : this.allowed) {
+            this.plugin.getSqlManager().deletePlotAllowed(this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), n, this.getWorld());
         }
-        allowed = new HashSet<String>();
+        this.allowed = new HashSet<String>();
     }
 
     public void removeAllDenied() {
-        for (String n : denied) {
-            plotmecore.getSqlManager().deletePlotDenied(plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), n, world);
+        for (String n : this.denied) {
+            this.plugin.getSqlManager().deletePlotDenied(this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), n, this.getWorld());
         }
-        denied = new HashSet<String>();
+        this.denied = new HashSet<String>();
     }
 
     public boolean isAllowed(String name) {
@@ -285,17 +299,17 @@ public class Plot implements Comparable<Plot> {
             return false;
         }
 
-        if (owner.equalsIgnoreCase(name) || (IncludeStar && owner.equals("*"))) {
+        if (this.owner.equalsIgnoreCase(name) || (IncludeStar && this.owner.equals("*"))) {
             return true;
         }
 
-        if (IncludeGroup && owner.toLowerCase().startsWith("group:") && Bukkit.getServer().getPlayerExact(name) != null) {
-            if (Bukkit.getServer().getPlayerExact(name).hasPermission("plotme.group." + owner.replace("Group:", ""))) {
+        if (IncludeGroup && this.owner.toLowerCase().startsWith("group:") && Bukkit.getServer().getPlayerExact(name) != null) {
+            if (Bukkit.getServer().getPlayerExact(name).hasPermission("plotme.group." + this.owner.replace("Group:", ""))) {
                 return true;
             }
         }
 
-        for (String str : allowed) {
+        for (String str : this.allowed) {
             if (str.equalsIgnoreCase(name) || (IncludeStar && str.equals("*"))) {
                 return true;
             }
@@ -311,7 +325,7 @@ public class Plot implements Comparable<Plot> {
     }
 
     private boolean contains(int y) {
-        return y >= baseY && y <= baseY + height;
+        return y >= this.getBaseY() && y <= this.getBaseY() + this.getHeight();
     }
 
     public boolean isDenied(String name) {
@@ -323,7 +337,7 @@ public class Plot implements Comparable<Plot> {
             return false;
         }
 
-        for (String str : denied) {
+        for (String str : this.denied) {
             if (str.equalsIgnoreCase(name) || str.equals("*")) {
                 return true;
             }
@@ -339,27 +353,27 @@ public class Plot implements Comparable<Plot> {
     }
 
     public HashSet<String> allowed() {
-        return allowed;
+        return this.allowed;
     }
 
     public HashSet<String> denied() {
-        return denied;
+        return this.denied;
     }
 
     public int allowedcount() {
-        return allowed.size();
+        return this.allowed.size();
     }
 
     public int deniedcount() {
-        return denied.size();
+        return this.denied.size();
     }
 
     @Override
     public int compareTo(Plot plot) {
-        if (expireddate.compareTo(plot.expireddate) == 0) {
-            return owner.compareTo(plot.owner);
+        if (this.getExpiredDate().compareTo(plot.getExpiredDate()) == 0) {
+            return this.owner.compareTo(plot.owner);
         } else {
-            return expireddate.compareTo(plot.expireddate);
+            return this.getExpiredDate().compareTo(plot.getExpiredDate());
         }
     }
 
@@ -369,6 +383,122 @@ public class Plot implements Comparable<Plot> {
     }
 
     public void updateField(String field, Object value) {
-        plotmecore.getSqlManager().updatePlot(plotmecore.getPlotMeCoreManager().getIdX(id), plotmecore.getPlotMeCoreManager().getIdZ(id), world, field, value);
+        this.plugin.getSqlManager().updatePlot(this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), this.getWorld(), field, value);
+    }
+
+    public String getWorld() {
+        return world;
+    }
+
+    public void setWorld(String world) {
+        this.world = world;
+    }
+
+    public void setBiome(Biome biome) {
+        this.biome = biome;
+    }
+
+    public int getBaseY() {
+        return baseY;
+    }
+
+    public void setBaseY(int baseY) {
+        this.baseY = baseY;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public Date getExpiredDate() {
+        return expireddate;
+    }
+
+    public void setExpiredDate(Date expireddate) {
+        this.expireddate = expireddate;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void setFinished(boolean finished) {
+        this.finished = finished;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public double getCustomPrice() {
+        return customprice;
+    }
+
+    public void setCustomPrice(double customprice) {
+        this.customprice = customprice;
+    }
+
+    public boolean isForSale() {
+        return forsale;
+    }
+
+    public void setForSale(boolean forsale) {
+        this.forsale = forsale;
+    }
+
+    public String getFinishedDate() {
+        return finisheddate;
+    }
+
+    public void setFinishedDate(String finisheddate) {
+        this.finisheddate = finisheddate;
+    }
+
+    public boolean isProtect() {
+        return protect;
+    }
+
+    public void setProtect(boolean protect) {
+        this.protect = protect;
+    }
+
+    public boolean isAuctionned() {
+        return auctionned;
+    }
+
+    public void setAuctionned(boolean auctionned) {
+        this.auctionned = auctionned;
+    }
+
+    public String getCurrentBidder() {
+        return currentbidder;
+    }
+
+    public void setCurrentBidder(String currentbidder) {
+        this.currentbidder = currentbidder;
+    }
+
+    public double getCurrentBid() {
+        return currentbid;
+    }
+
+    public void setCurrentBid(double currentbid) {
+        this.currentbid = currentbid;
+    }
+
+    public String getAuctionnedDate() {
+        return auctionneddate;
+    }
+
+    public void setAuctionnedDate(String auctionneddate) {
+        this.auctionneddate = auctionneddate;
     }
 }

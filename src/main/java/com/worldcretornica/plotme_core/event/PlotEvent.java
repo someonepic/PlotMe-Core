@@ -55,7 +55,7 @@ public abstract class PlotEvent extends Event
     public String getOwner()
     {
         if(plot != null) {
-            return plot.owner;
+            return plot.getOwner();
         } else {
             return "";
         }
@@ -70,7 +70,7 @@ public abstract class PlotEvent extends Event
     public Location getUpperBound()
     {
         if(plot != null && world != null) {
-            return plugin.getPlotMeCoreManager().getGenMan(world).getPlotTopLoc(world, plot.id);
+            return plugin.getPlotMeCoreManager().getGenMan(world).getPlotTopLoc(world, plot.getId());
         } else {
             return null;
         }
@@ -85,7 +85,7 @@ public abstract class PlotEvent extends Event
     public Location getLowerBound()
     {
         if(plot != null && world != null) {
-            return plugin.getPlotMeCoreManager().getGenMan(world).getPlotBottomLoc(world, plot.id);
+            return plugin.getPlotMeCoreManager().getGenMan(world).getPlotBottomLoc(world, plot.getId());
         } else {
             return null;
         }
@@ -133,7 +133,7 @@ public abstract class PlotEvent extends Event
     public Location getHomeLocation()
     {
         if(plot != null && world != null) {
-            return plugin.getPlotMeCoreManager().getPlotHome(world, plot.id);
+            return plugin.getPlotMeCoreManager().getPlotHome(world, plot.getId());
         } else {
             return null;
         }

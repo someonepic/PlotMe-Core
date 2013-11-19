@@ -45,7 +45,7 @@ public class CmdAuto extends PlotCommand {
                                 + plugin.getPlotMeCoreManager().getNbOwnedPlot(p, w) + "/" + plugin.getPlotLimit(p) + "). " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt"));
                     } else {
                         PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
-                        int limit = pmi.PlotAutoLimit;
+                        int limit = pmi.getPlotAutoLimit();
 
                         String next = pmi.getNextFreed();
                         String id = "";
@@ -91,7 +91,7 @@ public class CmdAuto extends PlotCommand {
                         PlotCreateEvent event;
 
                         if (plugin.getPlotMeCoreManager().isEconomyEnabled(w)) {
-                            price = pmi.ClaimPrice;
+                            price = pmi.getClaimPrice();
                             double balance = plugin.getEconomy().getBalance(name);
 
                             if (balance >= price) {
