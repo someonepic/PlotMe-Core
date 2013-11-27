@@ -108,7 +108,11 @@ public class PlotMe_Core extends JavaPlugin {
 
     public void reload() {
         getSqlManager().closeConnection();
+        reloadConfig();
         setupConfig();
+        for (String lang : captionsCA.keySet()) {
+            reloadCaptionConfig(lang);
+        }
         setupDefaultCaptions();
         setupMySQL();
 
