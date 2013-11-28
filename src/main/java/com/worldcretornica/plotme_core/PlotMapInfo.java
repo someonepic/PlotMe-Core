@@ -55,9 +55,8 @@ public class PlotMapInfo {
         _world = world;
         _freedplots = plugin.getSqlManager().getFreed(world);
     }
-    
-    public int getNbPlots()
-    {
+
+    public int getNbPlots() {
         return _plots.size();
     }
 
@@ -108,51 +107,51 @@ public class PlotMapInfo {
             plugin.getSqlManager().deleteFreed(x, z, _world);
         }
     }
-    
+
     public void addProtectedBlock(Integer blockId) {
-        if(!isProtectedBlock(blockId)) {
+        if (!isProtectedBlock(blockId)) {
             this.ProtectedBlocks.add(blockId);
         }
     }
-    
+
     public void removeProtectedBlock(Integer blockId) {
-        if(isProtectedBlock(blockId)) {
+        if (isProtectedBlock(blockId)) {
             this.ProtectedBlocks.remove(blockId);
         }
     }
-    
+
     public boolean isProtectedBlock(Integer blockId) {
         return this.ProtectedBlocks.contains(blockId);
     }
-    
+
     public List<Integer> getProtectedBlocks() {
         return this.ProtectedBlocks;
     }
-    
+
     public void setProtectedBlocks(List<Integer> blockId) {
         this.ProtectedBlocks = blockId;
     }
-    
+
     public void addPreventedItem(String itemId) {
-        if(!isPreventedItem(itemId)) {
+        if (!isPreventedItem(itemId)) {
             this.PreventedItems.add(itemId);
         }
     }
-    
+
     public void removePreventedItems(String itemId) {
-        if(isPreventedItem(itemId)) {
+        if (isPreventedItem(itemId)) {
             this.ProtectedBlocks.remove(itemId);
         }
     }
-    
+
     public boolean isPreventedItem(String itemId) {
         return this.PreventedItems.contains(itemId);
     }
-    
+
     public List<String> getPreventedItems() {
         return this.PreventedItems;
     }
-    
+
     public void setPreventedItems(List<String> itemIds) {
         this.PreventedItems = itemIds;
     }
@@ -167,7 +166,8 @@ public class PlotMapInfo {
 
     public void setNextFreed(String id) {
         NextFreed = id;
-        plugin.saveWorldConfig(_world);
+        // TODO: Temp fix. Should be resolved when PMI is deprecated.
+        // plugin.saveWorldConfig(_world);
     }
 
     public int getPlotAutoLimit() {
