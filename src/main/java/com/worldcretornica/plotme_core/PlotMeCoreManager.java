@@ -20,8 +20,6 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
@@ -86,28 +84,10 @@ public class PlotMeCoreManager {
             }
         }
 
-        //Create manager configurations
-        FileConfiguration config = plugin.getConfig();
-
-        ConfigurationSection worlds;
-
-        if (!config.contains("worlds")) {
-            worlds = config.createSection("worlds");
-        } else {
-            worlds = config.getConfigurationSection("worlds");
-        }
-
         PlotMapInfo tempPlotInfo = new PlotMapInfo(plugin, worldname);
-        ConfigurationSection currworld = worlds.getConfigurationSection(worldname);
-
-        if (currworld == null) {
-            currworld = worlds.createSection(worldname);
-        }
 
         tempPlotInfo.setPlotAutoLimit(Integer.parseInt(args.get("PlotAutoLimit")));
         tempPlotInfo.setDaysToExpiration(Integer.parseInt(args.get("DaysToExpiration")));
-        tempPlotInfo.setProtectedBlocks(plugin.getDefaultWorld().getIntegerList("ProtectedBlocks"));
-        tempPlotInfo.setPreventedItems(plugin.getDefaultWorld().getStringList("PreventedItems"));
         tempPlotInfo.setAutoLinkPlots(Boolean.parseBoolean(args.get("AutoLinkPlots")));
         tempPlotInfo.setDisableExplosion(Boolean.parseBoolean(args.get("DisableExplosion")));
         tempPlotInfo.setDisableIgnition(Boolean.parseBoolean(args.get("DisableIgnition")));
@@ -133,43 +113,7 @@ public class PlotMeCoreManager {
         tempPlotInfo.setProtectPrice(Double.parseDouble(args.get("ProtectPrice")));
         tempPlotInfo.setDisposePrice(Double.parseDouble(args.get("DisposePrice")));
 
-        currworld.set("PlotAutoLimit", tempPlotInfo.getPlotAutoLimit());
-        currworld.set("DaysToExpiration", tempPlotInfo.getDaysToExpiration());
-        currworld.set("ProtectedBlocks", tempPlotInfo.getProtectedBlocks());
-        currworld.set("PreventedItems", tempPlotInfo.getPreventedItems());
-        currworld.set("AutoLinkPlots", tempPlotInfo.isAutoLinkPlots());
-        currworld.set("DisableExplosion", tempPlotInfo.isDisableExplosion());
-        currworld.set("DisableIgnition", tempPlotInfo.isDisableIgnition());
-        currworld.set("UseProgressiveClear", tempPlotInfo.isUseProgressiveClear());
-
-        ConfigurationSection economysection = currworld.createSection("economy");
-
-        economysection.set("UseEconomy", tempPlotInfo.isUseEconomy());
-        economysection.set("CanPutOnSale", tempPlotInfo.isCanPutOnSale());
-        economysection.set("CanSellToBank", tempPlotInfo.isCanSellToBank());
-        economysection.set("RefundClaimPriceOnReset", tempPlotInfo.isRefundClaimPriceOnReset());
-        economysection.set("RefundClaimPriceOnSetOwner", tempPlotInfo.isRefundClaimPriceOnSetOwner());
-        economysection.set("ClaimPrice", tempPlotInfo.getClaimPrice());
-        economysection.set("ClearPrice", tempPlotInfo.getClearPrice());
-        economysection.set("AddPlayerPrice", tempPlotInfo.getAddPlayerPrice());
-        economysection.set("DenyPlayerPrice", tempPlotInfo.getDenyPlayerPrice());
-        economysection.set("RemovePlayerPrice", tempPlotInfo.getRemovePlayerPrice());
-        economysection.set("UndenyPlayerPrice", tempPlotInfo.getUndenyPlayerPrice());
-        economysection.set("PlotHomePrice", tempPlotInfo.getPlotHomePrice());
-        economysection.set("CanCustomizeSellPrice", tempPlotInfo.isCanCustomizeSellPrice());
-        economysection.set("SellToPlayerPrice", tempPlotInfo.getSellToPlayerPrice());
-        economysection.set("SellToBankPrice", tempPlotInfo.getSellToBankPrice());
-        economysection.set("BuyFromBankPrice", tempPlotInfo.getBuyFromBankPrice());
-        economysection.set("AddCommentPrice", tempPlotInfo.getAddCommentPrice());
-        economysection.set("BiomeChangePrice", tempPlotInfo.getBiomeChangePrice());
-        economysection.set("ProtectPrice", tempPlotInfo.getProtectPrice());
-        economysection.set("DisposePrice", tempPlotInfo.getDisposePrice());
-
-        worlds.set(worldname, currworld);
-
         addPlotMap(worldname.toLowerCase(), tempPlotInfo);
-
-        plugin.saveConfig();
 
         //Are we using multiworld?
         if (getMultiworld() != null) {

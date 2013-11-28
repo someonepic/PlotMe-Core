@@ -9,7 +9,6 @@ import com.worldcretornica.plotme_core.listener.PlotListener;
 import com.worldcretornica.plotme_core.listener.PlotWorldEditListener;
 import com.worldcretornica.plotme_core.utils.Util;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +25,6 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -185,18 +183,9 @@ public class PlotMe_Core extends JavaPlugin {
         config.set("Language", null);
         config.set("AdvancedLogging", null);
 
-        // Get default config sections
-        ConfigurationSection defaultWorld = getDefaultWorld();
-        ConfigurationSection defaultEconomy = getDefaultEconomy();
-
         // If no world exists add config for a world
-        if (!config.contains("worlds")) {
-            config.set("worlds.plotsworld", defaultWorld);
-
-            // If economy is enabled add economy config
-            if (config.getBoolean("globalUseEconomy")) {
-                config.set("worlds.plotsworld.economy", defaultEconomy);
-            }
+        if (!config.contains("worlds") || config.getConfigurationSection("worlds").getKeys(false).isEmpty()) {
+            new PlotMapInfo(this, "plotsworld");
         }
 
         // Do any config validation
@@ -234,12 +223,8 @@ public class PlotMe_Core extends JavaPlugin {
             oldWorldsCS = oldConfig.createSection("worlds");
         }
         for (String worldname : worldsCS.getKeys(false)) {
+            // Get the current config section
             final ConfigurationSection worldCS = worldsCS.getConfigurationSection(worldname);
-
-            // Add the default values
-            for (String path : defaultWorld.getKeys(true)) {
-                worldCS.addDefault(path, defaultWorld.get(path));
-            }
 
             // Find old world data an move it to oldConfig
             ConfigurationSection oldWorldCS = oldWorldsCS.getConfigurationSection(worldname);
@@ -251,17 +236,6 @@ public class PlotMe_Core extends JavaPlugin {
                     oldWorldCS.set(path, worldCS.get(path));
                     worldCS.set(path, null);
                 }
-            }
-
-            // If economy section is present add economy defaults
-            // or if economy is enabled but there is no config section for it, add it.
-            if (worldCS.contains("economy")) {
-                ConfigurationSection economyCS = worldCS.getConfigurationSection("economy");
-                for (String path : defaultEconomy.getKeys(true)) {
-                    economyCS.addDefault(path, defaultEconomy.get(path));
-                }
-            } else if (config.getBoolean("globalUseEconomy")) {
-                worldCS.set("economy", getDefaultEconomy());
             }
         }
 
@@ -278,60 +252,8 @@ public class PlotMe_Core extends JavaPlugin {
     private void setupWorlds() {
         final ConfigurationSection worldsCS = getConfig().getConfigurationSection("worlds");
         for (String worldname : worldsCS.getKeys(false)) {
-            ConfigurationSection worldCS = worldsCS.getConfigurationSection(worldname);
-            PlotMapInfo tempPlotInfo = new PlotMapInfo(this, worldname);
-
-            tempPlotInfo.setPlotAutoLimit(worldCS.getInt("PlotAutoLimit", 100));
-
-            tempPlotInfo.setDaysToExpiration(worldCS.getInt("DaysToExpiration", 7));
-            tempPlotInfo.setProtectedBlocks(worldCS.getIntegerList("ProtectedBlocks"));
-            tempPlotInfo.setPreventedItems(worldCS.getStringList("PreventedItems"));
-
-            tempPlotInfo.setAutoLinkPlots(worldCS.getBoolean("AutoLinkPlots", true));
-            tempPlotInfo.setDisableExplosion(worldCS.getBoolean("DisableExplosion", true));
-            tempPlotInfo.setDisableIgnition(worldCS.getBoolean("DisableIgnition", true));
-            tempPlotInfo.setUseProgressiveClear(worldCS.getBoolean("UseProgressiveClear", false));
-            tempPlotInfo.setNextFreed(worldCS.getString("NextFreed", "0;0"));
-
-            ConfigurationSection economyCS = worldCS.getConfigurationSection("economy");
-            if (economyCS == null) {
-                economyCS = getDefaultEconomy();
-            }
-            tempPlotInfo.setUseEconomy(economyCS.getBoolean("UseEconomy", false));
-            tempPlotInfo.setCanPutOnSale(economyCS.getBoolean("CanPutOnSale", false));
-            tempPlotInfo.setCanSellToBank(economyCS.getBoolean("CanSellToBank", false));
-            tempPlotInfo.setRefundClaimPriceOnReset(economyCS.getBoolean("RefundClaimPriceOnReset", false));
-            tempPlotInfo.setRefundClaimPriceOnSetOwner(economyCS.getBoolean("RefundClaimPriceOnSetOwner", false));
-            tempPlotInfo.setClaimPrice(economyCS.getDouble("ClaimPrice", 0));
-            tempPlotInfo.setClearPrice(economyCS.getDouble("ClearPrice", 0));
-            tempPlotInfo.setAddPlayerPrice(economyCS.getDouble("AddPlayerPrice", 0));
-            tempPlotInfo.setDenyPlayerPrice(economyCS.getDouble("DenyPlayerPrice", 0));
-            tempPlotInfo.setRemovePlayerPrice(economyCS.getDouble("RemovePlayerPrice", 0));
-            tempPlotInfo.setUndenyPlayerPrice(economyCS.getDouble("UndenyPlayerPrice", 0));
-            tempPlotInfo.setPlotHomePrice(economyCS.getDouble("PlotHomePrice", 0));
-            tempPlotInfo.setCanCustomizeSellPrice(economyCS.getBoolean("CanCustomizeSellPrice", false));
-            tempPlotInfo.setSellToPlayerPrice(economyCS.getDouble("SellToPlayerPrice", 0));
-            tempPlotInfo.setSellToBankPrice(economyCS.getDouble("SellToBankPrice", 0));
-            tempPlotInfo.setBuyFromBankPrice(economyCS.getDouble("BuyFromBankPrice", 0));
-            tempPlotInfo.setAddCommentPrice(economyCS.getDouble("AddCommentPrice", 0));
-            tempPlotInfo.setBiomeChangePrice(economyCS.getDouble("BiomeChangePrice", 0));
-            tempPlotInfo.setProtectPrice(economyCS.getDouble("ProtectPrice", 0));
-            tempPlotInfo.setDisposePrice(economyCS.getDouble("DisposePrice", 0));
-
-            getPlotMeCoreManager().addPlotMap(worldname.toLowerCase(), tempPlotInfo);
+            getPlotMeCoreManager().addPlotMap(worldname.toLowerCase(), new PlotMapInfo(this, worldname));
         }
-    }
-
-    protected final ConfigurationSection getDefaultWorld() {
-        InputStream defConfigStream = getResource("default-world.yml");
-
-        return YamlConfiguration.loadConfiguration(defConfigStream);
-    }
-
-    protected final ConfigurationSection getDefaultEconomy() {
-        InputStream defConfigStream = getResource("default-economy.yml");
-
-        return YamlConfiguration.loadConfiguration(defConfigStream);
     }
 
     private String loadCaptionConfig(String lang) {
@@ -628,63 +550,6 @@ public class PlotMe_Core extends JavaPlugin {
         }
 
         return null;
-    }
-
-    public void saveWorldConfig(String world) {
-        FileConfiguration config = getConfig();
-
-        PlotMapInfo pmi = getPlotMeCoreManager().getMap(world);
-
-        ConfigurationSection worlds = config.getConfigurationSection("worlds");
-        ConfigurationSection currworld = worlds.getConfigurationSection(world);
-
-        ConfigurationSection economysection;
-
-        if (currworld.getConfigurationSection("economy") == null) {
-            economysection = currworld.createSection("economy");
-        } else {
-            economysection = currworld.getConfigurationSection("economy");
-        }
-
-        currworld.set("PlotAutoLimit", pmi.getPlotAutoLimit());
-
-        currworld.set("DaysToExpiration", pmi.getDaysToExpiration());
-        currworld.set("ProtectedBlocks", pmi.getProtectedBlocks());
-        currworld.set("PreventedItems", pmi.getPreventedItems());
-
-        currworld.set("AutoLinkPlots", pmi.isAutoLinkPlots());
-        currworld.set("DisableExplosion", pmi.isDisableExplosion());
-        currworld.set("DisableIgnition", pmi.isDisableIgnition());
-        currworld.set("UseProgressiveClear", pmi.isUseProgressiveClear());
-        currworld.set("NextFreed", pmi.getNextFreed());
-
-        economysection.set("UseEconomy", pmi.isUseEconomy());
-        economysection.set("CanPutOnSale", pmi.isCanPutOnSale());
-        economysection.set("CanSellToBank", pmi.isCanSellToBank());
-        economysection.set("RefundClaimPriceOnReset", pmi.isRefundClaimPriceOnReset());
-        economysection.set("RefundClaimPriceOnSetOwner", pmi.isRefundClaimPriceOnSetOwner());
-        economysection.set("ClaimPrice", pmi.getClaimPrice());
-        economysection.set("ClearPrice", pmi.getClearPrice());
-        economysection.set("AddPlayerPrice", pmi.getAddPlayerPrice());
-        economysection.set("DenyPlayerPrice", pmi.getDenyPlayerPrice());
-        economysection.set("RemovePlayerPrice", pmi.getRemovePlayerPrice());
-        economysection.set("UndenyPlayerPrice", pmi.getUndenyPlayerPrice());
-        economysection.set("PlotHomePrice", pmi.getPlotHomePrice());
-        economysection.set("CanCustomizeSellPrice", pmi.isCanCustomizeSellPrice());
-        economysection.set("SellToPlayerPrice", pmi.getSellToPlayerPrice());
-        economysection.set("SellToBankPrice", pmi.getSellToBankPrice());
-        economysection.set("BuyFromBankPrice", pmi.getBuyFromBankPrice());
-        economysection.set("AddCommentPrice", pmi.getAddCommentPrice());
-        economysection.set("BiomeChangePrice", pmi.getBiomeChangePrice());
-        economysection.set("ProtectPrice", pmi.getProtectPrice());
-        economysection.set("DisposePrice", pmi.getDisposePrice());
-
-        currworld.set("economy", economysection);
-
-        worlds.set(world, currworld);
-        config.set("worlds", worlds);
-
-        saveConfig();
     }
 
     public Integer getNbPerDeletionProcessingExpired() {
