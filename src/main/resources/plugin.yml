@@ -1,6 +1,6 @@
 name: PlotMe
 main: com.worldcretornica.plotme_core.PlotMe_Core
-version: '0.14.3'
+version: ${project.version}
 author: ZachBora, flungo
 website: http://dev.bukkit.org/server-mods/plotme/
 softdepend: [WorldEdit, Vault, LWC, PlotMe-DefaultGenerator, Multiverse-Core, MultiWorld]
