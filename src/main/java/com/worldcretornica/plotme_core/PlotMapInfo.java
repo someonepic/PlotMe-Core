@@ -57,6 +57,9 @@ public class PlotMapInfo {
     }
 
     public Plot getPlot(String id) {
+        if (id.isEmpty()) {
+            return null;
+        }
         if (!_plots.containsKey(id)) {
             Plot plot = plugin.getSqlManager().getPlot(_world, id);
             if (plot == null) {
