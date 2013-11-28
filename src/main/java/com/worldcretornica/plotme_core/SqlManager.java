@@ -1392,32 +1392,31 @@ public class SqlManager {
         return plot;
     }
 
-    public void loadPlotsAsynchronously(String world){
+    public void loadPlotsAsynchronously(String world) {
         final String worldname = world;
-        
+
         Bukkit.getServer().getScheduler().runTaskAsynchronously(plugin,
                 new Runnable() {
                     @Override
                     public void run() {
                         plugin.getLogger().info("Starting to load plots for world " + worldname);
-                        
+
                         HashMap<String, Plot> plots = getPlots(worldname);
-                        
+
                         PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(worldname);
-                        
-                        for(String id : plots.keySet())
-                        {
+
+                        for (String id : plots.keySet()) {
                             pmi.addPlot(id, plots.get(id));
                             PlotMeEventFactory.callPlotLoadedEvent(plugin, Bukkit.getWorld(worldname), plots.get(id));
                         }
-                        
+
                         plugin.getLogger().info("Done loading " + pmi.getNbPlots() + " plots for world " + worldname);
                     }
                 }
-         );
+        );
     }
-    
-    //Do NOT call from the main thread 
+
+    //Do NOT call from the main thread
     private HashMap<String, Plot> getPlots(String world) {
         HashMap<String, Plot> ret = new HashMap<String, Plot>();
         Statement statementPlot = null;
@@ -1459,7 +1458,7 @@ public class SqlManager {
                 double currentbid = setPlots.getDouble("currentbid");
                 boolean auctionned = setPlots.getBoolean("auctionned");
                 String auctionneddate = setPlots.getString("auctionneddate");
-                
+
                 statementAllowed = conn.createStatement();
                 setAllowed = statementAllowed.executeQuery("SELECT * FROM plotmeAllowed WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
 
@@ -1467,8 +1466,9 @@ public class SqlManager {
                     allowed.add(setAllowed.getString("player"));
                 }
 
-                if (setAllowed != null)
+                if (setAllowed != null) {
                     setAllowed.close();
+                }
 
                 statementDenied = conn.createStatement();
                 setDenied = statementDenied.executeQuery("SELECT * FROM plotmeDenied WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
@@ -1477,8 +1477,9 @@ public class SqlManager {
                     denied.add(setDenied.getString("player"));
                 }
 
-                if (setDenied != null)
+                if (setDenied != null) {
                     setDenied.close();
+                }
 
                 statementComment = conn.createStatement();
                 setComments = statementComment.executeQuery("SELECT * FROM plotmeComments WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
@@ -1498,22 +1499,30 @@ public class SqlManager {
             plugin.getLogger().severe("  " + ex.getMessage());
         } finally {
             try {
-                if (statementPlot != null)
+                if (statementPlot != null) {
                     statementPlot.close();
-                if (statementAllowed != null)
+                }
+                if (statementAllowed != null) {
                     statementAllowed.close();
-                if (statementComment != null)
+                }
+                if (statementComment != null) {
                     statementComment.close();
-                if (statementDenied != null)
+                }
+                if (statementDenied != null) {
                     statementDenied.close();
-                if (setPlots != null)
+                }
+                if (setPlots != null) {
                     setPlots.close();
-                if (setComments != null)
+                }
+                if (setComments != null) {
                     setComments.close();
-                if (setDenied != null)
+                }
+                if (setDenied != null) {
                     setDenied.close();
-                if (setAllowed != null)
+                }
+                if (setAllowed != null) {
                     setAllowed.close();
+                }
             } catch (SQLException ex) {
                 plugin.getLogger().severe("Load Exception (on close) :");
                 plugin.getLogger().severe("  " + ex.getMessage());
@@ -1521,7 +1530,7 @@ public class SqlManager {
         }
         return ret;
     }
-    
+
     public List<String> getFreed(String world) {
         List<String> ret = new ArrayList<String>();
         PreparedStatement statementPlot = null;

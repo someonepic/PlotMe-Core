@@ -120,7 +120,7 @@ public class CmdAuto extends PlotCommand {
                             plugin.getPlotMeCoreManager().createPlot(w, id, name);
                             pmi.removeFreed(id);
 
-							//plugin.getPlotMeCoreManager().adjustLinkedPlots(id, w);
+                            //plugin.getPlotMeCoreManager().adjustLinkedPlots(id, w);
                             p.teleport(plugin.getPlotMeCoreManager().getPlotHome(w, id));
 
                             p.sendMessage(C("MsgThisPlotYours") + " " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt") + " " + Util().moneyFormat(-price));
