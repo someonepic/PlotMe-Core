@@ -33,7 +33,7 @@ public class CmdAdd extends PlotCommand {
                             String playername = p.getName();
                             String allowed = args[1];
 
-                            if (plot.owner.equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.add")) {
+                            if (plot.getOwner().equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.add")) {
                                 if (plot.isAllowed(allowed)) {
                                     p.sendMessage(C("WordPlayer") + " " + RED + args[1] + RESET + " " + C("MsgAlreadyAllowed"));
                                 } else {
@@ -47,7 +47,7 @@ public class CmdAdd extends PlotCommand {
 
                                     if (!event.isCancelled()) {
                                         if (plugin.getPlotMeCoreManager().isEconomyEnabled(w)) {
-                                            price = pmi.AddPlayerPrice;
+                                            price = pmi.getAddPlayerPrice();
                                             double balance = plugin.getEconomy().getBalance(playername);
 
                                             if (balance >= price) {

@@ -32,7 +32,7 @@ public class CmdRemove extends PlotCommand {
                             String playername = p.getName();
                             String allowed = args[1];
 
-                            if (plot.owner.equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.remove")) {
+                            if (plot.getOwner().equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.remove")) {
                                 if (plot.isAllowed(allowed)) {
 
                                     World w = p.getWorld();
@@ -44,7 +44,7 @@ public class CmdRemove extends PlotCommand {
                                     PlotRemoveAllowedEvent event;
 
                                     if (plugin.getPlotMeCoreManager().isEconomyEnabled(w)) {
-                                        price = pmi.RemovePlayerPrice;
+                                        price = pmi.getRemovePlayerPrice();
                                         double balance = plugin.getEconomy().getBalance(playername);
 
                                         if (balance >= price) {

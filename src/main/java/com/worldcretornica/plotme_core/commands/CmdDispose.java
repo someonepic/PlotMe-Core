@@ -28,15 +28,15 @@ public class CmdDispose extends PlotCommand {
                     if (!plugin.getPlotMeCoreManager().isPlotAvailable(id, p)) {
                         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
 
-                        if (plot.protect) {
+                        if (plot.isProtect()) {
                             p.sendMessage(RED + C("MsgPlotProtectedNotDisposed"));
                         } else {
                             String name = p.getName();
 
-                            if (plot.owner.equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.dispose")) {
+                            if (plot.getOwner().equalsIgnoreCase(name) || plugin.cPerms(p, "PlotMe.admin.dispose")) {
                                 PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
 
-                                double cost = pmi.DisposePrice;
+                                double cost = pmi.getDisposePrice();
 
                                 World w = p.getWorld();
 
@@ -61,11 +61,11 @@ public class CmdDispose extends PlotCommand {
                                             return true;
                                         }
 
-                                        if (plot.auctionned) {
-                                            String currentbidder = plot.currentbidder;
+                                        if (plot.isAuctionned()) {
+                                            String currentbidder = plot.getCurrentBidder();
 
                                             if (!currentbidder.equals("")) {
-                                                EconomyResponse er2 = plugin.getEconomy().depositPlayer(currentbidder, plot.currentbid);
+                                                EconomyResponse er2 = plugin.getEconomy().depositPlayer(currentbidder, plot.getCurrentBid());
 
                                                 if (!er2.transactionSuccess()) {
                                                     p.sendMessage(RED + er2.errorMessage);
@@ -74,7 +74,7 @@ public class CmdDispose extends PlotCommand {
                                                     for (Player player : Bukkit.getServer().getOnlinePlayers()) {
                                                         if (player.getName().equalsIgnoreCase(currentbidder)) {
                                                             player.sendMessage(C("WordPlot")
-                                                                    + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + " " + C("MsgWasDisposed") + " " + Util().moneyFormat(cost));
+                                                                    + " " + id + " " + C("MsgOwnedBy") + " " + plot.getOwner() + " " + C("MsgWasDisposed") + " " + Util().moneyFormat(cost));
                                                             break;
                                                         }
                                                     }

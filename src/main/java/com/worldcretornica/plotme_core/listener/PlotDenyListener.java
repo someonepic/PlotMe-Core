@@ -51,7 +51,7 @@ public class PlotDenyListener implements Listener {
                 Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, idTo);
 
                 if (plot != null && plot.isDenied(p.getName(), event.getTo().getBlockY())) {
-                    event.setTo(plugin.getPlotMeCoreManager().getPlotHome(p.getWorld(), plot.id));
+                    event.setTo(plugin.getPlotMeCoreManager().getPlotHome(p.getWorld(), plot.getId()));
                 }
             }
         }
@@ -68,7 +68,7 @@ public class PlotDenyListener implements Listener {
                 Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
 
                 if (plot != null && plot.isDenied(p.getName(), event.getPlayer().getLocation().getBlockY())) {
-                    p.teleport(plugin.getPlotMeCoreManager().getPlotHome(p.getWorld(), plot.id));
+                    p.teleport(plugin.getPlotMeCoreManager().getPlotHome(p.getWorld(), plot.getId()));
                 }
             }
         }

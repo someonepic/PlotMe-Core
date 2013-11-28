@@ -1,5 +1,6 @@
 package com.worldcretornica.plotme_core;
 
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -10,8 +11,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import org.bukkit.Bukkit;
 
 public class SqlManager {
 
@@ -806,25 +809,25 @@ public class SqlManager {
                     + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
             ps.setInt(1, idX);
             ps.setInt(2, idZ);
-            ps.setString(3, plot.owner);
-            ps.setString(4, plot.world.toLowerCase());
+            ps.setString(3, plot.getOwner());
+            ps.setString(4, plot.getWorld().toLowerCase());
             ps.setInt(5, topX);
             ps.setInt(6, bottomX);
             ps.setInt(7, topZ);
             ps.setInt(8, bottomZ);
-            ps.setString(9, plot.biome.name());
-            ps.setInt(10, plot.baseY);
-            ps.setInt(11, plot.height);
-            ps.setDate(12, plot.expireddate);
-            ps.setBoolean(13, plot.finished);
-            ps.setDouble(14, plot.customprice);
-            ps.setBoolean(15, plot.forsale);
-            ps.setString(16, plot.finisheddate);
-            ps.setBoolean(17, plot.protect);
-            ps.setBoolean(18, plot.auctionned);
+            ps.setString(9, plot.getBiome().name());
+            ps.setInt(10, plot.getBaseY());
+            ps.setInt(11, plot.getHeight());
+            ps.setDate(12, plot.getExpiredDate());
+            ps.setBoolean(13, plot.isFinished());
+            ps.setDouble(14, plot.getCustomPrice());
+            ps.setBoolean(15, plot.isForSale());
+            ps.setString(16, plot.getFinishedDate());
+            ps.setBoolean(17, plot.isProtect());
+            ps.setBoolean(18, plot.isAuctionned());
             ps.setString(19, "");
-            ps.setDouble(20, plot.currentbid);
-            ps.setString(21, plot.currentbidder);
+            ps.setDouble(20, plot.getCurrentBid());
+            ps.setString(21, plot.getCurrentBidder());
 
             ps.executeUpdate();
             conn.commit();
@@ -1389,125 +1392,136 @@ public class SqlManager {
         return plot;
     }
 
-    /*public static HashMap<String, Plot> getPlots(String world)
-     {
-     HashMap<String, Plot> ret = new HashMap<String, Plot>();
-     Statement statementPlot = null;
-     Statement statementAllowed = null;
-     Statement statementDenied = null;
-     Statement statementComment = null;
-     ResultSet setPlots = null;
-     ResultSet setAllowed = null;
-     ResultSet setDenied = null;
-     ResultSet setComments = null;
+    public void loadPlotsAsynchronously(String world){
+        final String worldname = world;
+        
+        Bukkit.getServer().getScheduler().runTaskAsynchronously(plugin,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        plugin.getLogger().info("Starting to load plots for world " + worldname);
+                        
+                        HashMap<String, Plot> plots = getPlots(worldname);
+                        
+                        PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(worldname);
+                        
+                        for(String id : plots.keySet())
+                        {
+                            pmi.addPlot(id, plots.get(id));
+                            PlotMeEventFactory.callPlotLoadedEvent(plugin, Bukkit.getWorld(worldname), plots.get(id));
+                        }
+                        
+                        plugin.getLogger().info("Done loading " + pmi.getNbPlots() + " plots for world " + worldname);
+                    }
+                }
+         );
+    }
+    
+    //Do NOT call from the main thread 
+    private HashMap<String, Plot> getPlots(String world) {
+        HashMap<String, Plot> ret = new HashMap<String, Plot>();
+        Statement statementPlot = null;
+        Statement statementAllowed = null;
+        Statement statementDenied = null;
+        Statement statementComment = null;
+        ResultSet setPlots = null;
+        ResultSet setAllowed = null;
+        ResultSet setDenied = null;
+        ResultSet setComments = null;
 
-     try
-     {
-     Connection conn = getConnection();
+        try {
+            Connection conn = getConnection();
 
-     statementPlot = conn.createStatement();
-     setPlots = statementPlot.executeQuery("SELECT * FROM plotmePlots WHERE LOWER(world) = '" + world + "'");
-     int size = 0;
-     while (setPlots.next())
-     {
-     size++;
-     int idX = setPlots.getInt("idX");
-     int idZ = setPlots.getInt("idZ");
-     String owner = setPlots.getString("owner");
-     String biome = setPlots.getString("biome");
-     java.sql.Date expireddate = null;
-     try
-     {
-     expireddate = setPlots.getDate("expireddate");
-     }catch(Exception e){}
-     boolean finished = setPlots.getBoolean("finished");
-     HashSet<String> allowed = new HashSet<String>();
-     HashSet<String> denied = new HashSet<String>();
-     List<String[]> comments = new ArrayList<String[]>();
-     double customprice = setPlots.getDouble("customprice");
-     boolean forsale = setPlots.getBoolean("forsale");
-     String finisheddate = setPlots.getString("finisheddate");
-     boolean protect = setPlots.getBoolean("protected");
-     String currentbidder = setPlots.getString("currentbidder");
-     double currentbid = setPlots.getDouble("currentbid");
-     boolean auctionned = setPlots.getBoolean("auctionned");
-     String auctionneddate = setPlots.getString("auctionneddate");
+            statementPlot = conn.createStatement();
+            setPlots = statementPlot.executeQuery("SELECT * FROM plotmePlots WHERE LOWER(world) = '" + world + "'");
 
+            while (setPlots.next()) {
+                int idX = setPlots.getInt("idX");
+                int idZ = setPlots.getInt("idZ");
+                String owner = setPlots.getString("owner");
+                String biome = setPlots.getString("biome");
+                int baseY = setPlots.getInt("baseY");
+                int height = setPlots.getInt("height");
+                java.sql.Date expireddate = null;
+                try {
+                    expireddate = setPlots.getDate("expireddate");
+                } catch (Exception e) {
+                }
+                boolean finished = setPlots.getBoolean("finished");
+                HashSet<String> allowed = new HashSet<String>();
+                HashSet<String> denied = new HashSet<String>();
+                List<String[]> comments = new ArrayList<String[]>();
+                double customprice = setPlots.getDouble("customprice");
+                boolean forsale = setPlots.getBoolean("forsale");
+                String finisheddate = setPlots.getString("finisheddate");
+                boolean protect = setPlots.getBoolean("protected");
+                String currentbidder = setPlots.getString("currentbidder");
+                double currentbid = setPlots.getDouble("currentbid");
+                boolean auctionned = setPlots.getBoolean("auctionned");
+                String auctionneddate = setPlots.getString("auctionneddate");
+                
+                statementAllowed = conn.createStatement();
+                setAllowed = statementAllowed.executeQuery("SELECT * FROM plotmeAllowed WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
 
-     statementAllowed = conn.createStatement();
-     setAllowed = statementAllowed.executeQuery("SELECT * FROM plotmeAllowed WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
+                while (setAllowed.next()) {
+                    allowed.add(setAllowed.getString("player"));
+                }
 
-     while (setAllowed.next())
-     {
-     allowed.add(setAllowed.getString("player"));
-     }
+                if (setAllowed != null)
+                    setAllowed.close();
 
-     if (setAllowed != null)
-     setAllowed.close();
+                statementDenied = conn.createStatement();
+                setDenied = statementDenied.executeQuery("SELECT * FROM plotmeDenied WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
 
-     statementDenied = conn.createStatement();
-     setDenied = statementDenied.executeQuery("SELECT * FROM plotmeDenied WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
+                while (setDenied.next()) {
+                    denied.add(setDenied.getString("player"));
+                }
 
-     while (setDenied.next())
-     {
-     denied.add(setDenied.getString("player"));
-     }
+                if (setDenied != null)
+                    setDenied.close();
 
-     if (setDenied != null)
-     setDenied.close();
+                statementComment = conn.createStatement();
+                setComments = statementComment.executeQuery("SELECT * FROM plotmeComments WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
 
-     statementComment = conn.createStatement();
-     setComments = statementComment.executeQuery("SELECT * FROM plotmeComments WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
+                while (setComments.next()) {
+                    String[] comment = new String[2];
+                    comment[0] = setComments.getString("player");
+                    comment[1] = setComments.getString("comment");
+                    comments.add(comment);
+                }
 
-     while (setComments.next())
-     {
-     String[] comment = new String[2];
-     comment[0] = setComments.getString("player");
-     comment[1] = setComments.getString("comment");
-     comments.add(comment);
-     }
-
-     Plot plot = new Plot(owner, world, biome, expireddate, finished, allowed,
-     comments, "" + idX + ";" + idZ, customprice, forsale, finisheddate, protect,
-     currentbidder, currentbid, auctionned, denied, auctionneddate);
-     ret.put("" + idX + ";" + idZ, plot);
-     }
-     plotmecore.getLogger().info(size + " plots loaded in " + world);
-     }
-     catch (SQLException ex)
-     {
-     plotmecore.getLogger().severe("Load Exception :");
-     plotmecore.getLogger().severe("  " + ex.getMessage());
-     }
-     finally
-     {
-     try
-     {
-     if (statementPlot != null)
-     statementPlot.close();
-     if (statementAllowed != null)
-     statementAllowed.close();
-     if (statementComment != null)
-     statementComment.close();
-     if (statementDenied != null)
-     statementDenied.close();
-     if (setPlots != null)
-     setPlots.close();
-     if (setComments != null)
-     setComments.close();
-     if (setDenied != null)
-     setDenied.close();
-     if (setAllowed != null)
-     setAllowed.close();
-     }
-     catch (SQLException ex)
-     {
-     plotmecore.getLogger().severe("Load Exception (on close) :");
-     plotmecore.getLogger().severe("  " + ex.getMessage());
-     }
-     }
-     return ret;
-     }    */
+                Plot plot = new Plot(plugin, owner, world, biome, baseY, height, expireddate, finished, allowed, comments, "" + idX + ";" + idZ, customprice, forsale, finisheddate, protect, currentbidder, currentbid, auctionned, denied, auctionneddate);
+                ret.put("" + idX + ";" + idZ, plot);
+            }
+        } catch (SQLException ex) {
+            plugin.getLogger().severe("Load Exception :");
+            plugin.getLogger().severe("  " + ex.getMessage());
+        } finally {
+            try {
+                if (statementPlot != null)
+                    statementPlot.close();
+                if (statementAllowed != null)
+                    statementAllowed.close();
+                if (statementComment != null)
+                    statementComment.close();
+                if (statementDenied != null)
+                    statementDenied.close();
+                if (setPlots != null)
+                    setPlots.close();
+                if (setComments != null)
+                    setComments.close();
+                if (setDenied != null)
+                    setDenied.close();
+                if (setAllowed != null)
+                    setAllowed.close();
+            } catch (SQLException ex) {
+                plugin.getLogger().severe("Load Exception (on close) :");
+                plugin.getLogger().severe("  " + ex.getMessage());
+            }
+        }
+        return ret;
+    }
+    
     public List<String> getFreed(String world) {
         List<String> ret = new ArrayList<String>();
         PreparedStatement statementPlot = null;
@@ -1717,9 +1731,9 @@ public class SqlManager {
                 String finisheddate = setPlots.getString("finisheddate");
 
                 Plot plot = new Plot(plugin);
-                plot.owner = owner;
-                plot.id = idX + ";" + idZ;
-                plot.finisheddate = finisheddate;
+                plot.setOwner(owner);
+                plot.setId(idX + ";" + idZ);
+                plot.setFinishedDate(finisheddate);
 
                 ret.add(plot);
             }
@@ -1774,9 +1788,9 @@ public class SqlManager {
                 }
 
                 Plot plot = new Plot(plugin);
-                plot.owner = owner;
-                plot.id = idX + ";" + idZ;
-                plot.expireddate = expireddate;
+                plot.setOwner(owner);
+                plot.setId(idX + ";" + idZ);
+                plot.setExpiredDate(expireddate);
 
                 ret.add(plot);
             }
@@ -1828,9 +1842,9 @@ public class SqlManager {
                 }
 
                 Plot plot = new Plot(plugin);
-                plot.owner = owner;
-                plot.id = idX + ";" + idZ;
-                plot.expireddate = expireddate;
+                plot.setOwner(owner);
+                plot.setId(idX + ";" + idZ);
+                plot.setExpiredDate(expireddate);
 
                 return plot;
             }

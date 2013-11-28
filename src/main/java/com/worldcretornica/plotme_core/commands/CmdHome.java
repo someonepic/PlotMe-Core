@@ -73,7 +73,7 @@ public class CmdHome extends PlotCommand {
                     int i = nb - 1;
 
                     for (Plot plot : plugin.getSqlManager().getOwnedPlots(w.getName(), playername)) {
-                        if (plot.owner.equalsIgnoreCase(playername)) {
+                        if (plot.getOwner().equalsIgnoreCase(playername)) {
                             if (i == 0) {
                                 PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
 
@@ -82,7 +82,7 @@ public class CmdHome extends PlotCommand {
                                 PlotTeleportHomeEvent event;
 
                                 if (plugin.getPlotMeCoreManager().isEconomyEnabled(w)) {
-                                    price = pmi.PlotHomePrice;
+                                    price = pmi.getPlotHomePrice();
                                     double balance = plugin.getEconomy().getBalance(playername);
 
                                     if (balance >= price) {
@@ -107,7 +107,7 @@ public class CmdHome extends PlotCommand {
                                 }
 
                                 if (!event.isCancelled()) {
-                                    p.teleport(event.getLocation());
+                                    p.teleport(event.getHomeLocation());
 
                                     if (price != 0) {
                                         p.sendMessage(Util().moneyFormat(-price));

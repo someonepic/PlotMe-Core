@@ -5,6 +5,7 @@ import com.griefcraft.model.Protection;
 import com.worldcretornica.plotme_core.MultiWorldWrapper.WorldGeneratorWrapper;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
+import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 import com.worldcretornica.plotme_core.utils.Util;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,7 +34,7 @@ public class PlotMeCoreManager {
     private MultiverseWrapper multiverse = null;
 
     private HashSet<String> playersignoringwelimit = null;
-    private Map<String, PlotMapInfo> plotmaps = null;
+    private HashMap<String, PlotMapInfo> plotmaps = null;
 
     public PlotMeCoreManager(PlotMe_Core instance) {
         plugin = instance;
@@ -103,66 +104,66 @@ public class PlotMeCoreManager {
             currworld = worlds.createSection(worldname);
         }
 
-        tempPlotInfo.PlotAutoLimit = Integer.parseInt(args.get("PlotAutoLimit"));
-        tempPlotInfo.DaysToExpiration = Integer.parseInt(args.get("DaysToExpiration"));
-        tempPlotInfo.ProtectedBlocks = plugin.getDefaultWorld().getIntegerList("ProtectedBlocks");
-        tempPlotInfo.PreventedItems = plugin.getConfig().getStringList("PreventedItems");
-        tempPlotInfo.AutoLinkPlots = Boolean.parseBoolean(args.get("AutoLinkPlots"));
-        tempPlotInfo.DisableExplosion = Boolean.parseBoolean(args.get("DisableExplosion"));
-        tempPlotInfo.DisableIgnition = Boolean.parseBoolean(args.get("DisableIgnition"));
-        tempPlotInfo.UseProgressiveClear = Boolean.parseBoolean(args.get("UseProgressiveClear"));
-        tempPlotInfo.UseEconomy = Boolean.parseBoolean(args.get("UseEconomy"));
-        tempPlotInfo.CanPutOnSale = Boolean.parseBoolean(args.get("CanPutOnSale"));
-        tempPlotInfo.CanSellToBank = Boolean.parseBoolean(args.get("CanSellToBank"));
-        tempPlotInfo.RefundClaimPriceOnReset = Boolean.parseBoolean(args.get("RefundClaimPriceOnReset"));
-        tempPlotInfo.RefundClaimPriceOnSetOwner = Boolean.parseBoolean(args.get("RefundClaimPriceOnSetOwner"));
-        tempPlotInfo.ClaimPrice = Double.parseDouble(args.get("ClaimPrice"));
-        tempPlotInfo.ClearPrice = Double.parseDouble(args.get("ClearPrice"));
-        tempPlotInfo.AddPlayerPrice = Double.parseDouble(args.get("AddPlayerPrice"));
-        tempPlotInfo.DenyPlayerPrice = Double.parseDouble(args.get("DenyPlayerPrice"));
-        tempPlotInfo.RemovePlayerPrice = Double.parseDouble(args.get("RemovePlayerPrice"));
-        tempPlotInfo.UndenyPlayerPrice = Double.parseDouble(args.get("UndenyPlayerPrice"));
-        tempPlotInfo.PlotHomePrice = Double.parseDouble(args.get("PlotHomePrice"));
-        tempPlotInfo.CanCustomizeSellPrice = Boolean.parseBoolean(args.get("CanCustomizeSellPrice"));
-        tempPlotInfo.SellToPlayerPrice = Double.parseDouble(args.get("SellToPlayerPrice"));
-        tempPlotInfo.SellToBankPrice = Double.parseDouble(args.get("SellToBankPrice"));
-        tempPlotInfo.BuyFromBankPrice = Double.parseDouble(args.get("BuyFromBankPrice"));
-        tempPlotInfo.AddCommentPrice = Double.parseDouble(args.get("AddCommentPrice"));
-        tempPlotInfo.BiomeChangePrice = Double.parseDouble(args.get("BiomeChangePrice"));
-        tempPlotInfo.ProtectPrice = Double.parseDouble(args.get("ProtectPrice"));
-        tempPlotInfo.DisposePrice = Double.parseDouble(args.get("DisposePrice"));
+        tempPlotInfo.setPlotAutoLimit(Integer.parseInt(args.get("PlotAutoLimit")));
+        tempPlotInfo.setDaysToExpiration(Integer.parseInt(args.get("DaysToExpiration")));
+        tempPlotInfo.setProtectedBlocks(plugin.getDefaultWorld().getIntegerList("ProtectedBlocks"));
+        tempPlotInfo.setPreventedItems(plugin.getDefaultWorld().getStringList("PreventedItems"));
+        tempPlotInfo.setAutoLinkPlots(Boolean.parseBoolean(args.get("AutoLinkPlots")));
+        tempPlotInfo.setDisableExplosion(Boolean.parseBoolean(args.get("DisableExplosion")));
+        tempPlotInfo.setDisableIgnition(Boolean.parseBoolean(args.get("DisableIgnition")));
+        tempPlotInfo.setUseProgressiveClear(Boolean.parseBoolean(args.get("UseProgressiveClear")));
+        tempPlotInfo.setUseEconomy(Boolean.parseBoolean(args.get("UseEconomy")));
+        tempPlotInfo.setCanPutOnSale(Boolean.parseBoolean(args.get("CanPutOnSale")));
+        tempPlotInfo.setCanSellToBank(Boolean.parseBoolean(args.get("CanSellToBank")));
+        tempPlotInfo.setRefundClaimPriceOnReset(Boolean.parseBoolean(args.get("RefundClaimPriceOnReset")));
+        tempPlotInfo.setRefundClaimPriceOnSetOwner(Boolean.parseBoolean(args.get("RefundClaimPriceOnSetOwner")));
+        tempPlotInfo.setClaimPrice(Double.parseDouble(args.get("ClaimPrice")));
+        tempPlotInfo.setClearPrice(Double.parseDouble(args.get("ClearPrice")));
+        tempPlotInfo.setAddPlayerPrice(Double.parseDouble(args.get("AddPlayerPrice")));
+        tempPlotInfo.setDenyPlayerPrice(Double.parseDouble(args.get("DenyPlayerPrice")));
+        tempPlotInfo.setRemovePlayerPrice(Double.parseDouble(args.get("RemovePlayerPrice")));
+        tempPlotInfo.setUndenyPlayerPrice(Double.parseDouble(args.get("UndenyPlayerPrice")));
+        tempPlotInfo.setPlotHomePrice(Double.parseDouble(args.get("PlotHomePrice")));
+        tempPlotInfo.setCanCustomizeSellPrice(Boolean.parseBoolean(args.get("CanCustomizeSellPrice")));
+        tempPlotInfo.setSellToPlayerPrice(Double.parseDouble(args.get("SellToPlayerPrice")));
+        tempPlotInfo.setSellToBankPrice(Double.parseDouble(args.get("SellToBankPrice")));
+        tempPlotInfo.setBuyFromBankPrice(Double.parseDouble(args.get("BuyFromBankPrice")));
+        tempPlotInfo.setAddCommentPrice(Double.parseDouble(args.get("AddCommentPrice")));
+        tempPlotInfo.setBiomeChangePrice(Double.parseDouble(args.get("BiomeChangePrice")));
+        tempPlotInfo.setProtectPrice(Double.parseDouble(args.get("ProtectPrice")));
+        tempPlotInfo.setDisposePrice(Double.parseDouble(args.get("DisposePrice")));
 
-        currworld.set("PlotAutoLimit", tempPlotInfo.PlotAutoLimit);
-        currworld.set("DaysToExpiration", tempPlotInfo.DaysToExpiration);
-        currworld.set("ProtectedBlocks", tempPlotInfo.ProtectedBlocks);
-        currworld.set("PreventedItems", tempPlotInfo.PreventedItems);
-        currworld.set("AutoLinkPlots", tempPlotInfo.AutoLinkPlots);
-        currworld.set("DisableExplosion", tempPlotInfo.DisableExplosion);
-        currworld.set("DisableIgnition", tempPlotInfo.DisableIgnition);
-        currworld.set("UseProgressiveClear", tempPlotInfo.UseProgressiveClear);
+        currworld.set("PlotAutoLimit", tempPlotInfo.getPlotAutoLimit());
+        currworld.set("DaysToExpiration", tempPlotInfo.getDaysToExpiration());
+        currworld.set("ProtectedBlocks", tempPlotInfo.getProtectedBlocks());
+        currworld.set("PreventedItems", tempPlotInfo.getPreventedItems());
+        currworld.set("AutoLinkPlots", tempPlotInfo.isAutoLinkPlots());
+        currworld.set("DisableExplosion", tempPlotInfo.isDisableExplosion());
+        currworld.set("DisableIgnition", tempPlotInfo.isDisableIgnition());
+        currworld.set("UseProgressiveClear", tempPlotInfo.isUseProgressiveClear());
 
         ConfigurationSection economysection = currworld.createSection("economy");
 
-        economysection.set("UseEconomy", tempPlotInfo.UseEconomy);
-        economysection.set("CanPutOnSale", tempPlotInfo.CanPutOnSale);
-        economysection.set("CanSellToBank", tempPlotInfo.CanSellToBank);
-        economysection.set("RefundClaimPriceOnReset", tempPlotInfo.RefundClaimPriceOnReset);
-        economysection.set("RefundClaimPriceOnSetOwner", tempPlotInfo.RefundClaimPriceOnSetOwner);
-        economysection.set("ClaimPrice", tempPlotInfo.ClaimPrice);
-        economysection.set("ClearPrice", tempPlotInfo.ClearPrice);
-        economysection.set("AddPlayerPrice", tempPlotInfo.AddPlayerPrice);
-        economysection.set("DenyPlayerPrice", tempPlotInfo.DenyPlayerPrice);
-        economysection.set("RemovePlayerPrice", tempPlotInfo.RemovePlayerPrice);
-        economysection.set("UndenyPlayerPrice", tempPlotInfo.UndenyPlayerPrice);
-        economysection.set("PlotHomePrice", tempPlotInfo.PlotHomePrice);
-        economysection.set("CanCustomizeSellPrice", tempPlotInfo.CanCustomizeSellPrice);
-        economysection.set("SellToPlayerPrice", tempPlotInfo.SellToPlayerPrice);
-        economysection.set("SellToBankPrice", tempPlotInfo.SellToBankPrice);
-        economysection.set("BuyFromBankPrice", tempPlotInfo.BuyFromBankPrice);
-        economysection.set("AddCommentPrice", tempPlotInfo.AddCommentPrice);
-        economysection.set("BiomeChangePrice", tempPlotInfo.BiomeChangePrice);
-        economysection.set("ProtectPrice", tempPlotInfo.ProtectPrice);
-        economysection.set("DisposePrice", tempPlotInfo.DisposePrice);
+        economysection.set("UseEconomy", tempPlotInfo.isUseEconomy());
+        economysection.set("CanPutOnSale", tempPlotInfo.isCanPutOnSale());
+        economysection.set("CanSellToBank", tempPlotInfo.isCanSellToBank());
+        economysection.set("RefundClaimPriceOnReset", tempPlotInfo.isRefundClaimPriceOnReset());
+        economysection.set("RefundClaimPriceOnSetOwner", tempPlotInfo.isRefundClaimPriceOnSetOwner());
+        economysection.set("ClaimPrice", tempPlotInfo.getClaimPrice());
+        economysection.set("ClearPrice", tempPlotInfo.getClearPrice());
+        economysection.set("AddPlayerPrice", tempPlotInfo.getAddPlayerPrice());
+        economysection.set("DenyPlayerPrice", tempPlotInfo.getDenyPlayerPrice());
+        economysection.set("RemovePlayerPrice", tempPlotInfo.getRemovePlayerPrice());
+        economysection.set("UndenyPlayerPrice", tempPlotInfo.getUndenyPlayerPrice());
+        economysection.set("PlotHomePrice", tempPlotInfo.getPlotHomePrice());
+        economysection.set("CanCustomizeSellPrice", tempPlotInfo.isCanCustomizeSellPrice());
+        economysection.set("SellToPlayerPrice", tempPlotInfo.getSellToPlayerPrice());
+        economysection.set("SellToBankPrice", tempPlotInfo.getSellToBankPrice());
+        economysection.set("BuyFromBankPrice", tempPlotInfo.getBuyFromBankPrice());
+        economysection.set("AddCommentPrice", tempPlotInfo.getAddCommentPrice());
+        economysection.set("BiomeChangePrice", tempPlotInfo.getBiomeChangePrice());
+        economysection.set("ProtectPrice", tempPlotInfo.getProtectPrice());
+        economysection.set("DisposePrice", tempPlotInfo.getDisposePrice());
 
         worlds.set(worldname, currworld);
 
@@ -256,7 +257,7 @@ public class PlotMeCoreManager {
         if (pmi == null) {
             return false;
         } else {
-            return pmi.UseEconomy && plugin.getConfig().getBoolean("globalUseEconomy") && plugin.getEconomy() != null;
+            return pmi.isUseEconomy() && plugin.getConfig().getBoolean("globalUseEconomy") && plugin.getEconomy() != null;
         }
     }
 
@@ -426,6 +427,7 @@ public class PlotMeCoreManager {
         }
 
         pmi.addPlot(id, plot);
+        PlotMeEventFactory.callPlotLoadedEvent(plugin, w, plot);
     }
 
     public World getFirstWorld() {
@@ -519,7 +521,7 @@ public class PlotMeCoreManager {
 
     public Plot createPlot(World w, String id, String owner) {
         if (isPlotAvailable(id, w) && !id.equals("")) {
-            Plot plot = new Plot(plugin, owner, w, id, getMap(w).DaysToExpiration);
+            Plot plot = new Plot(plugin, owner, w, id, getMap(w).getDaysToExpiration());
 
             setOwnerSign(w, plot);
 
@@ -584,37 +586,37 @@ public class PlotMeCoreManager {
             if (plot2 != null) {
                 int idX = getIdX(idTo);
                 int idZ = getIdZ(idTo);
-                plugin.getSqlManager().deletePlot(idX, idZ, plot2.world);
+                plugin.getSqlManager().deletePlot(idX, idZ, plot2.getWorld());
                 removePlot(w, idFrom);
                 removePlot(w, idTo);
                 idX = getIdX(idFrom);
                 idZ = getIdZ(idFrom);
-                plugin.getSqlManager().deletePlot(idX, idZ, plot1.world);
+                plugin.getSqlManager().deletePlot(idX, idZ, plot1.getWorld());
 
-                plot2.id = idFrom;
+                plot2.setId(idFrom);
                 plugin.getSqlManager().addPlot(plot2, idX, idZ, topX(idFrom, w), bottomX(idFrom, w), topZ(idFrom, w), bottomZ(idFrom, w));
                 addPlot(w, idFrom, plot2);
 
-                for (int i = 0; i < plot2.comments.size(); i++) {
-                    plugin.getSqlManager().addPlotComment(plot2.comments.get(i), i, idX, idZ, plot2.world);
+                for (int i = 0; i < plot2.getCommentsCount(); i++) {
+                    plugin.getSqlManager().addPlotComment(plot2.getComment(i), i, idX, idZ, plot2.getWorld());
                 }
 
                 for (String player : plot2.allowed()) {
-                    plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot2.world);
+                    plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot2.getWorld());
                 }
 
                 idX = getIdX(idTo);
                 idZ = getIdZ(idTo);
-                plot1.id = idTo;
+                plot1.setId(idTo);
                 plugin.getSqlManager().addPlot(plot1, idX, idZ, topX(idTo, w), bottomX(idTo, w), topZ(idTo, w), bottomZ(idTo, w));
                 addPlot(w, idTo, plot1);
 
-                for (int i = 0; i < plot1.comments.size(); i++) {
-                    plugin.getSqlManager().addPlotComment(plot1.comments.get(i), i, idX, idZ, plot1.world);
+                for (int i = 0; i < plot1.getCommentsCount(); i++) {
+                    plugin.getSqlManager().addPlotComment(plot1.getComment(i), i, idX, idZ, plot1.getWorld());
                 }
 
                 for (String player : plot1.allowed()) {
-                    plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot1.world);
+                    plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot1.getWorld());
                 }
 
                 setOwnerSign(w, plot1);
@@ -625,20 +627,20 @@ public class PlotMeCoreManager {
             } else {
                 int idX = getIdX(idFrom);
                 int idZ = getIdZ(idFrom);
-                plugin.getSqlManager().deletePlot(idX, idZ, plot1.world);
+                plugin.getSqlManager().deletePlot(idX, idZ, plot1.getWorld());
                 removePlot(w, idFrom);
                 idX = getIdX(idTo);
                 idZ = getIdZ(idTo);
-                plot1.id = idTo;
+                plot1.setId(idTo);
                 plugin.getSqlManager().addPlot(plot1, idX, idZ, topX(idTo, w), bottomX(idTo, w), topZ(idTo, w), bottomZ(idTo, w));
                 addPlot(w, idTo, plot1);
 
-                for (int i = 0; i < plot1.comments.size(); i++) {
-                    plugin.getSqlManager().addPlotComment(plot1.comments.get(i), i, idX, idZ, plot1.world);
+                for (int i = 0; i < plot1.getCommentsCount(); i++) {
+                    plugin.getSqlManager().addPlotComment(plot1.getComment(i), i, idX, idZ, plot1.getWorld());
                 }
 
                 for (String player : plot1.allowed()) {
-                    plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot1.world);
+                    plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot1.getWorld());
                 }
 
                 setOwnerSign(w, plot1);
@@ -651,21 +653,21 @@ public class PlotMeCoreManager {
             if (plot2 != null) {
                 int idX = getIdX(idTo);
                 int idZ = getIdZ(idTo);
-                plugin.getSqlManager().deletePlot(idX, idZ, plot2.world);
+                plugin.getSqlManager().deletePlot(idX, idZ, plot2.getWorld());
                 removePlot(w, idTo);
 
                 idX = getIdX(idFrom);
                 idZ = getIdZ(idFrom);
-                plot2.id = idFrom;
+                plot2.setId(idFrom);
                 plugin.getSqlManager().addPlot(plot2, idX, idZ, topX(idFrom, w), bottomX(idFrom, w), topZ(idFrom, w), bottomZ(idFrom, w));
                 addPlot(w, idFrom, plot2);
 
-                for (int i = 0; i < plot2.comments.size(); i++) {
-                    plugin.getSqlManager().addPlotComment(plot2.comments.get(i), i, idX, idZ, plot2.world);
+                for (int i = 0; i < plot2.getCommentsCount(); i++) {
+                    plugin.getSqlManager().addPlotComment(plot2.getComment(i), i, idX, idZ, plot2.getWorld());
                 }
 
                 for (String player : plot2.allowed()) {
-                    plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot2.world);
+                    plugin.getSqlManager().addPlotAllowed(player, idX, idZ, plot2.getWorld());
                 }
 
                 setOwnerSign(w, plot2);
@@ -709,7 +711,7 @@ public class PlotMeCoreManager {
         String line2 = "";
         String line3 = "";
         String line4 = "";
-        String id = plot.id;
+        String id = plot.getId();
 
         if ((Util().C("SignId") + id).length() > 16) {
             line1 = (Util().C("SignId") + id).substring(0, 16);
@@ -721,19 +723,19 @@ public class PlotMeCoreManager {
         } else {
             line1 = Util().C("SignId") + id;
         }
-        if ((Util().C("SignOwner") + plot.owner).length() > 16) {
-            line3 = (Util().C("SignOwner") + plot.owner).substring(0, 16);
-            if ((Util().C("SignOwner") + plot.owner).length() > 32) {
-                line4 = (Util().C("SignOwner") + plot.owner).substring(16, 32);
+        if ((Util().C("SignOwner") + plot.getOwner()).length() > 16) {
+            line3 = (Util().C("SignOwner") + plot.getOwner()).substring(0, 16);
+            if ((Util().C("SignOwner") + plot.getOwner()).length() > 32) {
+                line4 = (Util().C("SignOwner") + plot.getOwner()).substring(16, 32);
             } else {
-                line4 = (Util().C("SignOwner") + plot.owner).substring(16);
+                line4 = (Util().C("SignOwner") + plot.getOwner()).substring(16);
             }
         } else {
-            line3 = Util().C("SignOwner") + plot.owner;
+            line3 = Util().C("SignOwner") + plot.getOwner();
             line4 = "";
         }
 
-        getGenMan(w).setOwnerDisplay(w, plot.id, line1, line2, line3, line4);
+        getGenMan(w).setOwnerDisplay(w, plot.getId(), line1, line2, line3, line4);
     }
 
     public void setSellSign(World w, Plot plot) {
@@ -741,45 +743,45 @@ public class PlotMeCoreManager {
         String line2 = "";
         String line3 = "";
         String line4 = "";
-        String id = plot.id;
+        String id = plot.getId();
 
         getGenMan(w).removeSellerDisplay(w, id);
 
-        if (plot.forsale || plot.auctionned) {
-            if (plot.forsale) {
+        if (plot.isForSale() || plot.isAuctionned()) {
+            if (plot.isForSale()) {
                 line1 = Util().C("SignForSale");
                 line2 = Util().C("SignPrice");
-                if (plot.customprice % 1 == 0) {
-                    line3 = Util().C("SignPriceColor") + Math.round(plot.customprice);
+                if (plot.getCustomPrice() % 1 == 0) {
+                    line3 = Util().C("SignPriceColor") + Math.round(plot.getCustomPrice());
                 } else {
-                    line3 = Util().C("SignPriceColor") + plot.customprice;
+                    line3 = Util().C("SignPriceColor") + plot.getCustomPrice();
                 }
                 line4 = "/plotme " + Util().C("CommandBuy");
             }
 
-            getGenMan(w).setSellerDisplay(w, plot.id, line1, line2, line3, line4);
+            getGenMan(w).setSellerDisplay(w, plot.getId(), line1, line2, line3, line4);
 
             line1 = "";
             line2 = "";
             line3 = "";
             line4 = "";
 
-            if (plot.auctionned) {
+            if (plot.isAuctionned()) {
                 line1 = Util().C("SignOnAuction");
-                if (plot.currentbidder.equals("")) {
+                if (plot.getCurrentBidder().equals("")) {
                     line2 = Util().C("SignMinimumBid");
                 } else {
                     line2 = Util().C("SignCurrentBid");
                 }
-                if (plot.currentbid % 1 == 0) {
-                    line3 = Util().C("SignCurrentBidColor") + Math.round(plot.currentbid);
+                if (plot.getCurrentBid() % 1 == 0) {
+                    line3 = Util().C("SignCurrentBidColor") + Math.round(plot.getCurrentBid());
                 } else {
-                    line3 = Util().C("SignCurrentBidColor") + plot.currentbid;
+                    line3 = Util().C("SignCurrentBidColor") + plot.getCurrentBid();
                 }
                 line4 = "/plotme " + Util().C("CommandBid") + " <x>";
             }
 
-            getGenMan(w).setAuctionDisplay(w, plot.id, line1, line2, line3, line4);
+            getGenMan(w).setAuctionDisplay(w, plot.getId(), line1, line2, line3, line4);
         }
     }
 
@@ -804,73 +806,73 @@ public class PlotMeCoreManager {
             Plot p20 = plots.get((x + 1) + ";" + (z - 1));
             Plot p22 = plots.get((x + 1) + ";" + (z + 1));
 
-            if (p01 != null && p01.owner.equalsIgnoreCase(p11.owner)) {
-                gm.fillroad(p01.id, p11.id, world);
+            if (p01 != null && p01.getOwner().equalsIgnoreCase(p11.getOwner())) {
+                gm.fillroad(p01.getId(), p11.getId(), world);
             }
 
-            if (p10 != null && p10.owner.equalsIgnoreCase(p11.owner)) {
-                gm.fillroad(p10.id, p11.id, world);
+            if (p10 != null && p10.getOwner().equalsIgnoreCase(p11.getOwner())) {
+                gm.fillroad(p10.getId(), p11.getId(), world);
             }
 
-            if (p12 != null && p12.owner.equalsIgnoreCase(p11.owner)) {
-                gm.fillroad(p12.id, p11.id, world);
+            if (p12 != null && p12.getOwner().equalsIgnoreCase(p11.getOwner())) {
+                gm.fillroad(p12.getId(), p11.getId(), world);
             }
 
-            if (p21 != null && p21.owner.equalsIgnoreCase(p11.owner)) {
-                gm.fillroad(p21.id, p11.id, world);
+            if (p21 != null && p21.getOwner().equalsIgnoreCase(p11.getOwner())) {
+                gm.fillroad(p21.getId(), p11.getId(), world);
             }
 
             if (p00 != null && p10 != null && p01 != null
-                    && p00.owner.equalsIgnoreCase(p11.owner)
-                    && p11.owner.equalsIgnoreCase(p10.owner)
-                    && p10.owner.equalsIgnoreCase(p01.owner)) {
-                gm.fillmiddleroad(p00.id, p11.id, world);
+                    && p00.getOwner().equalsIgnoreCase(p11.getOwner())
+                    && p11.getOwner().equalsIgnoreCase(p10.getOwner())
+                    && p10.getOwner().equalsIgnoreCase(p01.getOwner())) {
+                gm.fillmiddleroad(p00.getId(), p11.getId(), world);
             }
 
             if (p10 != null && p20 != null && p21 != null
-                    && p10.owner.equalsIgnoreCase(p11.owner)
-                    && p11.owner.equalsIgnoreCase(p20.owner)
-                    && p20.owner.equalsIgnoreCase(p21.owner)) {
-                gm.fillmiddleroad(p20.id, p11.id, world);
+                    && p10.getOwner().equalsIgnoreCase(p11.getOwner())
+                    && p11.getOwner().equalsIgnoreCase(p20.getOwner())
+                    && p20.getOwner().equalsIgnoreCase(p21.getOwner())) {
+                gm.fillmiddleroad(p20.getId(), p11.getId(), world);
             }
 
             if (p01 != null && p02 != null && p12 != null
-                    && p01.owner.equalsIgnoreCase(p11.owner)
-                    && p11.owner.equalsIgnoreCase(p02.owner)
-                    && p02.owner.equalsIgnoreCase(p12.owner)) {
-                gm.fillmiddleroad(p02.id, p11.id, world);
+                    && p01.getOwner().equalsIgnoreCase(p11.getOwner())
+                    && p11.getOwner().equalsIgnoreCase(p02.getOwner())
+                    && p02.getOwner().equalsIgnoreCase(p12.getOwner())) {
+                gm.fillmiddleroad(p02.getId(), p11.getId(), world);
             }
 
             if (p12 != null && p21 != null && p22 != null
-                    && p12.owner.equalsIgnoreCase(p11.owner)
-                    && p11.owner.equalsIgnoreCase(p21.owner)
-                    && p21.owner.equalsIgnoreCase(p22.owner)) {
-                gm.fillmiddleroad(p22.id, p11.id, world);
+                    && p12.getOwner().equalsIgnoreCase(p11.getOwner())
+                    && p11.getOwner().equalsIgnoreCase(p21.getOwner())
+                    && p21.getOwner().equalsIgnoreCase(p22.getOwner())) {
+                gm.fillmiddleroad(p22.getId(), p11.getId(), world);
             }
 
         }
     }
 
     public void setBiome(World w, Plot plot, Biome b) {
-        String id = plot.id;
+        String id = plot.getId();
 
         getGenMan(w).setBiome(w, id, b);
 
-        plugin.getSqlManager().updatePlot(getIdX(id), getIdZ(id), plot.world, "biome", b.name());
+        plugin.getSqlManager().updatePlot(getIdX(id), getIdZ(id), plot.getWorld(), "biome", b.name());
     }
 
     public void clear(World w, Plot plot, CommandSender cs, ClearReason reason) {
-        String id = plot.id;
+        String id = plot.getId();
 
         /*getGenMan(w).clear(w, id);
          adjustWall(w, plot);
          RemoveLWC(w, plot);*/
-        plot.forsale = false;
-        plot.protect = false;
-        plot.auctionned = false;
-        plot.auctionneddate = null;
-        plot.currentbid = 0;
-        plot.currentbidder = "";
+        plot.setForSale(false);
+        plot.setProtect(false);
+        plot.setAuctionned(false);
+        plot.setAuctionnedDate(null);
+        plot.setCurrentBid(0);
+        plot.setCurrentBidder("");
 
         String world = w.getName();
         int idX = getIdX(id);
@@ -885,7 +887,7 @@ public class PlotMeCoreManager {
         sm.updatePlot(idX, idZ, world, "currentbid", 0);
         sm.updatePlot(idX, idZ, world, "currentbidder", "");
 
-        if (getMap(w).UseProgressiveClear) {
+        if (getMap(w).isUseProgressiveClear()) {
             plugin.addPlotToClear(new PlotToClear(world, id, cs, reason));
         } else {
             plugin.getGenManager(w).clear(w, id);
@@ -967,13 +969,13 @@ public class PlotMeCoreManager {
         if (plot == null) {
             getGenMan(w).adjustPlotFor(w, id, false, false, false, false);
         } else {
-            getGenMan(w).adjustPlotFor(w, id, true, plot.protect, plot.auctionned, plot.forsale);
+            getGenMan(w).adjustPlotFor(w, id, true, plot.isProtect(), plot.isAuctionned(), plot.isForSale());
         }
     }
 
     public void adjustWall(World w, Plot plot) {
-        String id = plot.id;
-        getGenMan(w).adjustPlotFor(w, id, true, plot.protect, plot.auctionned, plot.forsale);
+        String id = plot.getId();
+        getGenMan(w).adjustPlotFor(w, id, true, plot.isProtect(), plot.isAuctionned(), plot.isForSale());
     }
 
     public void removeOwnerSign(World w, String id) {
@@ -1022,14 +1024,14 @@ public class PlotMeCoreManager {
     }
 
     public void regen(World w, Plot plot, CommandSender sender) {
-        getGenMan(w).regen(w, plot.id, sender);
+        getGenMan(w).regen(w, plot.getId(), sender);
     }
 
     public PlotToClear getPlotLockInfo(String w, String id) {
         if (plugin.spools != null) {
             for (PlotMeSpool spool : plugin.spools) {
-                PlotToClear ptc = spool.plottoclear;
-                if (ptc != null && ptc.world.equalsIgnoreCase(w) && ptc.plotid.equalsIgnoreCase(id)) {
+                PlotToClear ptc = spool.getPlotToClear();
+                if (ptc != null && ptc.getWorld().equalsIgnoreCase(w) && ptc.getPlotId().equalsIgnoreCase(id)) {
                     return ptc;
                 }
             }

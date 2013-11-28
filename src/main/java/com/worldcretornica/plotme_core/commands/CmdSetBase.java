@@ -39,7 +39,7 @@ public class CmdSetBase extends PlotCommand {
             base = 0;
         }
         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
-        plot.baseY = base;
+        plot.setBaseY(base);
         plot.updateField("baseY", base);
         p.sendMessage(C("MsgBaseChangedTo") + " " + base);
         return true;

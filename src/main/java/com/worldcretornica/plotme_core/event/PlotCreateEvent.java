@@ -1,26 +1,21 @@
 package com.worldcretornica.plotme_core.event;
 
+import com.worldcretornica.plotme_core.PlotMe_Core;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.HandlerList;
-
-import com.worldcretornica.plotme_core.PlotMe_Core;
 
 public class PlotCreateEvent extends PlotEvent implements Cancellable
 {
-	private static final HandlerList handlers = new HandlerList();
-    private boolean _canceled;
+	private boolean _canceled;
     private String _plotId;
-    private World _world;
     private Player _creator;
     
     public PlotCreateEvent(PlotMe_Core instance, World world, String plotId, Player creator)
     {
-    	super(instance);
+    	super(instance, null, world);
     	_plotId = plotId;
-    	_world = world;
     	_creator = creator;
     }
     
@@ -35,26 +30,10 @@ public class PlotCreateEvent extends PlotEvent implements Cancellable
 	{
 		_canceled = cancel;
 	}
-
-	@Override
-	public HandlerList getHandlers() 
-	{
-		return handlers;
-	}
-	
-	public static HandlerList getHandlerList() 
-	{
-        return handlers;
-    }
 	
 	public String getPlotId()
 	{
 		return _plotId;
-	}
-	
-	public World getWorld()
-	{
-		return _world;
 	}
 	
 	public Player getPlayer()
@@ -62,13 +41,15 @@ public class PlotCreateEvent extends PlotEvent implements Cancellable
 		return _creator;
 	}
 	
+	@Override
 	public Location getUpperBound()
 	{
-		return plugin.getPlotMeCoreManager().getGenMan(_world).getPlotTopLoc(_world, _plotId);
+		return plugin.getPlotMeCoreManager().getGenMan(world).getPlotTopLoc(world, _plotId);
 	}
 	
+	@Override
 	public Location getLowerBound()
 	{
-		return plugin.getPlotMeCoreManager().getGenMan(_world).getPlotBottomLoc(_world, _plotId);
+		return plugin.getPlotMeCoreManager().getGenMan(world).getPlotBottomLoc(world, _plotId);
 	}
 }

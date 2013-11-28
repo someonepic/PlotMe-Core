@@ -30,7 +30,7 @@ public class CmdUndeny extends PlotCommand {
                             String playername = p.getName();
                             String denied = args[1];
 
-                            if (plot.owner.equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.undeny")) {
+                            if (plot.getOwner().equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.undeny")) {
                                 if (plot.isDenied(denied)) {
 
                                     World w = p.getWorld();
@@ -40,7 +40,7 @@ public class CmdUndeny extends PlotCommand {
                                     double price = 0;
                                     //TODO event
                                     if (plugin.getPlotMeCoreManager().isEconomyEnabled(w)) {
-                                        price = pmi.UndenyPlayerPrice;
+                                        price = pmi.getUndenyPlayerPrice();
                                         double balance = plugin.getEconomy().getBalance(playername);
 
                                         if (balance >= price) {

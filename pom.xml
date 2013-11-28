@@ -59,6 +59,16 @@
                 </configuration>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <targetPath>.</targetPath>
+                <filtering>true</filtering>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>plugin.yml</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 
     <properties>
@@ -117,12 +127,12 @@
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldedit</artifactId>
-            <version>5.5.7-SNAPSHOT</version>
+            <version>5.5.8-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.milkbowl.vault</groupId>
             <artifactId>Vault</artifactId>
-            <version>1.2.26-SNAPSHOT</version>
+            <version>1.2.27-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.getlwc</groupId>
@@ -137,7 +147,7 @@
         <dependency>
             <groupId>multiworld</groupId>
             <artifactId>multiworld</artifactId>
-            <version>4.6.1</version>
+            <version>4.7.3</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/multiworld.jar</systemPath>
         </dependency>

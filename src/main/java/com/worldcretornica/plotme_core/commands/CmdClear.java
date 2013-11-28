@@ -28,12 +28,12 @@ public class CmdClear extends PlotCommand {
                     if (!plugin.getPlotMeCoreManager().isPlotAvailable(id, p)) {
                         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
 
-                        if (plot.protect) {
+                        if (plot.isProtect()) {
                             p.sendMessage(RED + C("MsgPlotProtectedCannotClear"));
                         } else {
                             String playername = p.getName();
 
-                            if (plot.owner.equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.clear")) {
+                            if (plot.getOwner().equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.clear")) {
                                 World w = p.getWorld();
 
                                 PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
@@ -43,7 +43,7 @@ public class CmdClear extends PlotCommand {
                                 PlotClearEvent event;
 
                                 if (plugin.getPlotMeCoreManager().isEconomyEnabled(w)) {
-                                    price = pmi.ClearPrice;
+                                    price = pmi.getClearPrice();
                                     double balance = plugin.getEconomy().getBalance(playername);
 
                                     if (balance >= price) {

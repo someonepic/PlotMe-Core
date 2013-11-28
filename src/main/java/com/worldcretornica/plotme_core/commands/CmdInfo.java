@@ -24,16 +24,16 @@ public class CmdInfo extends PlotCommand {
                         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
 
                         p.sendMessage(GREEN + C("InfoId") + ": " + AQUA + id
-                                + GREEN + " " + C("InfoOwner") + ": " + AQUA + plot.owner
-                                + GREEN + " " + C("InfoBiome") + ": " + AQUA + Util().FormatBiome(plot.biome.name()));
+                                + GREEN + " " + C("InfoOwner") + ": " + AQUA + plot.getOwner()
+                                + GREEN + " " + C("InfoBiome") + ": " + AQUA + Util().FormatBiome(plot.getBiome().name()));
 
-                        p.sendMessage(GREEN + C("InfoExpire") + ": " + AQUA + ((plot.expireddate == null) ? C("WordNever") : plot.expireddate.toString())
-                                + GREEN + " " + C("InfoFinished") + ": " + AQUA + ((plot.finished) ? C("WordYes") : C("WordNo"))
-                                + GREEN + " " + C("InfoProtected") + ": " + AQUA + ((plot.protect) ? C("WordYes") : C("WordNo")));
+                        p.sendMessage(GREEN + C("InfoExpire") + ": " + AQUA + ((plot.getExpiredDate() == null) ? C("WordNever") : plot.getExpiredDate().toString())
+                                + GREEN + " " + C("InfoFinished") + ": " + AQUA + ((plot.isFinished()) ? C("WordYes") : C("WordNo"))
+                                + GREEN + " " + C("InfoProtected") + ": " + AQUA + ((plot.isProtect()) ? C("WordYes") : C("WordNo")));
 
-                        if (plot.baseY > 1 || plot.height < 255) {
-                            p.sendMessage(GREEN + C("InfoBase") + ": " + AQUA + plot.baseY
-                                    + GREEN + " " + C("InfoHeight") + ": " + AQUA + plot.height);
+                        if (plot.getBaseY() > 1 || plot.getHeight() < 255) {
+                            p.sendMessage(GREEN + C("InfoBase") + ": " + AQUA + plot.getBaseY()
+                                    + GREEN + " " + C("InfoHeight") + ": " + AQUA + plot.getHeight());
                         }
 
                         if (plot.allowedcount() > 0) {
@@ -45,15 +45,15 @@ public class CmdInfo extends PlotCommand {
                         }
 
                         if (plugin.getPlotMeCoreManager().isEconomyEnabled(p)) {
-                            if (plot.currentbidder.equals("")) {
-                                p.sendMessage(GREEN + C("InfoAuctionned") + ": " + AQUA + ((plot.auctionned) ? C("WordYes")
-                                        + GREEN + " " + C("InfoMinimumBid") + ": " + AQUA + Util().round(plot.currentbid) : C("WordNo"))
-                                        + GREEN + " " + C("InfoForSale") + ": " + AQUA + ((plot.forsale) ? AQUA + Util().round(plot.customprice) : C("WordNo")));
+                            if (plot.getCurrentBidder().equals("")) {
+                                p.sendMessage(GREEN + C("InfoAuctionned") + ": " + AQUA + ((plot.isAuctionned()) ? C("WordYes")
+                                        + GREEN + " " + C("InfoMinimumBid") + ": " + AQUA + Util().round(plot.getCurrentBid()) : C("WordNo"))
+                                        + GREEN + " " + C("InfoForSale") + ": " + AQUA + ((plot.isForSale()) ? AQUA + Util().round(plot.getCustomPrice()) : C("WordNo")));
                             } else {
-                                p.sendMessage(GREEN + C("InfoAuctionned") + ": " + AQUA + ((plot.auctionned) ? C("WordYes")
-                                        + GREEN + " " + C("InfoBidder") + ": " + AQUA + plot.currentbidder
-                                        + GREEN + " " + C("InfoBid") + ": " + AQUA + Util().round(plot.currentbid) : C("WordNo"))
-                                        + GREEN + " " + C("InfoForSale") + ": " + AQUA + ((plot.forsale) ? AQUA + Util().round(plot.customprice) : C("WordNo")));
+                                p.sendMessage(GREEN + C("InfoAuctionned") + ": " + AQUA + ((plot.isAuctionned()) ? C("WordYes")
+                                        + GREEN + " " + C("InfoBidder") + ": " + AQUA + plot.getCurrentBidder()
+                                        + GREEN + " " + C("InfoBid") + ": " + AQUA + Util().round(plot.getCurrentBid()) : C("WordNo"))
+                                        + GREEN + " " + C("InfoForSale") + ": " + AQUA + ((plot.isForSale()) ? AQUA + Util().round(plot.getCustomPrice()) : C("WordNo")));
                             }
                         }
                     } else {

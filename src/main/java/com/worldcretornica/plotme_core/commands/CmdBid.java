@@ -25,16 +25,16 @@ public class CmdBid extends PlotCommand {
                     if (!plugin.getPlotMeCoreManager().isPlotAvailable(id, p)) {
                         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
 
-                        if (plot.auctionned) {
+                        if (plot.isAuctionned()) {
                             String bidder = p.getName();
 
-                            if (plot.owner.equalsIgnoreCase(bidder)) {
+                            if (plot.getOwner().equalsIgnoreCase(bidder)) {
                                 p.sendMessage(RED + C("MsgCannotBidOwnPlot"));
                             } else {
                                 if (args.length == 2) {
                                     double bid = 0;
-                                    double currentbid = plot.currentbid;
-                                    String currentbidder = plot.currentbidder;
+                                    double currentbid = plot.getCurrentBid();
+                                    String currentbidder = plot.getCurrentBidder();
 
                                     try {
                                         bid = Double.parseDouble(args[1]);
@@ -42,7 +42,7 @@ public class CmdBid extends PlotCommand {
                                     }
 
                                     if (bid < currentbid || (bid == currentbid && !currentbidder.equals(""))) {
-                                        p.sendMessage(RED + C("MsgInvalidBidMustBeAbove") + " " + RESET + Util().moneyFormat(plot.currentbid, false));
+                                        p.sendMessage(RED + C("MsgInvalidBidMustBeAbove") + " " + RESET + Util().moneyFormat(plot.getCurrentBid(), false));
                                     } else {
                                         double balance = plugin.getEconomy().getBalance(bidder);
 
@@ -65,15 +65,15 @@ public class CmdBid extends PlotCommand {
                                                         } else {
                                                             for (Player player : Bukkit.getServer().getOnlinePlayers()) {
                                                                 if (player.getName().equalsIgnoreCase(currentbidder)) {
-                                                                    player.sendMessage(C("MsgOutbidOnPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + ". " + Util().moneyFormat(bid));
+                                                                    player.sendMessage(C("MsgOutbidOnPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.getOwner() + ". " + Util().moneyFormat(bid));
                                                                     break;
                                                                 }
                                                             }
                                                         }
                                                     }
 
-                                                    plot.currentbidder = bidder;
-                                                    plot.currentbid = bid;
+                                                    plot.setCurrentBidder(bidder);
+                                                    plot.setCurrentBid(bid);
 
                                                     plot.updateField("currentbidder", bidder);
                                                     plot.updateField("currentbid", bid);

@@ -65,7 +65,7 @@ public class PlotListener implements Listener {
                 PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(p.getWorld().getName(), id);
 
                 if (ptc != null) {
-                    switch (ptc.reason) {
+                    switch (ptc.getReason()) {
                         case Clear:
                             p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
                             break;
@@ -91,7 +91,7 @@ public class PlotListener implements Listener {
                             event.setCancelled(true);
                         }
                     } else {
-                        plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).DaysToExpiration);
+                        plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).getDaysToExpiration());
                     }
                 }
             }
@@ -116,7 +116,7 @@ public class PlotListener implements Listener {
                 PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(p.getWorld().getName(), id);
 
                 if (ptc != null) {
-                    switch (ptc.reason) {
+                    switch (ptc.getReason()) {
                         case Clear:
                             p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
                             break;
@@ -142,7 +142,7 @@ public class PlotListener implements Listener {
                             event.setCancelled(true);
                         }
                     } else {
-                        plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).DaysToExpiration);
+                        plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).getDaysToExpiration());
                     }
                 }
             }
@@ -165,7 +165,7 @@ public class PlotListener implements Listener {
                     PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(p.getWorld().getName(), id);
 
                     if (ptc != null) {
-                        switch (ptc.reason) {
+                        switch (ptc.getReason()) {
                             case Clear:
                                 p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
                                 break;
@@ -208,7 +208,7 @@ public class PlotListener implements Listener {
                     PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(p.getWorld().getName(), id);
 
                     if (ptc != null) {
-                        switch (ptc.reason) {
+                        switch (ptc.getReason()) {
                             case Clear:
                                 p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
                                 break;
@@ -249,7 +249,7 @@ public class PlotListener implements Listener {
             PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(p.getWorld().getName(), id);
 
             if (ptc != null) {
-                switch (ptc.reason) {
+                switch (ptc.getReason()) {
                     case Clear:
                         p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
                         break;
@@ -292,12 +292,12 @@ public class PlotListener implements Listener {
                                     event.setCancelled(true);
                                 }
                             } else {
-                                plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).DaysToExpiration);
+                                plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).getDaysToExpiration());
                             }
                         }
                     }
                 } else {
-                    if (pmi.ProtectedBlocks.contains(b.getTypeId())) {
+                    if (pmi.isProtectedBlock(b.getTypeId())) {
                         if (!plugin.cPerms(p, "plotme.unblock." + b.getTypeId())) {
                             blocked = true;
                         }
@@ -309,8 +309,8 @@ public class PlotListener implements Listener {
                         int itemid = is.getType().getId();
                         byte itemdata = is.getData().getData();
 
-                        if (pmi.PreventedItems.contains("" + itemid)
-                                || pmi.PreventedItems.contains("" + itemid + ":" + itemdata)) {
+                        if (pmi.isPreventedItem("" + itemid)
+                                || pmi.isPreventedItem("" + itemid + ":" + itemdata)) {
                             if (!plugin.cPerms(p, "plotme.unblock." + itemid)) {
                                 blocked = true;
                             }
@@ -537,7 +537,7 @@ public class PlotListener implements Listener {
         if (l != null) {
             PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(l);
 
-            if (pmi != null && pmi.DisableExplosion) {
+            if (pmi != null && pmi.isDisableExplosion()) {
                 event.setCancelled(true);
             } else {
                 String id = plugin.getPlotMeCoreManager().getPlotId(l);
@@ -558,7 +558,7 @@ public class PlotListener implements Listener {
             PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(b);
 
             if (pmi != null) {
-                if (pmi.DisableIgnition) {
+                if (pmi.isDisableIgnition()) {
                     event.setCancelled(true);
                 } else {
                     String id = plugin.getPlotMeCoreManager().getPlotId(b.getLocation());
@@ -570,7 +570,7 @@ public class PlotListener implements Listener {
                         PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 
                         if (ptc != null) {
-                            switch (ptc.reason) {
+                            switch (ptc.getReason()) {
                                 case Clear:
                                     p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
                                     break;
@@ -615,7 +615,7 @@ public class PlotListener implements Listener {
                 PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(b.getWorld().getName(), id);
 
                 if (ptc != null) {
-                    switch (ptc.reason) {
+                    switch (ptc.getReason()) {
                         case Clear:
                             p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
                             break;
@@ -641,7 +641,7 @@ public class PlotListener implements Listener {
                             event.setCancelled(true);
                         }
                     } else {
-                        plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).DaysToExpiration);
+                        plot.resetExpire(plugin.getPlotMeCoreManager().getMap(b).getDaysToExpiration());
                     }
                 }
             }
@@ -671,7 +671,7 @@ public class PlotListener implements Listener {
                     PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(l.getWorld().getName(), id);
 
                     if (ptc != null) {
-                        switch (ptc.reason) {
+                        switch (ptc.getReason()) {
                             case Clear:
                                 p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
                                 break;
@@ -697,7 +697,7 @@ public class PlotListener implements Listener {
                                 event.setCancelled(true);
                             }
                         } else {
-                            plot.resetExpire(plugin.getPlotMeCoreManager().getMap(l).DaysToExpiration);
+                            plot.resetExpire(plugin.getPlotMeCoreManager().getMap(l).getDaysToExpiration());
                         }
                     }
                 }
@@ -723,7 +723,7 @@ public class PlotListener implements Listener {
                 PlotToClear ptc = plugin.getPlotMeCoreManager().getPlotLockInfo(l.getWorld().getName(), id);
 
                 if (ptc != null) {
-                    switch (ptc.reason) {
+                    switch (ptc.getReason()) {
                         case Clear:
                             p.sendMessage(plugin.getUtil().C("MsgPlotLockedClear"));
                             break;
@@ -749,7 +749,7 @@ public class PlotListener implements Listener {
                             event.setCancelled(true);
                         }
                     } else {
-                        plot.resetExpire(plugin.getPlotMeCoreManager().getMap(l).DaysToExpiration);
+                        plot.resetExpire(plugin.getPlotMeCoreManager().getMap(l).getDaysToExpiration());
                     }
                 }
             }

@@ -49,7 +49,7 @@ public class CmdClaim extends PlotCommand {
                         PlotCreateEvent event;
 
                         if (plugin.getPlotMeCoreManager().isEconomyEnabled(w)) {
-                            price = pmi.ClaimPrice;
+                            price = pmi.getClaimPrice();
                             double balance = plugin.getEconomy().getBalance(playername);
 
                             if (balance >= price) {

@@ -1,28 +1,20 @@
 package com.worldcretornica.plotme_core.event;
 
-import org.bukkit.Location;
+import com.worldcretornica.plotme_core.Plot;
+import com.worldcretornica.plotme_core.PlotMe_Core;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.HandlerList;
-
-import com.worldcretornica.plotme_core.Plot;
-import com.worldcretornica.plotme_core.PlotMe_Core;
 
 public class PlotCommentEvent extends PlotEvent implements Cancellable
 {
-	private static final HandlerList handlers = new HandlerList();
-    private boolean _canceled;
-    private Plot _plot;
-    private World _world;
+	private boolean _canceled;
     private Player _commenter;
     private String _comment;
 	
     public PlotCommentEvent(PlotMe_Core instance, World world, Plot plot, Player commenter, String comment)
     {
-    	super(instance);
-    	_plot = plot;
-    	_world = world;
+    	super(instance, plot, world);
     	_commenter = commenter;
     	_comment = comment;
     }
@@ -38,27 +30,6 @@ public class PlotCommentEvent extends PlotEvent implements Cancellable
 	{
 		_canceled = cancel;
 	}
-
-	@Override
-	public HandlerList getHandlers() 
-	{
-		return handlers;
-	}
-	
-	public static HandlerList getHandlerList() 
-	{
-        return handlers;
-    }
-	
-	public Plot getPlot()
-	{
-		return _plot;
-	}
-	
-	public World getWorld()
-	{
-		return _world;
-	}
 	
 	public Player getPlayer()
 	{
@@ -68,20 +39,5 @@ public class PlotCommentEvent extends PlotEvent implements Cancellable
 	public String getComment()
 	{
 		return _comment;
-	}
-	
-	public String getOwner()
-	{
-		return _plot.owner;
-	}
-	
-	public Location getUpperBound()
-	{
-		return plugin.getPlotMeCoreManager().getGenMan(_world).getPlotTopLoc(_world, _plot.id);
-	}
-	
-	public Location getLowerBound()
-	{
-		return plugin.getPlotMeCoreManager().getGenMan(_world).getPlotBottomLoc(_world, _plot.id);
 	}
 }

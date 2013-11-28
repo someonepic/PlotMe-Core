@@ -34,7 +34,7 @@ public class PlotRunnableDeleteExpire implements Runnable {
                     if (!event.isCancelled()) {
                         coremanager.clear(w, expiredplot, plugin.getCommandSenderCurrentlyProcessingExpired(), ClearReason.Expired);
 
-                        String id = expiredplot.id;
+                        String id = expiredplot.getId();
                         ids += ChatColor.RED + id + ChatColor.RESET + ", ";
 
                         coremanager.removePlot(w, id);

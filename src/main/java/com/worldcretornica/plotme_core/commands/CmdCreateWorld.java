@@ -29,7 +29,7 @@ public class CmdCreateWorld extends PlotCommand {
                     //try to create world
                     Map<String, String> parameters = plugin.creationbuffer.get(cs.getName());
 
-                    PlotWorldCreateEvent event = PlotMeEventFactory.callPlotWorldCreateEvent(plugin, parameters.get("worldname"), cs, parameters);
+                    PlotWorldCreateEvent event = PlotMeEventFactory.callPlotWorldCreateEvent(parameters.get("worldname"), cs, parameters);
 
                     if (!event.isCancelled()) {
                         if (plugin.getPlotMeCoreManager().CreatePlotWorld(cs, parameters.get("worldname"), parameters.get("generator"), parameters)) {
@@ -82,7 +82,6 @@ public class CmdCreateWorld extends PlotCommand {
                     cs.sendMessage(C("WordUsage") + ": " + RED + "/plotme " + C("CommandCreateWorld") + " <" + C("WordWorld") + "> [" + C("WordGenerator") + "]");
                     cs.sendMessage("  " + C("MsgCreateWorldHelp"));
                 } else {
-                    // TODO: Should this call PlotMeCoreManager.CreatePlotWorld?
                     if (plugin.getPlotMeCoreManager().getMultiworld() == null) {
                         if (Bukkit.getPluginManager().isPluginEnabled("MultiWorld")) {
                             plugin.getPlotMeCoreManager().setMultiworld((JavaPlugin) Bukkit.getPluginManager().getPlugin("MultiWorld"));

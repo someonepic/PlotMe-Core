@@ -28,12 +28,12 @@ public class CmdBuy extends PlotCommand {
                     if (!plugin.getPlotMeCoreManager().isPlotAvailable(id, p)) {
                         Plot plot = plugin.getPlotMeCoreManager().getPlotById(p, id);
 
-                        if (!plot.forsale) {
+                        if (!plot.isForSale()) {
                             p.sendMessage(RED + C("MsgPlotNotForSale"));
                         } else {
                             String buyer = p.getName();
 
-                            if (plot.owner.equalsIgnoreCase(buyer)) {
+                            if (plot.getOwner().equalsIgnoreCase(buyer)) {
                                 p.sendMessage(RED + C("MsgCannotBuyOwnPlot"));
                             } else {
                                 int plotlimit = plugin.getPlotLimit(p);
@@ -45,7 +45,7 @@ public class CmdBuy extends PlotCommand {
                                 } else {
                                     World w = p.getWorld();
 
-                                    double cost = plot.customprice;
+                                    double cost = plot.getCustomPrice();
 
                                     if (plugin.getEconomy().getBalance(buyer) < cost) {
                                         p.sendMessage(RED + C("MsgNotEnoughBuy"));
@@ -57,7 +57,7 @@ public class CmdBuy extends PlotCommand {
                                             EconomyResponse er = plugin.getEconomy().withdrawPlayer(buyer, cost);
 
                                             if (er.transactionSuccess()) {
-                                                String oldowner = plot.owner;
+                                                String oldowner = plot.getOwner();
 
                                                 if (!oldowner.equalsIgnoreCase("$Bank$")) {
                                                     EconomyResponse er2 = plugin.getEconomy().depositPlayer(oldowner, cost);
@@ -76,9 +76,9 @@ public class CmdBuy extends PlotCommand {
                                                     }
                                                 }
 
-                                                plot.owner = buyer;
-                                                plot.customprice = 0;
-                                                plot.forsale = false;
+                                                plot.setOwner(buyer);
+                                                plot.setCustomPrice(0);
+                                                plot.setForSale(false);
 
                                                 plot.updateField("owner", buyer);
                                                 plot.updateField("customprice", 0);

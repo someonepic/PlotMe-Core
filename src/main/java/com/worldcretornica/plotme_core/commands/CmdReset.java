@@ -28,13 +28,13 @@ public class CmdReset extends PlotCommand {
                 if (plot == null) {
                     p.sendMessage(RED + C("MsgNoPlotFound"));
                 } else {
-                    if (plot.protect) {
+                    if (plot.isProtect()) {
                         p.sendMessage(RED + C("MsgPlotProtectedCannotReset"));
                     } else {
                         String playername = p.getName();
-                        String id = plot.id;
+                        String id = plot.getId();
 
-                        if (plot.owner.equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.reset")) {
+                        if (plot.getOwner().equalsIgnoreCase(playername) || plugin.cPerms(p, "PlotMe.admin.reset")) {
                             World w = p.getWorld();
 
                             PlotResetEvent event = PlotMeEventFactory.callPlotResetEvent(plugin, w, plot, p);
@@ -46,11 +46,11 @@ public class CmdReset extends PlotCommand {
                                 PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(p);
 
                                 if (plugin.getPlotMeCoreManager().isEconomyEnabled(p)) {
-                                    if (plot.auctionned) {
-                                        String currentbidder = plot.currentbidder;
+                                    if (plot.isAuctionned()) {
+                                        String currentbidder = plot.getCurrentBidder();
 
                                         if (!currentbidder.equals("")) {
-                                            EconomyResponse er = plugin.getEconomy().depositPlayer(currentbidder, plot.currentbid);
+                                            EconomyResponse er = plugin.getEconomy().depositPlayer(currentbidder, plot.getCurrentBid());
 
                                             if (!er.transactionSuccess()) {
                                                 p.sendMessage(er.errorMessage);
@@ -58,7 +58,7 @@ public class CmdReset extends PlotCommand {
                                             } else {
                                                 for (Player player : Bukkit.getServer().getOnlinePlayers()) {
                                                     if (player.getName().equalsIgnoreCase(currentbidder)) {
-                                                        player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + " " + C("MsgWasReset") + " " + Util().moneyFormat(plot.currentbid));
+                                                        player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.getOwner() + " " + C("MsgWasReset") + " " + Util().moneyFormat(plot.getCurrentBid()));
                                                         break;
                                                     }
                                                 }
@@ -66,8 +66,8 @@ public class CmdReset extends PlotCommand {
                                         }
                                     }
 
-                                    if (pmi.RefundClaimPriceOnReset) {
-                                        EconomyResponse er = plugin.getEconomy().depositPlayer(plot.owner, pmi.ClaimPrice);
+                                    if (pmi.isRefundClaimPriceOnReset()) {
+                                        EconomyResponse er = plugin.getEconomy().depositPlayer(plot.getOwner(), pmi.getClaimPrice());
 
                                         if (!er.transactionSuccess()) {
                                             p.sendMessage(RED + er.errorMessage);
@@ -75,8 +75,8 @@ public class CmdReset extends PlotCommand {
                                             return true;
                                         } else {
                                             for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-                                                if (player.getName().equalsIgnoreCase(plot.owner)) {
-                                                    player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.owner + " " + C("MsgWasReset") + " " + Util().moneyFormat(pmi.ClaimPrice));
+                                                if (player.getName().equalsIgnoreCase(plot.getOwner())) {
+                                                    player.sendMessage(C("WordPlot") + " " + id + " " + C("MsgOwnedBy") + " " + plot.getOwner() + " " + C("MsgWasReset") + " " + Util().moneyFormat(pmi.getClaimPrice()));
                                                     break;
                                                 }
                                             }

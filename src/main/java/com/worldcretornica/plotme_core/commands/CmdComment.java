@@ -44,7 +44,7 @@ public class CmdComment extends PlotCommand {
                             PlotCommentEvent event;
 
                             if (plugin.getPlotMeCoreManager().isEconomyEnabled(w)) {
-                                price = pmi.AddCommentPrice;
+                                price = pmi.getAddCommentPrice();
                                 double balance = plugin.getEconomy().getBalance(playername);
 
                                 if (balance >= price) {
@@ -74,8 +74,8 @@ public class CmdComment extends PlotCommand {
                                 comment[0] = playername;
                                 comment[1] = text;
 
-                                plot.comments.add(comment);
-                                plugin.getSqlManager().addPlotComment(comment, plot.comments.size(), plugin.getPlotMeCoreManager().getIdX(id), plugin.getPlotMeCoreManager().getIdZ(id), plot.world);
+                                plot.addComment(comment);
+                                plugin.getSqlManager().addPlotComment(comment, plot.getCommentsCount(), plugin.getPlotMeCoreManager().getIdX(id), plugin.getPlotMeCoreManager().getIdZ(id), plot.getWorld());
 
                                 p.sendMessage(C("MsgCommentAdded") + " " + Util().moneyFormat(-price));
 

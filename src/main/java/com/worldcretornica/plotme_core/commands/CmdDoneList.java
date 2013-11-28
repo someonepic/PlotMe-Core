@@ -50,11 +50,11 @@ public class CmdDoneList extends PlotCommand {
                     for (int i = (page - 1) * pagesize; i < finishedplots.size() && i < (page * pagesize); i++) {
                         Plot plot = finishedplots.get(i);
 
-                        String starttext = "  " + AQUA + plot.id + RESET + " -> " + plot.owner;
+                        String starttext = "  " + AQUA + plot.getId() + RESET + " -> " + plot.getOwner();
 
                         int textLength = MinecraftFontWidthCalculator.getStringWidth(starttext);
 
-                        String line = starttext + Util().whitespace(550 - textLength) + "@" + plot.finisheddate;
+                        String line = starttext + Util().whitespace(550 - textLength) + "@" + plot.getFinishedDate();
 
                         p.sendMessage(line);
                     }
