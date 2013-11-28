@@ -91,9 +91,9 @@ public class PlotMe_Core extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        setupMySQL();
         setupConfig();
         setupDefaultCaptions();
-        setupMySQL();
         setPlotMeCoreManager(new PlotMeCoreManager(this));
         setUtil(new Util(this));
         setupWorlds(); // TODO: Remove concept of pmi so this is not needed
