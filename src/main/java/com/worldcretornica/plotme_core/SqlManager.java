@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 
 public class SqlManager {
@@ -1874,6 +1875,25 @@ public class SqlManager {
             }
         }
         return null;
+    }
+
+    public List<Plot> getAllPlots() {
+        List<Plot> ret = new ArrayList<Plot>();
+        Connection connection = getConnection();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT world, idX, idZ FROM plotmePlots");
+
+            while (rs.next()) {
+                String world = rs.getString("world");
+                int idX = rs.getInt("idX");
+                int idZ = rs.getInt("idZ");
+
+                ret.add(getPlot(world, idX + ";" + idZ));
+            }
+        } catch (SQLException ex) {
+            plugin.getLogger().log(Level.SEVERE, null, ex);
+        }
+        return ret;
     }
 
     public List<Plot> getPlayerPlots(String owner) {
