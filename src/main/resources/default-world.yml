@@ -18,6 +18,9 @@ ProtectedBlocks:
 - 138
 - 140
 - 145
+- 154
+- 23
+- 158
 PreventedItems:
 - '351:15'
 - '259'
