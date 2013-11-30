@@ -4,6 +4,7 @@ import com.griefcraft.model.Protection;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
+import com.worldcretornica.plotme_core.listener.PlayerListener;
 import com.worldcretornica.plotme_core.listener.PlotDenyListener;
 import com.worldcretornica.plotme_core.listener.PlotListener;
 import com.worldcretornica.plotme_core.listener.PlotWorldEditListener;
@@ -19,6 +20,7 @@ import java.util.logging.Level;
 import me.flungo.bukkit.tools.ConfigAccessor;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -38,12 +40,16 @@ public class PlotMe_Core extends JavaPlugin {
     public static final String LANG_PATH = "language";
     public static final String DEFAULT_LANG = "english";
     public static final String CAPTIONS_PATTERN = "caption-%s.yml";
+    public static final String DEFAULT_GENERATOR_URL = "http://dev.bukkit.org/bukkit-plugins/plotme/";
 
     //Config accessors for language <lang, accessor>
     private final HashMap<String, ConfigAccessor> captionsCA = new HashMap<>();
 
     private Economy economy = null;
     private Boolean usinglwc = false;
+
+    // Worlds that do not have a world generator
+    private final Set<String> badWorlds = new HashSet<>();
 
     private World worldcurrentlyprocessingexpired;
     private CommandSender cscurrentlyprocessingexpired;
@@ -253,6 +259,12 @@ public class PlotMe_Core extends JavaPlugin {
         final ConfigurationSection worldsCS = getConfig().getConfigurationSection("worlds");
         for (String worldname : worldsCS.getKeys(false)) {
             getPlotMeCoreManager().addPlotMap(worldname.toLowerCase(), new PlotMapInfo(this, worldname));
+            if (getGenManager(worldname) == null) {
+                getLogger().log(Level.SEVERE, "The world {0} either does not exist or not using a PlotMe generator", worldname);
+                getLogger().log(Level.SEVERE, "Please ensure that {0} is set up and that it is using a PlotMe generator", worldname);
+                getLogger().log(Level.SEVERE, "The default generator can be downloaded from " + DEFAULT_GENERATOR_URL);
+                badWorlds.add(worldname);
+            }
         }
     }
 
@@ -322,6 +334,8 @@ public class PlotMe_Core extends JavaPlugin {
     private void setupListeners() {
         PluginManager pm = getServer().getPluginManager();
 
+        pm.registerEvents(new PlayerListener(this), this);
+
         pm.registerEvents(new PlotListener(this), this);
 
         if (getConfig().getBoolean("allowToDeny")) {
@@ -362,6 +376,10 @@ public class PlotMe_Core extends JavaPlugin {
             spools.add(pms);
             spoolTasks.add(Bukkit.getServer().getScheduler().runTaskAsynchronously(this, pms));
         }
+    }
+
+    public void sendMessage(CommandSender cs, String message) {
+        cs.sendMessage(ChatColor.AQUA + "[" + message + "] " + ChatColor.RESET + message);
     }
 
     public boolean cPerms(CommandSender sender, String node) {
@@ -490,6 +508,10 @@ public class PlotMe_Core extends JavaPlugin {
 
     public String getVersion() {
         return getDescription().getVersion();
+    }
+
+    public Set<String> getBadWorlds() {
+        return badWorlds;
     }
 
     public World getWorldCurrentlyProcessingExpired() {
