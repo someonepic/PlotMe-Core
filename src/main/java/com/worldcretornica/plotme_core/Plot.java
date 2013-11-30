@@ -42,8 +42,8 @@ public class Plot implements Comparable<Plot> {
         this.owner = "";
         this.setWorld("");
         this.setId("");
-        this.allowed = new HashSet<String>();
-        this.denied = new HashSet<String>();
+        this.allowed = new HashSet<>();
+        this.denied = new HashSet<>();
         this.setBiome(Biome.PLAINS);
 
         this.setBaseY(0);
@@ -54,7 +54,7 @@ public class Plot implements Comparable<Plot> {
         java.util.Date utlDate = cal.getTime();
         this.setExpiredDate(new java.sql.Date(utlDate.getTime()));
 
-        this.comments = new ArrayList<String[]>();
+        this.comments = new ArrayList<>();
         this.setCustomPrice(0);
         this.setForSale(false);
         this.setFinishedDate("");
@@ -68,8 +68,8 @@ public class Plot implements Comparable<Plot> {
         this.plugin = instance;
         this.owner = own;
         this.setWorld(wor.getName());
-        this.allowed = new HashSet<String>();
-        this.denied = new HashSet<String>();
+        this.allowed = new HashSet<>();
+        this.denied = new HashSet<>();
         this.setBiome(Biome.PLAINS);
         this.setId(tid);
 
@@ -95,7 +95,7 @@ public class Plot implements Comparable<Plot> {
             this.setExpiredDate(new java.sql.Date(utlDate.getTime()));
         }
 
-        this.comments = new ArrayList<String[]>();
+        this.comments = new ArrayList<>();
         this.setCustomPrice(0);
         this.setForSale(false);
         this.setFinishedDate("");
@@ -275,14 +275,14 @@ public class Plot implements Comparable<Plot> {
         for (String n : this.allowed) {
             this.plugin.getSqlManager().deletePlotAllowed(this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), n, this.getWorld());
         }
-        this.allowed = new HashSet<String>();
+        this.allowed = new HashSet<>();
     }
 
     public void removeAllDenied() {
         for (String n : this.denied) {
             this.plugin.getSqlManager().deletePlotDenied(this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), n, this.getWorld());
         }
-        this.denied = new HashSet<String>();
+        this.denied = new HashSet<>();
     }
 
     public boolean isAllowed(String name) {

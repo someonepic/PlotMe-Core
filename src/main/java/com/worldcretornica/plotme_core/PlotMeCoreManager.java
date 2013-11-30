@@ -37,7 +37,7 @@ public class PlotMeCoreManager {
     public PlotMeCoreManager(PlotMe_Core instance) {
         plugin = instance;
         setPlayersIgnoringWELimit(new HashSet<String>());
-        plotmaps = new HashMap<String, PlotMapInfo>();
+        plotmaps = new HashMap<>();
     }
 
     public boolean CreatePlotWorld(CommandSender cs, String worldname, String generator, Map<String, String> args) {
@@ -731,7 +731,7 @@ public class PlotMeCoreManager {
 
     public void adjustLinkedPlots(String id, World world) {
         //TODO
-        Map<String, Plot> plots = new HashMap<String, Plot>(); //getPlots(world);
+        Map<String, Plot> plots = new HashMap<>(); //getPlots(world);
 
         IPlotMe_GeneratorManager gm = getGenMan(world);
 

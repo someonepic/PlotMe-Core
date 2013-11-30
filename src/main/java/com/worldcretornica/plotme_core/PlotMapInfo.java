@@ -50,7 +50,7 @@ public class PlotMapInfo {
         return config;
     }
 
-    private final ConfigurationSection getDefaultWorld() {
+    private ConfigurationSection getDefaultWorld() {
         InputStream defConfigStream = plugin.getResource("default-world.yml");
 
         return YamlConfiguration.loadConfiguration(defConfigStream);

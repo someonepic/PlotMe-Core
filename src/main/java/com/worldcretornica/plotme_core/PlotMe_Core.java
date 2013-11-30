@@ -200,7 +200,7 @@ public class PlotMe_Core extends JavaPlugin {
         final FileConfiguration oldConfig = oldConfCA.getConfig();
 
         // Create a list of old world configs that should be moved to config-old.yml
-        final Set<String> oldWorldConfigs = new HashSet<String>();
+        final Set<String> oldWorldConfigs = new HashSet<>();
         oldWorldConfigs.add("PathWidth");
         oldWorldConfigs.add("PlotSize");
         oldWorldConfigs.add("XTranslation");
@@ -351,12 +351,12 @@ public class PlotMe_Core extends JavaPlugin {
     }
 
     private void setupClearSpools() {
-        creationbuffer = new HashMap<String, Map<String, String>>();
-        plotsToClear = new ConcurrentLinkedQueue<PlotToClear>();
+        creationbuffer = new HashMap<>();
+        plotsToClear = new ConcurrentLinkedQueue<>();
 
         //Start the spools
-        spoolTasks = new HashSet<BukkitTask>();
-        spools = new HashSet<PlotMeSpool>();
+        spoolTasks = new HashSet<>();
+        spools = new HashSet<>();
         for (int i = 1; i <= getConfig().getInt("NbClearSpools"); i++) {
             PlotMeSpool pms = new PlotMeSpool(this);
             spools.add(pms);
@@ -429,8 +429,8 @@ public class PlotMe_Core extends JavaPlugin {
     private String getDate(Calendar cal) {
         int imonth = cal.get(Calendar.MONTH) + 1;
         int iday = cal.get(Calendar.DAY_OF_MONTH) + 1;
-        String month = "";
-        String day = "";
+        String month;
+        String day;
 
         if (imonth < 10) {
             month = "0" + imonth;
@@ -474,6 +474,7 @@ public class PlotMe_Core extends JavaPlugin {
                     final Block block = w.getBlockAt(x, y, z);
 
                     Bukkit.getScheduler().runTask(this, new Runnable() {
+                        @Override
                         public void run() {
                             Protection protection = com.griefcraft.lwc.LWC.getInstance().findProtection(block);
 
