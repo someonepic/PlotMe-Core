@@ -7,9 +7,6 @@ import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_ChunkGenerator;
 import com.worldcretornica.plotme_core.api.v0_14b.IPlotMe_GeneratorManager;
 import com.worldcretornica.plotme_core.event.PlotMeEventFactory;
 import com.worldcretornica.plotme_core.utils.Util;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,10 +20,6 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.Plugin;
@@ -44,7 +37,7 @@ public class PlotMeCoreManager {
     public PlotMeCoreManager(PlotMe_Core instance) {
         plugin = instance;
         setPlayersIgnoringWELimit(new HashSet<String>());
-        plotmaps = new HashMap<String, PlotMapInfo>();
+        plotmaps = new HashMap<>();
     }
 
     public boolean CreatePlotWorld(CommandSender cs, String worldname, String generator, Map<String, String> args) {
@@ -91,42 +84,10 @@ public class PlotMeCoreManager {
             }
         }
 
-        //Create manager configurations
-        File configfile = new File(plugin.getConfigPath(), "core-config.yml");
-
-        FileConfiguration config = new YamlConfiguration();
-        try {
-            config.load(configfile);
-        } catch (FileNotFoundException e) {
-        } catch (IOException e) {
-            plugin.getLogger().severe("can't read configuration file");
-            e.printStackTrace();
-            return false;
-        } catch (InvalidConfigurationException e) {
-            plugin.getLogger().severe("invalid configuration format");
-            e.printStackTrace();
-            return false;
-        }
-
-        ConfigurationSection worlds;
-
-        if (!config.contains("worlds")) {
-            worlds = config.createSection("worlds");
-        } else {
-            worlds = config.getConfigurationSection("worlds");
-        }
-
         PlotMapInfo tempPlotInfo = new PlotMapInfo(plugin, worldname);
-        ConfigurationSection currworld = worlds.getConfigurationSection(worldname);
-
-        if (currworld == null) {
-            currworld = worlds.createSection(worldname);
-        }
 
         tempPlotInfo.setPlotAutoLimit(Integer.parseInt(args.get("PlotAutoLimit")));
         tempPlotInfo.setDaysToExpiration(Integer.parseInt(args.get("DaysToExpiration")));
-        tempPlotInfo.setProtectedBlocks(plugin.getDefaultProtectedBlocks());
-        tempPlotInfo.setPreventedItems(plugin.getDefaultPreventedItems());
         tempPlotInfo.setAutoLinkPlots(Boolean.parseBoolean(args.get("AutoLinkPlots")));
         tempPlotInfo.setDisableExplosion(Boolean.parseBoolean(args.get("DisableExplosion")));
         tempPlotInfo.setDisableIgnition(Boolean.parseBoolean(args.get("DisableIgnition")));
@@ -152,51 +113,7 @@ public class PlotMeCoreManager {
         tempPlotInfo.setProtectPrice(Double.parseDouble(args.get("ProtectPrice")));
         tempPlotInfo.setDisposePrice(Double.parseDouble(args.get("DisposePrice")));
 
-        currworld.set("PlotAutoLimit", tempPlotInfo.getPlotAutoLimit());
-        currworld.set("DaysToExpiration", tempPlotInfo.getDaysToExpiration());
-        currworld.set("ProtectedBlocks", tempPlotInfo.getProtectedBlocks());
-        currworld.set("PreventedItems", tempPlotInfo.getPreventedItems());
-        currworld.set("AutoLinkPlots", tempPlotInfo.isAutoLinkPlots());
-        currworld.set("DisableExplosion", tempPlotInfo.isDisableExplosion());
-        currworld.set("DisableIgnition", tempPlotInfo.isDisableIgnition());
-        currworld.set("UseProgressiveClear", tempPlotInfo.isUseProgressiveClear());
-
-        ConfigurationSection economysection = currworld.createSection("economy");
-
-        economysection.set("UseEconomy", tempPlotInfo.isUseEconomy());
-        economysection.set("CanPutOnSale", tempPlotInfo.isCanPutOnSale());
-        economysection.set("CanSellToBank", tempPlotInfo.isCanSellToBank());
-        economysection.set("RefundClaimPriceOnReset", tempPlotInfo.isRefundClaimPriceOnReset());
-        economysection.set("RefundClaimPriceOnSetOwner", tempPlotInfo.isRefundClaimPriceOnSetOwner());
-        economysection.set("ClaimPrice", tempPlotInfo.getClaimPrice());
-        economysection.set("ClearPrice", tempPlotInfo.getClearPrice());
-        economysection.set("AddPlayerPrice", tempPlotInfo.getAddPlayerPrice());
-        economysection.set("DenyPlayerPrice", tempPlotInfo.getDenyPlayerPrice());
-        economysection.set("RemovePlayerPrice", tempPlotInfo.getRemovePlayerPrice());
-        economysection.set("UndenyPlayerPrice", tempPlotInfo.getUndenyPlayerPrice());
-        economysection.set("PlotHomePrice", tempPlotInfo.getPlotHomePrice());
-        economysection.set("CanCustomizeSellPrice", tempPlotInfo.isCanCustomizeSellPrice());
-        economysection.set("SellToPlayerPrice", tempPlotInfo.getSellToPlayerPrice());
-        economysection.set("SellToBankPrice", tempPlotInfo.getSellToBankPrice());
-        economysection.set("BuyFromBankPrice", tempPlotInfo.getBuyFromBankPrice());
-        economysection.set("AddCommentPrice", tempPlotInfo.getAddCommentPrice());
-        economysection.set("BiomeChangePrice", tempPlotInfo.getBiomeChangePrice());
-        economysection.set("ProtectPrice", tempPlotInfo.getProtectPrice());
-        economysection.set("DisposePrice", tempPlotInfo.getDisposePrice());
-
-        currworld.set("economy", economysection);
-
-        worlds.set(worldname, currworld);
-
         addPlotMap(worldname.toLowerCase(), tempPlotInfo);
-
-        try {
-            config.save(configfile);
-        } catch (IOException e) {
-            plugin.getLogger().severe("error writting configurations");
-            e.printStackTrace();
-            return false;
-        }
 
         //Are we using multiworld?
         if (getMultiworld() != null) {
@@ -275,48 +192,29 @@ public class PlotMeCoreManager {
         return plugin.getSqlManager().getPlotCount(w.getName(), name);
     }
 
-    public boolean isEconomyEnabled(World w) {
-        PlotMapInfo pmi = getMap(w);
+    public boolean isEconomyEnabled(String worldname) {
+        if (plugin.getConfig().getBoolean("globalUseEconomy") || plugin.getEconomy() != null) {
+            return false;
+        }
+        PlotMapInfo pmi = getMap(worldname);
 
         if (pmi == null) {
             return false;
         } else {
-            return pmi.isUseEconomy() && plugin.getGlobalUseEconomy() && plugin.getEconomy() != null;
+            return pmi.isUseEconomy() && plugin.getConfig().getBoolean("globalUseEconomy") && plugin.getEconomy() != null;
         }
     }
 
-    public boolean isEconomyEnabled(String name) {
-        PlotMapInfo pmi = getMap(name);
-
-        if (pmi == null) {
-            return false;
-        } else {
-            return pmi.isUseEconomy() && plugin.getGlobalUseEconomy();
-        }
+    public boolean isEconomyEnabled(World w) {
+        return isEconomyEnabled(w.getName());
     }
 
     public boolean isEconomyEnabled(Player p) {
-        if (plugin.getEconomy() == null) {
-            return false;
-        }
-
-        PlotMapInfo pmi = getMap(p);
-
-        if (pmi == null) {
-            return false;
-        } else {
-            return pmi.isUseEconomy() && plugin.getGlobalUseEconomy();
-        }
+        return isEconomyEnabled(p.getWorld().getName());
     }
 
     public boolean isEconomyEnabled(Block b) {
-        PlotMapInfo pmi = getMap(b);
-
-        if (pmi == null) {
-            return false;
-        } else {
-            return pmi.isUseEconomy() && plugin.getGlobalUseEconomy();
-        }
+        return isEconomyEnabled(b.getWorld().getName());
     }
 
     public PlotMapInfo getMap(World w) {
@@ -833,7 +731,7 @@ public class PlotMeCoreManager {
 
     public void adjustLinkedPlots(String id, World world) {
         //TODO
-        Map<String, Plot> plots = new HashMap<String, Plot>(); //getPlots(world);
+        Map<String, Plot> plots = new HashMap<>(); //getPlots(world);
 
         IPlotMe_GeneratorManager gm = getGenMan(world);
 
@@ -1116,7 +1014,6 @@ public class PlotMeCoreManager {
 
     public void addPlotMap(String world, PlotMapInfo map) {
         this.plotmaps.put(world, map);
-        plugin.getSqlManager().loadPlotsAsynchronously(world);
     }
 
     public void removePlotMap(String world) {

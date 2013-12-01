@@ -42,8 +42,8 @@ public class Plot implements Comparable<Plot> {
         this.owner = "";
         this.setWorld("");
         this.setId("");
-        this.allowed = new HashSet<String>();
-        this.denied = new HashSet<String>();
+        this.allowed = new HashSet<>();
+        this.denied = new HashSet<>();
         this.setBiome(Biome.PLAINS);
 
         this.setBaseY(0);
@@ -54,7 +54,7 @@ public class Plot implements Comparable<Plot> {
         java.util.Date utlDate = cal.getTime();
         this.setExpiredDate(new java.sql.Date(utlDate.getTime()));
 
-        this.comments = new ArrayList<String[]>();
+        this.comments = new ArrayList<>();
         this.setCustomPrice(0);
         this.setForSale(false);
         this.setFinishedDate("");
@@ -68,8 +68,8 @@ public class Plot implements Comparable<Plot> {
         this.plugin = instance;
         this.owner = own;
         this.setWorld(wor.getName());
-        this.allowed = new HashSet<String>();
-        this.denied = new HashSet<String>();
+        this.allowed = new HashSet<>();
+        this.denied = new HashSet<>();
         this.setBiome(Biome.PLAINS);
         this.setId(tid);
 
@@ -82,8 +82,8 @@ public class Plot implements Comparable<Plot> {
             this.setBaseY(0);
             this.setHeight(256);
         } else {
-            this.setBaseY(plotWorldConfig.getInt("PlotBase", 0));
-            this.setHeight(plotWorldConfig.getInt("PlotHeight", 256));
+            this.setBaseY(plotWorldConfig.getInt("DefaultPlotBase", 0));
+            this.setHeight(plotWorldConfig.getInt("DefaultPlotHeight", 256));
         }
 
         if (days == 0) {
@@ -95,7 +95,7 @@ public class Plot implements Comparable<Plot> {
             this.setExpiredDate(new java.sql.Date(utlDate.getTime()));
         }
 
-        this.comments = new ArrayList<String[]>();
+        this.comments = new ArrayList<>();
         this.setCustomPrice(0);
         this.setForSale(false);
         this.setFinishedDate("");
@@ -180,9 +180,8 @@ public class Plot implements Comparable<Plot> {
     public String getOwner() {
         return this.owner;
     }
-    
-    public void setOwner(String owner)
-    {
+
+    public void setOwner(String owner) {
         this.owner = owner;
     }
 
@@ -217,11 +216,11 @@ public class Plot implements Comparable<Plot> {
     public String[] getComment(int i) {
         return this.comments.get(i);
     }
-    
+
     public List<String[]> getComments() {
         return this.comments;
     }
-    
+
     public void addComment(String[] comment) {
         this.comments.add(comment);
     }
@@ -276,14 +275,14 @@ public class Plot implements Comparable<Plot> {
         for (String n : this.allowed) {
             this.plugin.getSqlManager().deletePlotAllowed(this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), n, this.getWorld());
         }
-        this.allowed = new HashSet<String>();
+        this.allowed = new HashSet<>();
     }
 
     public void removeAllDenied() {
         for (String n : this.denied) {
             this.plugin.getSqlManager().deletePlotDenied(this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), n, this.getWorld());
         }
-        this.denied = new HashSet<String>();
+        this.denied = new HashSet<>();
     }
 
     public boolean isAllowed(String name) {
@@ -386,119 +385,119 @@ public class Plot implements Comparable<Plot> {
         this.plugin.getSqlManager().updatePlot(this.plugin.getPlotMeCoreManager().getIdX(this.getId()), this.plugin.getPlotMeCoreManager().getIdZ(this.getId()), this.getWorld(), field, value);
     }
 
-    public String getWorld() {
+    public final String getWorld() {
         return world;
     }
 
-    public void setWorld(String world) {
+    public final void setWorld(String world) {
         this.world = world;
     }
 
-    public void setBiome(Biome biome) {
+    public final void setBiome(Biome biome) {
         this.biome = biome;
     }
 
-    public int getBaseY() {
+    public final int getBaseY() {
         return baseY;
     }
 
-    public void setBaseY(int baseY) {
+    public final void setBaseY(int baseY) {
         this.baseY = baseY;
     }
 
-    public int getHeight() {
+    public final int getHeight() {
         return height;
     }
 
-    public void setHeight(int height) {
+    public final void setHeight(int height) {
         this.height = height;
     }
 
-    public Date getExpiredDate() {
+    public final Date getExpiredDate() {
         return expireddate;
     }
 
-    public void setExpiredDate(Date expireddate) {
+    public final void setExpiredDate(Date expireddate) {
         this.expireddate = expireddate;
     }
 
-    public boolean isFinished() {
+    public final boolean isFinished() {
         return finished;
     }
 
-    public void setFinished(boolean finished) {
+    public final void setFinished(boolean finished) {
         this.finished = finished;
     }
 
-    public String getId() {
+    public final String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public final void setId(String id) {
         this.id = id;
     }
 
-    public double getCustomPrice() {
+    public final double getCustomPrice() {
         return customprice;
     }
 
-    public void setCustomPrice(double customprice) {
+    public final void setCustomPrice(double customprice) {
         this.customprice = customprice;
     }
 
-    public boolean isForSale() {
+    public final boolean isForSale() {
         return forsale;
     }
 
-    public void setForSale(boolean forsale) {
+    public final void setForSale(boolean forsale) {
         this.forsale = forsale;
     }
 
-    public String getFinishedDate() {
+    public final String getFinishedDate() {
         return finisheddate;
     }
 
-    public void setFinishedDate(String finisheddate) {
+    public final void setFinishedDate(String finisheddate) {
         this.finisheddate = finisheddate;
     }
 
-    public boolean isProtect() {
+    public final boolean isProtect() {
         return protect;
     }
 
-    public void setProtect(boolean protect) {
+    public final void setProtect(boolean protect) {
         this.protect = protect;
     }
 
-    public boolean isAuctionned() {
+    public final boolean isAuctionned() {
         return auctionned;
     }
 
-    public void setAuctionned(boolean auctionned) {
+    public final void setAuctionned(boolean auctionned) {
         this.auctionned = auctionned;
     }
 
-    public String getCurrentBidder() {
+    public final String getCurrentBidder() {
         return currentbidder;
     }
 
-    public void setCurrentBidder(String currentbidder) {
+    public final void setCurrentBidder(String currentbidder) {
         this.currentbidder = currentbidder;
     }
 
-    public double getCurrentBid() {
+    public final double getCurrentBid() {
         return currentbid;
     }
 
-    public void setCurrentBid(double currentbid) {
+    public final void setCurrentBid(double currentbid) {
         this.currentbid = currentbid;
     }
 
-    public String getAuctionnedDate() {
+    public final String getAuctionnedDate() {
         return auctionneddate;
     }
 
-    public void setAuctionnedDate(String auctionneddate) {
+    public final void setAuctionnedDate(String auctionneddate) {
         this.auctionneddate = auctionneddate;
     }
 }

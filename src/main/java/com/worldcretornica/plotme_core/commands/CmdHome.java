@@ -18,7 +18,7 @@ public class CmdHome extends PlotCommand {
 
     public boolean exec(Player p, String[] args) {
         if (plugin.cPerms(p, "PlotMe.use.home") || plugin.cPerms(p, "PlotMe.admin.home.other")) {
-            if (!plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.getAllowWorldTeleport()) {
+            if (!plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.getConfig().getBoolean("allowWorldTeleport")) {
                 p.sendMessage(RED + C("MsgNotPlotWorld"));
             } else {
                 boolean found = false;
@@ -26,7 +26,7 @@ public class CmdHome extends PlotCommand {
                 int nb = 1;
                 World w;
 
-                if (!plugin.getPlotMeCoreManager().isPlotWorld(p) && plugin.getAllowWorldTeleport()) {
+                if (!plugin.getPlotMeCoreManager().isPlotWorld(p)) {
                     w = plugin.getPlotMeCoreManager().getFirstWorld();
                 } else {
                     w = p.getWorld();

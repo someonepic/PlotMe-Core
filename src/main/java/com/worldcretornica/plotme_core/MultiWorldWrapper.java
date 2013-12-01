@@ -50,9 +50,7 @@ public class MultiWorldWrapper implements Delegate<MultiWorldPlugin> {
         public boolean makeWorld(String name, WorldGeneratorWrapper env, long seed, String options) throws DelegateClassException {
             try {
                 return dataHandler.makeWorld(name, env.getDelegate(), seed, options);
-            } catch (ConfigException ex) {
-                throw new DelegateClassException(ex);
-            } catch (WorldGenException ex) {
+            } catch (ConfigException | WorldGenException ex) {
                 throw new DelegateClassException(ex);
             }
         }

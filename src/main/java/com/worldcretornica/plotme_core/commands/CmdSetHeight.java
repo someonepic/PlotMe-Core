@@ -47,6 +47,9 @@ public class CmdSetHeight extends PlotCommand {
 
     public boolean add(Player p, String[] args) {
         String id = plugin.getPlotMeCoreManager().getPlotId(p.getLocation());
+        if (id.equals("")) {
+            p.sendMessage(RED + C("MsgNoPlotFound"));
+        }
         Integer height;
         try {
             height = Integer.parseInt(args[1]);

@@ -13,8 +13,8 @@ public class CmdWEAnywhere extends PlotCommand {
         if (plugin.cPerms(p, "PlotMe.admin.weanywhere")) {
             String name = p.getName();
 
-            if (plugin.getPlotMeCoreManager().isPlayerIgnoringWELimit(p.getName()) && !plugin.getDefaultWEAnywhere()
-                    || !plugin.getPlotMeCoreManager().isPlayerIgnoringWELimit(p.getName()) && plugin.getDefaultWEAnywhere()) {
+            if (plugin.getPlotMeCoreManager().isPlayerIgnoringWELimit(p.getName()) && !plugin.getConfig().getBoolean("defaultWEAnywhere")
+                    || !plugin.getPlotMeCoreManager().isPlayerIgnoringWELimit(p.getName()) && plugin.getConfig().getBoolean("defaultWEAnywhere")) {
                 plugin.getPlotMeCoreManager().removePlayerIgnoringWELimit(p.getName());
             } else {
                 plugin.getPlotMeCoreManager().addPlayerIgnoringWELimit(p.getName());

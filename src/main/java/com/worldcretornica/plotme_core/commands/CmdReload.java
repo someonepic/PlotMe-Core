@@ -15,7 +15,7 @@ public class CmdReload extends PlotCommand {
         if (!(s instanceof Player) || plugin.cPerms((Player) s, "PlotMe.admin.reload")) {
             PlotMeEventFactory.callPlotReloadEvent();
 
-            plugin.initialize();
+            plugin.reload();
             s.sendMessage(C("MsgReloadedSuccess"));
 
             if (isAdv) {
