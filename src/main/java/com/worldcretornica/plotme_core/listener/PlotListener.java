@@ -4,7 +4,10 @@ import com.worldcretornica.plotme_core.Plot;
 import com.worldcretornica.plotme_core.PlotMapInfo;
 import com.worldcretornica.plotme_core.PlotMe_Core;
 import com.worldcretornica.plotme_core.PlotToClear;
+import com.worldcretornica.plotme_core.event.PlotWorldLoadEvent;
+
 import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -47,7 +50,7 @@ public class PlotListener implements Listener {
         plugin = instance;
     }
 
-    @EventHandler(priority = EventPriority.HIGH) //, ignoreCancelled = true
+    @EventHandler(priority = EventPriority.HIGH)
     public void onBlockBreak(final BlockBreakEvent event) {
         Block b = event.getBlock();
 
@@ -803,5 +806,10 @@ public class PlotListener implements Listener {
                 }
             }
         }
+    }
+    
+    @EventHandler()
+    public void onPlotWorldLoad(final PlotWorldLoadEvent event) {
+        plugin.getLogger().info("Done loading " + event.getNbPlots() + " plots for world " + event.getWorldName());
     }
 }

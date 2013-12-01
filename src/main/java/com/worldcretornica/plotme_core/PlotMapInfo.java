@@ -46,7 +46,7 @@ public class PlotMapInfo {
 
     public PlotMapInfo(PlotMe_Core instance) {
         plugin = instance;
-        _plots = new ConcurrentHashMap<String, Plot>();
+        _plots = new ConcurrentHashMap<String, Plot>(1000, 0.75f, 5);
         _freedplots = new ArrayList<String>();
     }
 

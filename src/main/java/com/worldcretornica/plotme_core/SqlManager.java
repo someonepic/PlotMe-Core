@@ -1411,7 +1411,8 @@ public class SqlManager {
                             PlotMeEventFactory.callPlotLoadedEvent(plugin, Bukkit.getWorld(worldname), plots.get(id));
                         }
                         
-                        plugin.getLogger().info("Done loading " + pmi.getNbPlots() + " plots for world " + worldname);
+                        //plugin.getLogger().info("Done loading " + pmi.getNbPlots() + " plots for world " + worldname);
+                        PlotMeEventFactory.callPlotWorldLoadEvent(plugin, worldname, pmi.getNbPlots());
                     }
                 }
          );

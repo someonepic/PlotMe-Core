@@ -1249,83 +1249,88 @@ public class PlotMe_Core extends JavaPlugin {
     }
 
     public void saveWorldConfig(String world) {
-        File configfile = new File(getConfigPath(), "core-config.yml");
-
-        if (!configfile.exists()) {
-            importOldConfigs(configfile);
-        }
-
-        FileConfiguration config = new YamlConfiguration();
-
-        try {
-            config.load(configfile);
-        } catch (FileNotFoundException e) {
-        } catch (IOException e) {
-            getLogger().severe("can't read configuration file");
-            e.printStackTrace();
-        } catch (InvalidConfigurationException e) {
-            getLogger().severe("invalid configuration format");
-            e.printStackTrace();
-        }
-
+        
         PlotMapInfo pmi = getPlotMeCoreManager().getMap(world);
-
-        ConfigurationSection worlds = config.getConfigurationSection("worlds");
-        ConfigurationSection currworld = worlds.getConfigurationSection(world);
-
-        ConfigurationSection economysection;
-
-        if (currworld.getConfigurationSection("economy") == null) {
+        
+        if(pmi != null)
+        {
+            File configfile = new File(getConfigPath(), "core-config.yml");
+    
+            if (!configfile.exists()) {
+                importOldConfigs(configfile);
+            }
+    
+            FileConfiguration config = new YamlConfiguration();
+    
+            try {
+                config.load(configfile);
+            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
+                getLogger().severe("can't read configuration file");
+                e.printStackTrace();
+            } catch (InvalidConfigurationException e) {
+                getLogger().severe("invalid configuration format");
+                e.printStackTrace();
+            }
+        
+            ConfigurationSection worlds = config.getConfigurationSection("worlds");
+            ConfigurationSection currworld = worlds.getConfigurationSection(world);
+            
+            ConfigurationSection economysection;
+    
+            if (currworld.getConfigurationSection("economy") == null) {
+                economysection = currworld.createSection("economy");
+            } else {
+                economysection = currworld.getConfigurationSection("economy");
+            }
+    
+            currworld.set("PlotAutoLimit", pmi.getPlotAutoLimit());
+    
+            currworld.set("DaysToExpiration", pmi.getDaysToExpiration());
+            currworld.set("ProtectedBlocks", pmi.getProtectedBlocks());
+            currworld.set("PreventedItems", pmi.getPreventedItems());
+    
+            currworld.set("AutoLinkPlots", pmi.isAutoLinkPlots());
+            currworld.set("DisableExplosion", pmi.isDisableExplosion());
+            currworld.set("DisableIgnition", pmi.isDisableIgnition());
+            currworld.set("UseProgressiveClear", pmi.isUseProgressiveClear());
+            currworld.set("NextFreed", pmi.getNextFreed());
+    
             economysection = currworld.createSection("economy");
-        } else {
-            economysection = currworld.getConfigurationSection("economy");
-        }
-
-        currworld.set("PlotAutoLimit", pmi.getPlotAutoLimit());
-
-        currworld.set("DaysToExpiration", pmi.getDaysToExpiration());
-        currworld.set("ProtectedBlocks", pmi.getProtectedBlocks());
-        currworld.set("PreventedItems", pmi.getPreventedItems());
-
-        currworld.set("AutoLinkPlots", pmi.isAutoLinkPlots());
-        currworld.set("DisableExplosion", pmi.isDisableExplosion());
-        currworld.set("DisableIgnition", pmi.isDisableIgnition());
-        currworld.set("UseProgressiveClear", pmi.isUseProgressiveClear());
-        currworld.set("NextFreed", pmi.getNextFreed());
-
-        economysection = currworld.createSection("economy");
-
-        economysection.set("UseEconomy", pmi.isUseEconomy());
-        economysection.set("CanPutOnSale", pmi.isCanPutOnSale());
-        economysection.set("CanSellToBank", pmi.isCanSellToBank());
-        economysection.set("RefundClaimPriceOnReset", pmi.isRefundClaimPriceOnReset());
-        economysection.set("RefundClaimPriceOnSetOwner", pmi.isRefundClaimPriceOnSetOwner());
-        economysection.set("ClaimPrice", pmi.getClaimPrice());
-        economysection.set("ClearPrice", pmi.getClearPrice());
-        economysection.set("AddPlayerPrice", pmi.getAddPlayerPrice());
-        economysection.set("DenyPlayerPrice", pmi.getDenyPlayerPrice());
-        economysection.set("RemovePlayerPrice", pmi.getRemovePlayerPrice());
-        economysection.set("UndenyPlayerPrice", pmi.getUndenyPlayerPrice());
-        economysection.set("PlotHomePrice", pmi.getPlotHomePrice());
-        economysection.set("CanCustomizeSellPrice", pmi.isCanCustomizeSellPrice());
-        economysection.set("SellToPlayerPrice", pmi.getSellToPlayerPrice());
-        economysection.set("SellToBankPrice", pmi.getSellToBankPrice());
-        economysection.set("BuyFromBankPrice", pmi.getBuyFromBankPrice());
-        economysection.set("AddCommentPrice", pmi.getAddCommentPrice());
-        economysection.set("BiomeChangePrice", pmi.getBiomeChangePrice());
-        economysection.set("ProtectPrice", pmi.getProtectPrice());
-        economysection.set("DisposePrice", pmi.getDisposePrice());
-
-        currworld.set("economy", economysection);
-
-        worlds.set(world, currworld);
-        config.set("worlds", worlds);
-
-        try {
-            config.save(configfile);
-        } catch (IOException e) {
-            getLogger().severe("error writting configurations");
-            e.printStackTrace();
+    
+            economysection.set("UseEconomy", pmi.isUseEconomy());
+            economysection.set("CanPutOnSale", pmi.isCanPutOnSale());
+            economysection.set("CanSellToBank", pmi.isCanSellToBank());
+            economysection.set("RefundClaimPriceOnReset", pmi.isRefundClaimPriceOnReset());
+            economysection.set("RefundClaimPriceOnSetOwner", pmi.isRefundClaimPriceOnSetOwner());
+            economysection.set("ClaimPrice", pmi.getClaimPrice());
+            economysection.set("ClearPrice", pmi.getClearPrice());
+            economysection.set("AddPlayerPrice", pmi.getAddPlayerPrice());
+            economysection.set("DenyPlayerPrice", pmi.getDenyPlayerPrice());
+            economysection.set("RemovePlayerPrice", pmi.getRemovePlayerPrice());
+            economysection.set("UndenyPlayerPrice", pmi.getUndenyPlayerPrice());
+            economysection.set("PlotHomePrice", pmi.getPlotHomePrice());
+            economysection.set("CanCustomizeSellPrice", pmi.isCanCustomizeSellPrice());
+            economysection.set("SellToPlayerPrice", pmi.getSellToPlayerPrice());
+            economysection.set("SellToBankPrice", pmi.getSellToBankPrice());
+            economysection.set("BuyFromBankPrice", pmi.getBuyFromBankPrice());
+            economysection.set("AddCommentPrice", pmi.getAddCommentPrice());
+            economysection.set("BiomeChangePrice", pmi.getBiomeChangePrice());
+            economysection.set("ProtectPrice", pmi.getProtectPrice());
+            economysection.set("DisposePrice", pmi.getDisposePrice());
+    
+            currworld.set("economy", economysection);
+    
+            worlds.set(world, currworld);
+            config.set("worlds", worlds);
+    
+            try {
+                config.save(configfile);
+            } catch (IOException e) {
+                getLogger().severe("error writting configurations");
+                e.printStackTrace();
+            }
+        
         }
     }
 

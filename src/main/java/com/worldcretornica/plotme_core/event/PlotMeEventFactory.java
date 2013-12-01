@@ -188,4 +188,11 @@ public class PlotMeEventFactory
 		Bukkit.getPluginManager().callEvent(event);
 		return event;
 	}
+	
+    public static PlotWorldLoadEvent callPlotWorldLoadEvent(PlotMe_Core plugin, String worldname, int NbPlots)
+    {
+        PlotWorldLoadEvent event = new PlotWorldLoadEvent(plugin, worldname, NbPlots);
+        Bukkit.getPluginManager().callEvent(event);
+        return event;
+    }
 }
