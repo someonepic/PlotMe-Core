@@ -40,17 +40,18 @@ public class CmdAuto extends PlotCommand {
                 if (w == null) {
                     p.sendMessage(RED + C("MsgNoPlotworldFound"));
                 } else {
-                    if (plugin.getPlotMeCoreManager().getNbOwnedPlot(p, w) >= plugin.getPlotLimit(p) && !plugin.cPerms(p, "PlotMe.admin")) {
+                    
+                    int playerlimit = plugin.getPlotLimit(p);
+                    
+                    if (playerlimit != -1 && plugin.getPlotMeCoreManager().getNbOwnedPlot(p, w) >= playerlimit && !plugin.cPerms(p, "PlotMe.admin")) {
                         p.sendMessage(RED + C("MsgAlreadyReachedMaxPlots") + " ("
-                                + plugin.getPlotMeCoreManager().getNbOwnedPlot(p, w) + "/" + plugin.getPlotLimit(p) + "). " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt"));
+                                + plugin.getPlotMeCoreManager().getNbOwnedPlot(p, w) + "/" + playerlimit + "). " + C("WordUse") + " " + RED + "/plotme " + C("CommandHome") + RESET + " " + C("MsgToGetToIt"));
                     } else {
                         PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(w);
                         int limit = pmi.getPlotAutoLimit();
 
                         String next = pmi.getNextFreed();
                         String id = "";
-
-                        plugin.getLogger().info("starting search " + next);
 
                         if (plugin.getPlotMeCoreManager().isPlotAvailable(next, w)) {
                             id = next;
@@ -63,10 +64,8 @@ public class CmdAuto extends PlotCommand {
                                 for (; x <= i; x++) {
                                     for (; z <= i; z++) {
                                         id = "" + x + ";" + z;
-                                        plugin.getLogger().info("id tried = " + id);
 
                                         if (plugin.getPlotMeCoreManager().isPlotAvailable(id, w)) {
-                                            plugin.getLogger().info("id found = " + id);
                                             pmi.setNextFreed(id);
                                             break toploop;
                                         }

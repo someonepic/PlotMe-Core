@@ -416,23 +416,18 @@ public class PlotMeCoreManager {
     }
 
     public Plot getPlotById(Player p) {
-        PlotMapInfo pmi = getMap(p);
-
-        if (pmi == null) {
-            return null;
-        }
-
-        return pmi.getPlot(getPlotId(p));
+        return getPlotById(p.getLocation());
     }
 
     public Plot getPlotById(Location l) {
         PlotMapInfo pmi = getMap(l);
+        String id = getPlotId(l);
 
-        if (pmi == null) {
+        if (pmi == null || id.equals("")) {
             return null;
         }
 
-        return pmi.getPlot(getPlotId(l));
+        return pmi.getPlot(id);
     }
 
     public Plot getPlotById(Block b, String id) {
@@ -446,13 +441,7 @@ public class PlotMeCoreManager {
     }
 
     public Plot getPlotById(Block b) {
-        PlotMapInfo pmi = getMap(b);
-
-        if (pmi == null) {
-            return null;
-        }
-
-        return pmi.getPlot(getPlotId(b.getLocation()));
+        return getPlotById(b.getLocation());
     }
 
     public void removePlot(World w, String id) {
