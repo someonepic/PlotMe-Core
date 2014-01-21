@@ -961,15 +961,6 @@ public class PlotMeCoreManager {
     }
 
     public PlotToClear getPlotLockInfo(String w, String id) {
-        if (plugin.spools != null) {
-            for (PlotMeSpool spool : plugin.spools) {
-                PlotToClear ptc = spool.getPlotToClear();
-                if (ptc != null && ptc.getWorld().equalsIgnoreCase(w) && ptc.getPlotId().equalsIgnoreCase(id)) {
-                    return ptc;
-                }
-            }
-        }
-
         return plugin.getPlotLocked(w, id);
     }
 

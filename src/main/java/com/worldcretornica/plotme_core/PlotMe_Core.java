@@ -31,7 +31,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.mcstats.Metrics;
 import org.mcstats.Metrics.Graph;
 
@@ -60,8 +59,6 @@ public class PlotMe_Core extends JavaPlugin {
 
     //Spool stuff
     private ConcurrentLinkedQueue<PlotToClear> plotsToClear = null;
-    public Set<PlotMeSpool> spools = null;
-    public Set<BukkitTask> spoolTasks = null;
 
     //Global variables
     private PlotMeCoreManager plotmecoremanager = null;
@@ -71,14 +68,6 @@ public class PlotMe_Core extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        for (PlotMeSpool spool : spools) {
-            spool.Stop();
-        }
-        spools.clear();
-        for (BukkitTask bt : spoolTasks) {
-            bt.cancel();
-        }
-        spoolTasks = null;
         getSqlManager().closeConnection();
         setEconomy(null);
         setUsinglwc(null);
@@ -191,7 +180,7 @@ public class PlotMe_Core extends JavaPlugin {
 
         // If no world exists add config for a world
         if (!config.contains("worlds") || config.getConfigurationSection("worlds").getKeys(false).isEmpty()) {
-            new PlotMapInfo(this, "plotsworld");
+            new PlotMapInfo(this, "plotworld");
         }
 
         // Do any config validation
@@ -367,15 +356,6 @@ public class PlotMe_Core extends JavaPlugin {
     private void setupClearSpools() {
         creationbuffer = new HashMap<>();
         plotsToClear = new ConcurrentLinkedQueue<>();
-
-        //Start the spools
-        spoolTasks = new HashSet<>();
-        spools = new HashSet<>();
-        for (int i = 1; i <= getConfig().getInt("NbClearSpools"); i++) {
-            PlotMeSpool pms = new PlotMeSpool(this);
-            spools.add(pms);
-            spoolTasks.add(Bukkit.getServer().getScheduler().runTaskAsynchronously(this, pms));
-        }
     }
 
     public void sendMessage(CommandSender cs, String message) {
@@ -549,10 +529,15 @@ public class PlotMe_Core extends JavaPlugin {
 
     public void addPlotToClear(PlotToClear plotToClear) {
         this.plotsToClear.offer(plotToClear);
+        
+        PlotMeSpool pms = new PlotMeSpool(this, plotToClear);
+        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, pms, 0L, 200L);
     }
+    
+    public void removePlotToClear(PlotToClear plotToClear, int taskid) {
+        this.plotsToClear.remove(plotToClear);
 
-    public PlotToClear pollPlotsToClear() {
-        return plotsToClear.poll();
+        Bukkit.getScheduler().cancelTask(taskid);
     }
 
     public boolean isPlotLocked(String world, String id) {
@@ -624,5 +609,4 @@ public class PlotMe_Core extends JavaPlugin {
     private void setUtil(Util util) {
         this.util = util;
     }
-
 }

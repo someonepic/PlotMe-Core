@@ -11,82 +11,52 @@ public class PlotMeSpool implements Runnable {
     private Long[] currentClear = null;
     private PlotToClear plottoclear = null;
 
-    private long timer = 0;
-    private boolean mustStop = false;
+    private int taskid = 0;
 
     private static String T;
     private static String G;
     private static String M;
     private static String k;
 
-    public PlotMeSpool(PlotMe_Core instance) {
+    public PlotMeSpool(PlotMe_Core instance, PlotToClear plotToClear) {
         plugin = instance;
 
         T = plugin.getUtil().C("Unit_1000000000000");
         G = plugin.getUtil().C("Unit_1000000000");
         M = plugin.getUtil().C("Unit_1000000");
         k = plugin.getUtil().C("Unit_1000");
+        
+        this.plottoclear = plotToClear;
     }
 
     @Override
     public void run() {
-        while (!mustStop && plugin != null && plugin.isEnabled()) {
-            //Plots to clear
-            if (getPlotToClear() == null) {
-                setPlotToClear(plugin.pollPlotsToClear());
+        if (this.plottoclear != null) {
+            World w = Bukkit.getWorld(this.plottoclear.getWorld());
 
-                if (getPlotToClear() != null) {
-                    World w = Bukkit.getWorld(getPlotToClear().getWorld());
+            if (w != null) {
+                if (this.currentClear == null)
+                    this.currentClear = this.plugin.getGenManager(w).clear(w, getPlotToClear().getPlotId(), plugin.getConfig().getInt("NbBlocksPerClearStep"), true, null);
+                else {
+                    this.currentClear = this.plugin.getGenManager(w).clear(w, getPlotToClear().getPlotId(), plugin.getConfig().getInt("NbBlocksPerClearStep"), false, this.currentClear);
+                }
 
-                    currentClear = plugin.getGenManager(w).clear(w, getPlotToClear().getPlotId(), plugin.getConfig().getInt("NbBlocksPerClearStep"), true, null);
-                    timer = System.currentTimeMillis();
-                    ShowProgress();
+                ShowProgress();
+
+                if (this.currentClear == null) {
+                    this.plugin.getGenManager(getPlotToClear().getWorld()).adjustPlotFor(w, getPlotToClear().getPlotId(), true, false, false, false);
+                    this.plugin.getPlotMeCoreManager().RemoveLWC(w, getPlotToClear().getPlotId());
+                    this.plugin.getGenManager(getPlotToClear().getWorld()).refreshPlotChunks(w, getPlotToClear().getPlotId());
+
+                    Msg(this.plugin.getUtil().C("WordPlot") + " " + getPlotToClear().getPlotId() + " " + this.plugin.getUtil().C("WordCleared"));
+
+                    this.plugin.removePlotToClear(this.plottoclear, this.taskid);
+                    this.plottoclear = null;
                 }
             } else {
-                World w = Bukkit.getWorld(getPlotToClear().getWorld());
-                currentClear = plugin.getGenManager(w).clear(w, getPlotToClear().getPlotId(), plugin.getConfig().getInt("NbBlocksPerClearStep"), false, currentClear);
+                this.plugin.removePlotToClear(this.plottoclear, this.taskid);
+                this.plottoclear = null;
             }
-
-            if (getPlotToClear() != null) {
-                if (currentClear != null) {
-                    if ((timer + 20000 < System.currentTimeMillis())) {
-                        timer = System.currentTimeMillis();
-
-                        ShowProgress();
-                    }
-                } //Clear finished, adjust walls and remove LWC
-                else {
-                    World w = Bukkit.getWorld(getPlotToClear().getWorld());
-                    if (w != null) {
-                        plugin.getGenManager(getPlotToClear().getWorld()).adjustPlotFor(w, getPlotToClear().getPlotId(), true, false, false, false);
-                        plugin.getPlotMeCoreManager().RemoveLWC(w, getPlotToClear().getPlotId());
-                        plugin.getGenManager(getPlotToClear().getWorld()).refreshPlotChunks(w, getPlotToClear().getPlotId());
-                    }
-
-                    Msg(plugin.getUtil().C("WordPlot") + " " + getPlotToClear().getPlotId() + " " + plugin.getUtil().C("WordCleared"));
-                    setPlotToClear(null);
-                }
-            }
-
-            //Sleep
-            if (!doSleep()) {
-                return;
-            }
-        }
-    }
-
-    public void Stop() {
-        mustStop = true;
-    }
-
-    private boolean doSleep() {
-        try {
-            Thread.sleep(200);
-            return true;
-        } catch (InterruptedException e) {
-            plugin.getLogger().severe(plugin.getUtil().C("ErrSpoolInterrupted"));
-            e.printStackTrace();
-            return false;
         }
     }
 
@@ -137,16 +107,15 @@ public class PlotMeSpool implements Runnable {
             buffer = ((double) count / 1000);
             buffer = ((double) Math.round(buffer * 10) / 10);
             return buffer + k;
-        } else {
-            return count.toString();
         }
+        return count.toString();
     }
 
     public PlotToClear getPlotToClear() {
         return plottoclear;
     }
 
-    public void setPlotToClear(PlotToClear plottoclear) {
-        this.plottoclear = plottoclear;
+    public void setTaskId(int taskid) {
+        this.taskid = taskid;
     }
 }

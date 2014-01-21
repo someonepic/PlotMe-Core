@@ -6,7 +6,7 @@ public class PlotToClear {
 
     private String world;
     private String plotid;
-    private CommandSender commandsender;
+    private CommandSender commandsender; //TODO Make it work if player relogs
     private ClearReason reason;
 
     public PlotToClear(String w, String id, CommandSender cs, ClearReason r) {

@@ -31,6 +31,9 @@ public class SqlManager {
     public final String sqlitedb = "plots.db";
 
     //todo add update to table for customprice, forsale
+    //TODO Update the system to save both username (for display purposes) and UUID of player
+    //will need to migrate using mojang for exisitng plots
+    //have to be done on plots, comments, allowed, denied
     private final String PLOT_TABLE = "CREATE TABLE `plotmePlots` ("
             + "`idX` INTEGER,"
             + "`idZ` INTEGER,"
