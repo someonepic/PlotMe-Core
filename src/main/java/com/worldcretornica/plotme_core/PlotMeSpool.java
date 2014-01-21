@@ -38,13 +38,13 @@ public class PlotMeSpool implements Runnable {
                 if (getPlotToClear() != null) {
                     World w = Bukkit.getWorld(getPlotToClear().getWorld());
 
-                    currentClear = plugin.getGenManager(w).clear(w, getPlotToClear().getPlotId(), plugin.getNbBlocksPerClearStep(), true, null);
+                    currentClear = plugin.getGenManager(w).clear(w, getPlotToClear().getPlotId(), plugin.getConfig().getInt("NbBlocksPerClearStep"), true, null);
                     timer = System.currentTimeMillis();
                     ShowProgress();
                 }
             } else {
                 World w = Bukkit.getWorld(getPlotToClear().getWorld());
-                currentClear = plugin.getGenManager(w).clear(w, getPlotToClear().getPlotId(), plugin.getNbBlocksPerClearStep(), false, currentClear);
+                currentClear = plugin.getGenManager(w).clear(w, getPlotToClear().getPlotId(), plugin.getConfig().getInt("NbBlocksPerClearStep"), false, currentClear);
             }
 
             if (getPlotToClear() != null) {

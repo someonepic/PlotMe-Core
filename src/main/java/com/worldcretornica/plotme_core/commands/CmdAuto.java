@@ -17,12 +17,12 @@ public class CmdAuto extends PlotCommand {
 
     public boolean exec(Player p, String[] args) {
         if (plugin.cPerms(p, "PlotMe.use.auto")) {
-            if (!plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.getAllowWorldTeleport()) {
+            if (!plugin.getPlotMeCoreManager().isPlotWorld(p) && !plugin.getConfig().getBoolean("allowWorldTeleport")) {
                 p.sendMessage(RED + C("MsgNotPlotWorld"));
             } else {
                 World w;
 
-                if (!plugin.getPlotMeCoreManager().isPlotWorld(p) && plugin.getAllowWorldTeleport()) {
+                if (!plugin.getPlotMeCoreManager().isPlotWorld(p) && plugin.getConfig().getBoolean("allowWorldTeleport")) {
                     if (args.length == 2) {
                         w = Bukkit.getWorld(args[1]);
                     } else {

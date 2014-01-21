@@ -1,377 +1,423 @@
 package com.worldcretornica.plotme_core;
 
-import java.util.ArrayList;
+import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 public class PlotMapInfo {
 
-    private PlotMe_Core plugin = null;
+    private final PlotMe_Core plugin;
 
-    private ConcurrentHashMap<String, Plot> _plots;
-    private List<String> _freedplots;
-    private String _world;
+    private final ConcurrentHashMap<String, Plot> plots;
+    private final List<String> freedplots;
+    private final String world;
+    private final String worldPath;
 
-    private int PlotAutoLimit;
-    private int DaysToExpiration;
-    private List<Integer> ProtectedBlocks;
-    private List<String> PreventedItems;
-    private boolean UseEconomy;
-    private boolean CanPutOnSale;
-    private boolean CanSellToBank;
-    private boolean RefundClaimPriceOnReset;
-    private boolean RefundClaimPriceOnSetOwner;
-    private double ClaimPrice;
-    private double ClearPrice;
-    private double AddPlayerPrice;
-    private double DenyPlayerPrice;
-    private double RemovePlayerPrice;
-    private double UndenyPlayerPrice;
-    private double PlotHomePrice;
-    private boolean CanCustomizeSellPrice;
-    private double SellToPlayerPrice;
-    private double SellToBankPrice;
-    private double BuyFromBankPrice;
-    private double AddCommentPrice;
-    private double BiomeChangePrice;
-    private double ProtectPrice;
-    private double DisposePrice;
-
-    private boolean AutoLinkPlots;
-    private boolean DisableExplosion;
-    private boolean DisableIgnition;
-
-    private boolean UseProgressiveClear;
-    private String NextFreed;
-
-    public PlotMapInfo(PlotMe_Core instance) {
-        plugin = instance;
-        _plots = new ConcurrentHashMap<String, Plot>(1000, 0.75f, 5);
-        _freedplots = new ArrayList<String>();
-    }
-
+    /*public PlotMapInfo(PlotMe_Core instance) {
+     plugin = instance;
+     _plots = new ConcurrentHashMap<String, Plot>();
+     _freedplots = new ArrayList<String>();
+     }*/
     public PlotMapInfo(PlotMe_Core instance, String world) {
-        this(instance);
-        _world = world;
-        _freedplots = plugin.getSqlManager().getFreed(world);
+        this.plugin = instance;
+        this.world = world;
+        this.worldPath = "worlds." + world;
+        loadConfig();
+        this.plots = new ConcurrentHashMap<>(1000, 0.75f, 5);
+        this.freedplots = plugin.getSqlManager().getFreed(world);
     }
-    
-    public int getNbPlots()
-    {
-        return _plots.size();
+
+    private ConfigurationSection loadConfig() {
+        ConfigurationSection defaultCS = getDefaultWorld();
+        ConfigurationSection configCS;
+        if (plugin.getConfig().contains(worldPath)) {
+            configCS = plugin.getConfig().getConfigurationSection(worldPath);
+        } else {
+            plugin.getConfig().set(worldPath, defaultCS);
+            saveConfig();
+            configCS = plugin.getConfig().getConfigurationSection(worldPath);
+        }
+        for (String path : defaultCS.getKeys(true)) {
+            configCS.addDefault(path, defaultCS.get(path));
+        }
+        return configCS;
+    }
+
+    private ConfigurationSection getConfig() {
+        ConfigurationSection config = plugin.getConfig().getConfigurationSection(worldPath);
+        return config;
+    }
+
+    private ConfigurationSection getDefaultWorld() {
+        InputStream defConfigStream = plugin.getResource("default-world.yml");
+
+        return YamlConfiguration.loadConfiguration(defConfigStream);
+    }
+
+    public void saveConfig() {
+        plugin.saveConfig();
+    }
+
+    public int getNbPlots() {
+        return plots.size();
     }
 
     public Plot getPlot(String id) {
-        if (!_plots.containsKey(id)) {
-            Plot plot = plugin.getSqlManager().getPlot(_world, id);
+        if (id.isEmpty()) {
+            return null;
+        }
+        if (!plots.containsKey(id)) {
+            Plot plot = plugin.getSqlManager().getPlot(world, id);
             if (plot == null) {
                 return null;
             }
 
-            _plots.put(id, plot);
+            plots.put(id, plot);
         }
 
-        return _plots.get(id);
+        return plots.get(id);
     }
 
     public ConcurrentHashMap<String, Plot> getLoadedPlots() {
-        return _plots;
+        return plots;
     }
 
     public void addPlot(String id, Plot plot) {
-        _plots.putIfAbsent(id, plot);
+        plots.putIfAbsent(id, plot);
     }
 
     public void removePlot(String id) {
-        if (_plots.containsKey(id)) {
-            _plots.remove(id);
+        if (plots.containsKey(id)) {
+            plots.remove(id);
         }
     }
 
     public void addFreed(String id) {
-        if (!_freedplots.contains(id)) {
-            _freedplots.add(id);
+        if (!freedplots.contains(id)) {
+            freedplots.add(id);
             int x = plugin.getPlotMeCoreManager().getIdX(id);
             int z = plugin.getPlotMeCoreManager().getIdZ(id);
-            plugin.getSqlManager().addFreed(x, z, _world);
+            plugin.getSqlManager().addFreed(x, z, world);
         }
     }
 
     public void removeFreed(String id) {
-        if (_freedplots.contains(id)) {
-            _freedplots.remove(id);
+        if (freedplots.contains(id)) {
+            freedplots.remove(id);
             int x = plugin.getPlotMeCoreManager().getIdX(id);
             int z = plugin.getPlotMeCoreManager().getIdZ(id);
-            plugin.getSqlManager().deleteFreed(x, z, _world);
+            plugin.getSqlManager().deleteFreed(x, z, world);
         }
     }
-    
+
+    private List<Integer> getProtectedBlocks() {
+        return getConfig().getIntegerList("ProtectedBlocks");
+    }
+
+    private void setProtectedBlocks(List<Integer> protectedBlocks) {
+        getConfig().set("ProtectedBlocks", protectedBlocks);
+        saveConfig();
+    }
+
     public void addProtectedBlock(Integer blockId) {
-        if(!isProtectedBlock(blockId)) {
-            this.ProtectedBlocks.add(blockId);
+        if (!isProtectedBlock(blockId)) {
+            final List<Integer> protectedBlocks = getProtectedBlocks();
+            protectedBlocks.add(blockId);
+            setProtectedBlocks(protectedBlocks);
         }
     }
-    
+
     public void removeProtectedBlock(Integer blockId) {
-        if(isProtectedBlock(blockId)) {
-            this.ProtectedBlocks.remove(blockId);
+        if (isProtectedBlock(blockId)) {
+            final List<Integer> protectedBlocks = getProtectedBlocks();
+            protectedBlocks.remove(blockId);
+            setProtectedBlocks(protectedBlocks);
         }
     }
-    
+
     public boolean isProtectedBlock(Integer blockId) {
-        return this.ProtectedBlocks.contains(blockId);
+        return getProtectedBlocks().contains(blockId);
     }
-    
-    public List<Integer> getProtectedBlocks() {
-        return this.ProtectedBlocks;
+
+    private List<String> getPreventedItems() {
+        return getConfig().getStringList("PreventedItems");
     }
-    
-    public void setProtectedBlocks(List<Integer> blockId) {
-        this.ProtectedBlocks = blockId;
+
+    private void setPreventedItems(List<String> preventedItems) {
+        getConfig().set("PreventedItems", preventedItems);
+        saveConfig();
     }
-    
+
     public void addPreventedItem(String itemId) {
-        if(!isPreventedItem(itemId)) {
-            this.PreventedItems.add(itemId);
+        if (!isPreventedItem(itemId)) {
+            final List<String> preventedItems = getPreventedItems();
+            preventedItems.add(itemId);
+            setPreventedItems(preventedItems);
         }
     }
-    
+
     public void removePreventedItems(String itemId) {
-        if(isPreventedItem(itemId)) {
-            this.ProtectedBlocks.remove(itemId);
+        if (isPreventedItem(itemId)) {
+            final List<String> preventedItems = getPreventedItems();
+            preventedItems.remove(itemId);
+            setPreventedItems(preventedItems);
         }
     }
-    
+
     public boolean isPreventedItem(String itemId) {
-        return this.PreventedItems.contains(itemId);
-    }
-    
-    public List<String> getPreventedItems() {
-        return this.PreventedItems;
-    }
-    
-    public void setPreventedItems(List<String> itemIds) {
-        this.PreventedItems = itemIds;
+        return getPreventedItems().contains(itemId);
     }
 
     public String getNextFreed() {
-        if (!_freedplots.isEmpty()) {
-            return _freedplots.get(0);
+        if (!freedplots.isEmpty()) {
+            return freedplots.get(0);
         } else {
-            return NextFreed;
+            return getConfig().getString("NextFreed");
         }
     }
 
     public void setNextFreed(String id) {
-        NextFreed = id;
-        plugin.saveWorldConfig(_world);
+        getConfig().set("NextFreed", id);
+        saveConfig();
     }
 
     public int getPlotAutoLimit() {
-        return PlotAutoLimit;
+        return getConfig().getInt("PlotAutoLimit");
     }
 
     public void setPlotAutoLimit(int plotAutoLimit) {
-        PlotAutoLimit = plotAutoLimit;
+        getConfig().set("PlotAutoLimit", plotAutoLimit);
+        saveConfig();
     }
 
     public int getDaysToExpiration() {
-        return DaysToExpiration;
+        return getConfig().getInt("DaysToExpiration");
     }
 
     public void setDaysToExpiration(int daysToExpiration) {
-        DaysToExpiration = daysToExpiration;
+        getConfig().set("DaysToExpiration", daysToExpiration);
+        saveConfig();
+    }
+
+    private ConfigurationSection getEconomySection() {
+        return getConfig().getConfigurationSection("economy");
     }
 
     public boolean isUseEconomy() {
-        return UseEconomy;
+        return getEconomySection().getBoolean("UseEconomy");
     }
 
     public void setUseEconomy(boolean useEconomy) {
-        UseEconomy = useEconomy;
+        getEconomySection().set("UseEconomy", useEconomy);
+        saveConfig();
     }
 
     public boolean isCanPutOnSale() {
-        return CanPutOnSale;
+        return getEconomySection().getBoolean("CanPutOnSale");
     }
 
     public void setCanPutOnSale(boolean canPutOnSale) {
-        CanPutOnSale = canPutOnSale;
+        getEconomySection().set("CanPutOnSale", canPutOnSale);
+        saveConfig();
     }
 
     public boolean isCanSellToBank() {
-        return CanSellToBank;
+        return getEconomySection().getBoolean("CanSellToBank");
     }
 
     public void setCanSellToBank(boolean canSellToBank) {
-        CanSellToBank = canSellToBank;
+        getEconomySection().set("CanSellToBank", canSellToBank);
+        saveConfig();
     }
 
     public boolean isRefundClaimPriceOnReset() {
-        return RefundClaimPriceOnReset;
+        return getEconomySection().getBoolean("RefundClaimPriceOnReset");
     }
 
     public void setRefundClaimPriceOnReset(boolean refundClaimPriceOnReset) {
-        RefundClaimPriceOnReset = refundClaimPriceOnReset;
+        getEconomySection().set("RefundClaimPriceOnReset", refundClaimPriceOnReset);
+        saveConfig();
     }
 
     public boolean isRefundClaimPriceOnSetOwner() {
-        return RefundClaimPriceOnSetOwner;
+        return getEconomySection().getBoolean("RefundClaimPriceOnSetOwner");
     }
 
     public void setRefundClaimPriceOnSetOwner(boolean refundClaimPriceOnSetOwner) {
-        RefundClaimPriceOnSetOwner = refundClaimPriceOnSetOwner;
+        getEconomySection().set("RefundClaimPriceOnSetOwner", refundClaimPriceOnSetOwner);
+        saveConfig();
     }
 
     public double getClaimPrice() {
-        return ClaimPrice;
+        return getEconomySection().getDouble("ClaimPrice");
     }
 
     public void setClaimPrice(double claimPrice) {
-        ClaimPrice = claimPrice;
+        getEconomySection().set("ClaimPrice", claimPrice);
+        saveConfig();
     }
 
     public double getClearPrice() {
-        return ClearPrice;
+        return getEconomySection().getDouble("ClearPrice");
     }
 
     public void setClearPrice(double clearPrice) {
-        ClearPrice = clearPrice;
+        getEconomySection().set("ClearPrice", clearPrice);
+        saveConfig();
     }
 
     public double getAddPlayerPrice() {
-        return AddPlayerPrice;
+        return getEconomySection().getDouble("AddPlayerPrice");
     }
 
     public void setAddPlayerPrice(double addPlayerPrice) {
-        AddPlayerPrice = addPlayerPrice;
+        getEconomySection().set("AddPlayerPrice", addPlayerPrice);
+        saveConfig();
     }
 
     public double getDenyPlayerPrice() {
-        return DenyPlayerPrice;
+        return getEconomySection().getDouble("DenyPlayerPrice");
     }
 
     public void setDenyPlayerPrice(double denyPlayerPrice) {
-        DenyPlayerPrice = denyPlayerPrice;
+        getEconomySection().set("DenyPlayerPrice", denyPlayerPrice);
+        saveConfig();
     }
 
     public double getRemovePlayerPrice() {
-        return RemovePlayerPrice;
+        return getEconomySection().getDouble("RemovePlayerPrice");
     }
 
     public void setRemovePlayerPrice(double removePlayerPrice) {
-        RemovePlayerPrice = removePlayerPrice;
+        getEconomySection().set("RemovePlayerPrice", removePlayerPrice);
+        saveConfig();
     }
 
     public double getUndenyPlayerPrice() {
-        return UndenyPlayerPrice;
+        return getEconomySection().getDouble("UndenyPlayerPrice");
     }
 
     public void setUndenyPlayerPrice(double undenyPlayerPrice) {
-        UndenyPlayerPrice = undenyPlayerPrice;
+        getEconomySection().set("UndenyPlayerPrice", undenyPlayerPrice);
+        saveConfig();
     }
 
     public double getPlotHomePrice() {
-        return PlotHomePrice;
+        return getEconomySection().getDouble("PlotHomePrice");
     }
 
     public void setPlotHomePrice(double plotHomePrice) {
-        PlotHomePrice = plotHomePrice;
+        getEconomySection().set("PlotHomePrice", plotHomePrice);
+        saveConfig();
     }
 
     public boolean isCanCustomizeSellPrice() {
-        return CanCustomizeSellPrice;
+        return getEconomySection().getBoolean("CanCustomizeSellPrice");
     }
 
     public void setCanCustomizeSellPrice(boolean canCustomizeSellPrice) {
-        CanCustomizeSellPrice = canCustomizeSellPrice;
+        getEconomySection().set("CanCustomizeSellPrice", canCustomizeSellPrice);
+        saveConfig();
     }
 
     public double getSellToPlayerPrice() {
-        return SellToPlayerPrice;
+        return getEconomySection().getDouble("SellToPlayerPrice");
     }
 
     public void setSellToPlayerPrice(double sellToPlayerPrice) {
-        SellToPlayerPrice = sellToPlayerPrice;
+        getEconomySection().set("SellToPlayerPrice", sellToPlayerPrice);
+        saveConfig();
     }
 
     public double getSellToBankPrice() {
-        return SellToBankPrice;
+        return getEconomySection().getDouble("SellToBankPrice");
     }
 
     public void setSellToBankPrice(double sellToBankPrice) {
-        SellToBankPrice = sellToBankPrice;
+        getEconomySection().set("SellToBankPrice", sellToBankPrice);
+        saveConfig();
     }
 
     public double getBuyFromBankPrice() {
-        return BuyFromBankPrice;
+        return getEconomySection().getDouble("BuyFromBankPrice");
     }
 
     public void setBuyFromBankPrice(double buyFromBankPrice) {
-        BuyFromBankPrice = buyFromBankPrice;
+        getEconomySection().set("BuyFromBankPrice", buyFromBankPrice);
+        saveConfig();
     }
 
     public double getAddCommentPrice() {
-        return AddCommentPrice;
+        return getEconomySection().getDouble("AddCommentPrice");
     }
 
     public void setAddCommentPrice(double addCommentPrice) {
-        AddCommentPrice = addCommentPrice;
+        getEconomySection().set("AddCommentPrice", addCommentPrice);
+        saveConfig();
     }
 
     public double getBiomeChangePrice() {
-        return BiomeChangePrice;
+        return getEconomySection().getDouble("BiomeChangePrice");
     }
 
     public void setBiomeChangePrice(double biomeChangePrice) {
-        BiomeChangePrice = biomeChangePrice;
+        getEconomySection().set("BiomeChangePrice", biomeChangePrice);
+        saveConfig();
     }
 
     public double getProtectPrice() {
-        return ProtectPrice;
+        return getEconomySection().getDouble("ProtectPrice");
     }
 
     public void setProtectPrice(double protectPrice) {
-        ProtectPrice = protectPrice;
+        getEconomySection().set("ProtectPrice", protectPrice);
+        saveConfig();
     }
 
     public double getDisposePrice() {
-        return DisposePrice;
+        return getEconomySection().getDouble("DisposePrice");
     }
 
     public void setDisposePrice(double disposePrice) {
-        DisposePrice = disposePrice;
+        getEconomySection().set("DisposePrice", disposePrice);
+        saveConfig();
     }
 
     public boolean isAutoLinkPlots() {
-        return AutoLinkPlots;
+        return getConfig().getBoolean("AutoLinkPlots");
     }
 
     public void setAutoLinkPlots(boolean autoLinkPlots) {
-        AutoLinkPlots = autoLinkPlots;
+        getConfig().set("AutoLinkPlots", autoLinkPlots);
+        saveConfig();
     }
 
     public boolean isDisableExplosion() {
-        return DisableExplosion;
+        return getConfig().getBoolean("DisableExplosion");
     }
 
     public void setDisableExplosion(boolean disableExplosion) {
-        DisableExplosion = disableExplosion;
+        getConfig().set("DisableExplosion", disableExplosion);
+        saveConfig();
     }
 
     public boolean isDisableIgnition() {
-        return DisableIgnition;
+        return getConfig().getBoolean("DisableIgnition");
     }
 
     public void setDisableIgnition(boolean disableIgnition) {
-        DisableIgnition = disableIgnition;
+        getConfig().set("DisableIgnition", disableIgnition);
+        saveConfig();
     }
 
     public boolean isUseProgressiveClear() {
-        return UseProgressiveClear;
+        return getConfig().getBoolean("UseProgressiveClear");
     }
 
     public void setUseProgressiveClear(boolean useProgressiveClear) {
-        UseProgressiveClear = useProgressiveClear;
+        getConfig().set("UseProgressiveClear", useProgressiveClear);
+        saveConfig();
     }
 }

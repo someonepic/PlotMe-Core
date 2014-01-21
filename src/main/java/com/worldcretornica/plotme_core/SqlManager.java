@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 
 public class SqlManager {
@@ -104,7 +105,7 @@ public class SqlManager {
                 conn.setAutoCommit(false);
             } else {
                 Class.forName("org.sqlite.JDBC");
-                conn = DriverManager.getConnection("jdbc:sqlite:" + plugin.getConfigPath() + "/plots.db");
+                conn = DriverManager.getConnection("jdbc:sqlite:" + plugin.getDataFolder().getAbsolutePath() + "/plots.db");
                 conn.setAutoCommit(false);
             }
         } catch (SQLException ex) {
@@ -603,14 +604,14 @@ public class SqlManager {
             if (usemySQL) {
                 plugin.getLogger().info("Modifying database for MySQL support");
 
-                File sqlitefile = new File(plugin.getConfigPath(), sqlitedb);
+                File sqlitefile = new File(plugin.getDataFolder(), sqlitedb);
                 if (!sqlitefile.exists()) {
                     //plotmecore.getLogger().info("Could not find old " + sqlitedb);
                     return;
                 } else {
                     plugin.getLogger().info("Trying to import plots from plots.db");
                     Class.forName("org.sqlite.JDBC");
-                    Connection sqliteconn = DriverManager.getConnection("jdbc:sqlite:" + plugin.getConfigPath() + "\\" + sqlitedb);
+                    Connection sqliteconn = DriverManager.getConnection("jdbc:sqlite:" + plugin.getDataFolder().getAbsolutePath() + "\\" + sqlitedb);
 
                     sqliteconn.setAutoCommit(false);
                     Statement slstatement = sqliteconn.createStatement();
@@ -742,7 +743,7 @@ public class SqlManager {
                     }
 
                     plugin.getLogger().info("Renaming " + sqlitedb + " to " + sqlitedb + ".old");
-                    if (!sqlitefile.renameTo(new File(plugin.getConfigPath(), sqlitedb + ".old"))) {
+                    if (!sqlitefile.renameTo(new File(plugin.getDataFolder(), sqlitedb + ".old"))) {
                         plugin.getLogger().severe("Failed to rename " + sqlitedb + "! Please rename this manually!");
                     }
                 }
@@ -1392,21 +1393,20 @@ public class SqlManager {
         return plot;
     }
 
-    public void loadPlotsAsynchronously(String world){
+    public void loadPlotsAsynchronously(String world) {
         final String worldname = world;
-        
+
         Bukkit.getServer().getScheduler().runTaskAsynchronously(plugin,
                 new Runnable() {
                     @Override
                     public void run() {
                         plugin.getLogger().info("Starting to load plots for world " + worldname);
-                        
+
                         HashMap<String, Plot> plots = getPlots(worldname);
-                        
+
                         PlotMapInfo pmi = plugin.getPlotMeCoreManager().getMap(worldname);
-                        
-                        for(String id : plots.keySet())
-                        {
+
+                        for (String id : plots.keySet()) {
                             pmi.addPlot(id, plots.get(id));
                             PlotMeEventFactory.callPlotLoadedEvent(plugin, Bukkit.getWorld(worldname), plots.get(id));
                         }
@@ -1415,10 +1415,10 @@ public class SqlManager {
                         PlotMeEventFactory.callPlotWorldLoadEvent(plugin, worldname, pmi.getNbPlots());
                     }
                 }
-         );
+        );
     }
-    
-    //Do NOT call from the main thread 
+
+    //Do NOT call from the main thread
     private HashMap<String, Plot> getPlots(String world) {
         HashMap<String, Plot> ret = new HashMap<String, Plot>();
         Statement statementPlot = null;
@@ -1460,7 +1460,7 @@ public class SqlManager {
                 double currentbid = setPlots.getDouble("currentbid");
                 boolean auctionned = setPlots.getBoolean("auctionned");
                 String auctionneddate = setPlots.getString("auctionneddate");
-                
+
                 statementAllowed = conn.createStatement();
                 setAllowed = statementAllowed.executeQuery("SELECT * FROM plotmeAllowed WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
 
@@ -1468,8 +1468,9 @@ public class SqlManager {
                     allowed.add(setAllowed.getString("player"));
                 }
 
-                if (setAllowed != null)
+                if (setAllowed != null) {
                     setAllowed.close();
+                }
 
                 statementDenied = conn.createStatement();
                 setDenied = statementDenied.executeQuery("SELECT * FROM plotmeDenied WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
@@ -1478,8 +1479,9 @@ public class SqlManager {
                     denied.add(setDenied.getString("player"));
                 }
 
-                if (setDenied != null)
+                if (setDenied != null) {
                     setDenied.close();
+                }
 
                 statementComment = conn.createStatement();
                 setComments = statementComment.executeQuery("SELECT * FROM plotmeComments WHERE idX = '" + idX + "' AND idZ = '" + idZ + "' AND LOWER(world) = '" + world + "'");
@@ -1499,22 +1501,30 @@ public class SqlManager {
             plugin.getLogger().severe("  " + ex.getMessage());
         } finally {
             try {
-                if (statementPlot != null)
+                if (statementPlot != null) {
                     statementPlot.close();
-                if (statementAllowed != null)
+                }
+                if (statementAllowed != null) {
                     statementAllowed.close();
-                if (statementComment != null)
+                }
+                if (statementComment != null) {
                     statementComment.close();
-                if (statementDenied != null)
+                }
+                if (statementDenied != null) {
                     statementDenied.close();
-                if (setPlots != null)
+                }
+                if (setPlots != null) {
                     setPlots.close();
-                if (setComments != null)
+                }
+                if (setComments != null) {
                     setComments.close();
-                if (setDenied != null)
+                }
+                if (setDenied != null) {
                     setDenied.close();
-                if (setAllowed != null)
+                }
+                if (setAllowed != null) {
                     setAllowed.close();
+                }
             } catch (SQLException ex) {
                 plugin.getLogger().severe("Load Exception (on close) :");
                 plugin.getLogger().severe("  " + ex.getMessage());
@@ -1522,7 +1532,7 @@ public class SqlManager {
         }
         return ret;
     }
-    
+
     public List<String> getFreed(String world) {
         List<String> ret = new ArrayList<String>();
         PreparedStatement statementPlot = null;
@@ -1866,6 +1876,25 @@ public class SqlManager {
             }
         }
         return null;
+    }
+
+    public List<Plot> getAllPlots() {
+        List<Plot> ret = new ArrayList<Plot>();
+        Connection connection = getConnection();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT world, idX, idZ FROM plotmePlots");
+
+            while (rs.next()) {
+                String world = rs.getString("world");
+                int idX = rs.getInt("idX");
+                int idZ = rs.getInt("idZ");
+
+                ret.add(getPlot(world, idX + ";" + idZ));
+            }
+        } catch (SQLException ex) {
+            plugin.getLogger().log(Level.SEVERE, null, ex);
+        }
+        return ret;
     }
 
     public List<Plot> getPlayerPlots(String owner) {

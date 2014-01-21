@@ -16,35 +16,35 @@ public class PlotToClear {
         setReason(r);
     }
 
-    public String getWorld() {
+    public final String getWorld() {
         return world;
     }
 
-    public void setWorld(String world) {
+    public final void setWorld(String world) {
         this.world = world;
     }
 
-    public String getPlotId() {
+    public final String getPlotId() {
         return plotid;
     }
 
-    public void setPlotId(String plotid) {
+    public final void setPlotId(String plotid) {
         this.plotid = plotid;
     }
 
-    public CommandSender getCommandSender() {
+    public final CommandSender getCommandSender() {
         return commandsender;
     }
 
-    public void setCommandSender(CommandSender commandsender) {
+    public final void setCommandSender(CommandSender commandsender) {
         this.commandsender = commandsender;
     }
 
-    public ClearReason getReason() {
+    public final ClearReason getReason() {
         return reason;
     }
 
-    public void setReason(ClearReason reason) {
+    public final void setReason(ClearReason reason) {
         this.reason = reason;
     }
 }
