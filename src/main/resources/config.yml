@@ -4,7 +4,7 @@ mySQLuname: root
 mySQLpass: password
 globalUseEconomy: false
 AdvancedLogging: false
-Language: english
+language: english
 allowWorldTeleport: true
 defaultWEAnywhere: false
 allowToDeny: true
